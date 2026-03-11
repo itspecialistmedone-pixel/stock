@@ -40,6 +40,7 @@ input,select,textarea{font-family:var(--fn);}
 .sp-fill{height:100%;background:var(--red);border-radius:2px;animation:spfill 1.8s ease infinite;}
 @keyframes spfill{0%{width:0;margin-left:0;}50%{width:60%;margin-left:20%;}100%{width:0;margin-left:100%;}}
 
+@keyframes scanline{0%,100%{opacity:.4;transform:translateY(-50%) scaleX(.8);}50%{opacity:1;transform:translateY(-50%) scaleX(1);}}
 /* LOGIN */
 #loginWrap{min-height:100vh;display:none;align-items:center;justify-content:center;background:linear-gradient(135deg,#fff5f6,#fff,#f5f8ff);}
 .lbox{width:400px;max-width:94vw;background:var(--w);border:1px solid var(--bdr);border-radius:24px;padding:36px 32px;box-shadow:var(--sh2);}
@@ -58,8 +59,7 @@ input,select,textarea{font-family:var(--fn);}
 .fg textarea{resize:vertical;min-height:68px;}
 .btn-login{width:100%;padding:12px;background:var(--red);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:600;box-shadow:0 4px 14px rgba(192,0,26,.3);}
 .btn-login:hover{background:var(--red2);}
-.demo-box{margin-top:14px;background:var(--redl);border:1px solid var(--redb);border-radius:var(--r);padding:11px 13px;}
-.demo-box p{font-size:10px;color:var(--red);margin-bottom:5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+
 .demo-row{font-size:11px;color:var(--t2);margin:3px 0;font-family:var(--mo);}
 .demo-row b{color:var(--red);}
 .err{color:var(--red);font-size:12px;margin-top:7px;text-align:center;min-height:15px;}
@@ -294,12 +294,7 @@ input,select,textarea{font-family:var(--fn);}
     <div class="fg"><label>Password</label><input type="password" id="lp" placeholder="รหัสผ่าน" onkeydown="if(event.key==='Enter')doLogin()"></div>
     <button class="btn-login" onclick="doLogin()" id="btnLogin">🔑 เข้าสู่ระบบ</button>
     <div class="err" id="lerr"></div>
-    <div class="demo-box">
-      <p>Demo Accounts</p>
-      <div class="demo-row">👑 Admin : <b>admin</b> / <b>admin123</b></div>
-      <div class="demo-row">🧑‍🔬 Staff : <b>staff1</b> / <b>staff123</b></div>
-      <div class="demo-row">👁 Viewer : <b>viewer</b> / <b>view123</b></div>
-    </div>
+
   </div>
 </div>
 
@@ -553,6 +548,23 @@ input,select,textarea{font-family:var(--fn);}
                   <div style="font-size:11px;color:var(--t3);margin-top:3px;">ถ้าไม่มี Proxy ระบบจะส่งตรงไป api.line.me (อาจถูกบล็อก CORS บางเบราว์เซอร์)</div>
                 </div>
 
+                <!-- สรุปขั้นตอนทั้งหมด -->
+                <div style="margin-top:14px;background:#fff;border:1.5px solid var(--bdr);border-radius:10px;padding:14px;">
+                  <div style="font-size:12px;font-weight:700;color:var(--t1);margin-bottom:10px;">🗺️ ภาพรวมขั้นตอนทั้งหมด (ทำครั้งเดียว)</div>
+                  <div style="display:flex;flex-direction:column;gap:6px;font-size:12px;line-height:1.8;">
+                    <div style="display:flex;gap:8px;"><span style="color:var(--grn);font-weight:700;">Step 1</span><span>สร้าง LINE Official Account ที่ <a href="https://developers.line.biz" target="_blank" style="color:var(--blu);">developers.line.biz</a></span></div>
+                    <div style="display:flex;gap:8px;"><span style="color:var(--grn);font-weight:700;">Step 2</span><span>ไปแท็บ <b>Messaging API</b> → กด <b>Issue</b> รับ <b>Channel Access Token</b> → Copy ใส่ช่องบน</span></div>
+                    <div style="display:flex;gap:8px;"><span style="color:var(--grn);font-weight:700;">Step 3</span><span>เพิ่มเพื่อน Bot (scan QR ใน Console) → ส่งข้อความหา Bot ก่อน 1 ข้อความ</span></div>
+                    <div style="display:flex;gap:8px;"><span style="color:var(--grn);font-weight:700;">Step 4</span><span>เข้า <a href="https://webhook.site" target="_blank" style="color:var(--blu);">webhook.site</a> → Copy URL → วางใน <b>Webhook URL</b> ของ LINE Channel → ส่งข้อความหา Bot → ดู <b>userId</b> ใน JSON → Copy ใส่ช่อง User/Group ID</span></div>
+                    <div style="display:flex;gap:8px;"><span style="color:var(--blu);font-weight:700;">Step 5</span><span>แก้ CORS: สมัคร <a href="https://make.com" target="_blank" style="color:var(--blu);">make.com</a> → สร้าง Scenario → <b>Webhook</b> รับ → <b>HTTP Request</b> ส่งต่อ LINE → Copy Webhook URL ใส่ช่อง Proxy URL</span></div>
+                    <div style="display:flex;gap:8px;"><span style="color:var(--red);font-weight:700;">Step 6</span><span>กด <b>ทดสอบ</b> ในระบบ — ถ้าขึ้น LINE ✅ แสดงว่าสำเร็จ!</span></div>
+                  </div>
+                  <div style="margin-top:10px;display:flex;gap:7px;flex-wrap:wrap;">
+                    <button class="ab ab-b" onclick="openLineFullGuide()" style="font-size:12px;">📖 คู่มือละเอียด Make.com</button>
+                    <button class="ab ab-g" onclick="openCfWorkerGuide()" style="font-size:12px;">⚡ คู่มือ Cloudflare Worker</button>
+                  </div>
+                </div>
+
               </div>
             </div>
           </div>
@@ -697,7 +709,35 @@ input,select,textarea{font-family:var(--fn);}
 <div class="ov" id="mItem">
   <div class="modal" style="max-width:520px;">
     <h3 id="mIT">➕ เพิ่ม Reagent</h3>
-    <div class="fg"><label>บาร์โค้ด *</label><input type="text" id="fi-bc" placeholder="เช่น BC001"></div>
+    <div class="fg">
+      <label>บาร์โค้ด</label>
+      <div style="display:flex;gap:7px;align-items:center;">
+        <input type="text" id="fi-bc" placeholder="สแกนหรือพิมพ์บาร์โค้ด"
+          style="flex:1;font-family:var(--mo);letter-spacing:1px;font-size:15px;"
+          inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="off">
+        <button type="button" class="btn-p" onclick="toggleCamScan()" id="btnCam"
+          style="padding:9px 14px;font-size:13px;white-space:nowrap;" title="เปิดกล้องสแกนบาร์โค้ด">
+          📷 สแกน
+        </button>
+      </div>
+      <div style="font-size:11px;color:var(--t3);margin-top:4px;">💡 กด "สแกน" เพื่อเปิดกล้องมือถือ หรือใช้เครื่องสแกนต่อพ่วง</div>
+      <div id="camScanWrap" style="display:none;margin-top:10px;">
+        <div style="background:#000;border-radius:12px;overflow:hidden;position:relative;">
+          <video id="camVideo" autoplay playsinline muted style="width:100%;display:block;max-height:260px;object-fit:cover;border-radius:12px;"></video>
+          <div style="position:absolute;inset:0;pointer-events:none;border-radius:12px;">
+            <!-- เส้นสแกน -->
+            <div style="position:absolute;top:50%;left:8%;right:8%;transform:translateY(-50%);height:2px;background:rgba(192,0,26,.9);box-shadow:0 0 10px rgba(192,0,26,.8);animation:scanline 1.8s ease-in-out infinite;"></div>
+            <!-- กรอบมุม -->
+            <div style="position:absolute;top:20%;left:10%;width:30px;height:30px;border-top:3px solid #fff;border-left:3px solid #fff;border-radius:3px 0 0 0;"></div>
+            <div style="position:absolute;top:20%;right:10%;width:30px;height:30px;border-top:3px solid #fff;border-right:3px solid #fff;border-radius:0 3px 0 0;"></div>
+            <div style="position:absolute;bottom:20%;left:10%;width:30px;height:30px;border-bottom:3px solid #fff;border-left:3px solid #fff;border-radius:0 0 0 3px;"></div>
+            <div style="position:absolute;bottom:20%;right:10%;width:30px;height:30px;border-bottom:3px solid #fff;border-right:3px solid #fff;border-radius:0 0 3px 0;"></div>
+          </div>
+        </div>
+        <div id="camStatus" style="font-size:12px;color:var(--grn);text-align:center;margin-top:7px;font-weight:500;">🔍 ชี้กล้องไปที่บาร์โค้ด...</div>
+        <button onclick="toggleCamScan()" style="width:100%;margin-top:7px;padding:8px;background:var(--s2);border:1.5px solid var(--bdr);border-radius:var(--r);font-size:13px;color:var(--t2);">⏹ ปิดกล้อง</button>
+      </div>
+    </div>
     <div class="fg"><label>ชื่อ Reagent *</label><input type="text" id="fi-name" placeholder="ชื่อ Reagent"></div>
     <div class="fg"><label>หมวดหมู่</label><select id="fi-cat"></select></div>
     <div class="r2">
@@ -901,6 +941,7 @@ input,select,textarea{font-family:var(--fn);}
 <div id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 <script>
 // ══ SUPABASE ══
 const SU='https://uvjawvyixljcfqbyjlbg.supabase.co';
@@ -2092,6 +2133,196 @@ function cors(){return{'Access-Control-Allow-Origin':'*','Access-Control-Allow-H
   openM('mView');
 }
 
+
+// ══ CAMERA BARCODE SCAN (ใน modal เพิ่ม Reagent) ══
+let camStream=null,camTimer=null,barcodeReader=null;
+
+async function toggleCamScan(){
+  const wrap=document.getElementById('camScanWrap');
+  if(wrap.style.display==='none'||!wrap.style.display){
+    wrap.style.display='block';
+    document.getElementById('btnCam').textContent='⏹';
+    await startCamera();
+  } else {
+    stopCamera();
+    wrap.style.display='none';
+    document.getElementById('btnCam').textContent='📷';
+  }
+}
+
+async function startCamera(){
+  const status=document.getElementById('camStatus');
+  try{
+    // ขอสิทธิ์กล้องหลัง (environment) รองรับมือถือทุกรุ่น
+    camStream=await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}
+    });
+    const video=document.getElementById('camVideo');
+    video.srcObject=camStream;
+    await video.play();
+    status.textContent='🔍 ชี้กล้องไปที่บาร์โค้ด...';
+    status.style.color='var(--grn)';
+    // ลอง BarcodeDetector API ก่อน (Chrome Android รองรับดี)
+    if('BarcodeDetector' in window){
+      status.textContent='✅ กล้องพร้อม — ชี้บาร์โค้ดให้อยู่กลางภาพ';
+      startBarcodeDetector(video);
+    } else if(typeof jsQR !== 'undefined'){
+      // Fallback: jsQR (รองรับทุกเบราว์เซอร์ รวมถึง Safari iOS)
+      status.textContent='✅ กล้องพร้อม (jsQR) — ชี้บาร์โค้ดให้อยู่กลางภาพ';
+      startJsQR(video);
+    } else {
+      status.textContent='⚠️ กล้องเปิดแล้ว — ถ้าสแกนไม่ได้ให้พิมพ์บาร์โค้ดในช่องด้านบน';
+      status.style.color='var(--amb)';
+    }
+  }catch(e){
+    if(e.name==='NotAllowedError'){
+      status.textContent='❌ กรุณาอนุญาตการใช้กล้องในเบราว์เซอร์ก่อน';
+    } else {
+      status.textContent='❌ ไม่สามารถเปิดกล้องได้: '+e.message;
+    }
+    status.style.color='var(--red)';
+  }
+}
+
+function onBarcodeFound(val){
+  document.getElementById('fi-bc').value=val;
+  document.getElementById('camStatus').textContent='✅ สแกนได้: '+val;
+  document.getElementById('camStatus').style.color='var(--grn)';
+  setTimeout(()=>{
+    stopCamera();
+    document.getElementById('camScanWrap').style.display='none';
+    document.getElementById('btnCam').textContent='📷';
+    document.getElementById('fi-name').focus();
+    toast('📷 สแกนบาร์โค้ด: '+val,'ok');
+  },500);
+}
+
+function startBarcodeDetector(video){
+  try{
+    const detector=new BarcodeDetector({formats:['code_128','ean_13','ean_8','code_39','qr_code','upc_a','upc_e','itf','codabar']});
+    camTimer=setInterval(async()=>{
+      if(video.readyState!==4||!video.videoWidth)return;
+      try{
+        const codes=await detector.detect(video);
+        if(codes&&codes.length>0) onBarcodeFound(codes[0].rawValue);
+      }catch{}
+    },300);
+  }catch(e){
+    // BarcodeDetector ไม่รองรับ format นี้ — fallback jsQR
+    if(typeof jsQR!=='undefined') startJsQR(video);
+    else document.getElementById('camStatus').textContent='❌ '+e.message;
+  }
+}
+
+// jsQR fallback — รองรับ QR Code + บาร์โค้ดทั่วไปบน Safari/Firefox
+let jsqrCanvas=null;
+function startJsQR(video){
+  jsqrCanvas=document.createElement('canvas');
+  camTimer=setInterval(()=>{
+    if(video.readyState!==4||!video.videoWidth)return;
+    const w=video.videoWidth,h=video.videoHeight;
+    jsqrCanvas.width=w;jsqrCanvas.height=h;
+    const ctx=jsqrCanvas.getContext('2d');
+    ctx.drawImage(video,0,0,w,h);
+    const imgData=ctx.getImageData(0,0,w,h);
+    const code=jsQR(imgData.data,w,h,{inversionAttempts:'dontInvert'});
+    if(code&&code.data) onBarcodeFound(code.data);
+  },300);
+}
+
+function stopCamera(){
+  if(camTimer){clearInterval(camTimer);camTimer=null;}
+  if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
+  const video=document.getElementById('camVideo');
+  if(video){video.srcObject=null;}
+}
+
+// ปิดกล้องเมื่อปิด modal
+const _origCloseM=closeM;
+function closeM(id){
+  if(id==='mItem'){stopCamera();const w=document.getElementById('camScanWrap');if(w)w.style.display='none';const b=document.getElementById('btnCam');if(b)b.textContent='📷';}
+  _origCloseM(id);
+}
+
+function startBcScan(){}
+function stopBcScan(){}
+
+
+function openLineFullGuide(){
+  document.getElementById('viewContent').innerHTML=`
+  <div style="font-size:13px;line-height:1.9;color:var(--t1);">
+    <div style="font-size:15px;font-weight:700;color:var(--red);margin-bottom:14px;">📋 คู่มือละเอียด: Make.com + LINE Messaging API</div>
+
+    <b style="color:var(--grn);">ส่วนที่ 1 — สร้าง LINE Channel</b><br>
+    1. ไปที่ <a href="https://developers.line.biz" target="_blank" style="color:var(--blu);">developers.line.biz</a> → Log in ด้วย LINE Account<br>
+    2. กด <b>Create a new provider</b> → ตั้งชื่อ (เช่น Hospital Lab)<br>
+    3. กด <b>Create a Messaging API channel</b><br>
+    4. กรอกข้อมูล Channel name, description → กด Agree → Create<br>
+    5. ไปแท็บ <b>Messaging API</b> → เลื่อนหา <b>Channel access token</b><br>
+    6. กด <b>Issue</b> → Copy token → วางในช่อง <b>Channel Access Token</b><br><br>
+
+    <b style="color:var(--grn);">ส่วนที่ 2 — หา User ID</b><br>
+    1. ใน Console → แท็บ Messaging API → เลื่อนหา QR Code → เพิ่มเพื่อน Bot<br>
+    2. ไปที่ <a href="https://webhook.site" target="_blank" style="color:var(--blu);">webhook.site</a> → Copy Your unique URL<br>
+    3. กลับ LINE Console → แท็บ <b>Messaging API</b> → <b>Webhook URL</b> → วาง URL จาก webhook.site → กด Verify<br>
+    4. ส่งข้อความใดก็ได้หา Bot ใน LINE<br>
+    5. กลับ webhook.site → ดู JSON ที่เข้ามา → หาค่า <code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;">userId</code> (ขึ้นต้น U)<br>
+    6. Copy userId → วางในช่อง <b>User ID / Group ID</b><br><br>
+
+    <b style="color:var(--blu);">ส่วนที่ 3 — ตั้งค่า Make.com (Proxy)</b><br>
+    1. สมัคร <a href="https://make.com" target="_blank" style="color:var(--blu);">make.com</a> → กด <b>Create a new scenario</b><br>
+    2. กด <b>+</b> → เลือก <b>Webhooks</b> → <b>Custom webhook</b> → กด <b>Add</b> → <b>Save</b><br>
+    3. Copy <b>Webhook URL</b> ที่ได้ → วางในช่อง <b>Proxy URL</b> ในระบบนี้<br>
+    4. กด <b>+</b> ต่อจาก Webhook → เลือก <b>HTTP</b> → <b>Make a request</b><br>
+    5. ตั้งค่า:<br>
+    &nbsp;&nbsp;• URL: <code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;">https://api.line.me/v2/bot/message/push</code><br>
+    &nbsp;&nbsp;• Method: POST<br>
+    &nbsp;&nbsp;• Headers: Authorization = <code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;">Bearer [Channel Access Token]</code><br>
+    &nbsp;&nbsp;• Body type: Raw → Application/JSON<br>
+    &nbsp;&nbsp;• Content: <code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;">{{1.body}}</code><br>
+    6. กด <b>OK</b> → กด <b>Save</b> → เปิด Scenario (toggle ON)<br>
+    7. กลับระบบ → กด <b>ทดสอบ</b> → ถ้าขึ้น LINE ✅ สำเร็จ!<br>
+  </div>`;
+  openM('mView');
+}
+
+function openCfWorkerGuide(){
+  document.getElementById('viewContent').innerHTML=`
+  <div style="font-size:13px;line-height:1.9;color:var(--t1);">
+    <div style="font-size:15px;font-weight:700;color:var(--red);margin-bottom:14px;">⚡ คู่มือ: Cloudflare Worker (ฟรี 100k req/วัน)</div>
+    1. สมัคร <a href="https://workers.cloudflare.com" target="_blank" style="color:var(--blu);">workers.cloudflare.com</a><br>
+    2. Dashboard → <b>Workers & Pages</b> → <b>Create</b> → <b>Create Worker</b><br>
+    3. ตั้งชื่อ เช่น <code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;">lab-line-proxy</code> → Deploy<br>
+    4. กด <b>Edit Code</b> → ลบโค้ดเดิมทั้งหมด → วางโค้ดนี้:<br>
+    <pre style="background:#1e1e2e;color:#cdd6f4;padding:12px;border-radius:8px;font-size:11px;overflow-x:auto;margin:8px 0;white-space:pre-wrap;">export default {
+  async fetch(req) {
+    if(req.method==='OPTIONS')
+      return new Response('',{headers:cors()});
+    const b = await req.json();
+    const r = await fetch(
+      'https://api.line.me/v2/bot/message/push',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':'Bearer '+req.headers.get('X-Line-Token')
+      },
+      body: JSON.stringify(b)
+    });
+    return new Response(await r.text(),
+      {status:r.status,headers:cors()});
+  }
+}
+function cors(){return{
+  'Access-Control-Allow-Origin':'*',
+  'Access-Control-Allow-Headers':'*',
+  'Content-Type':'application/json'
+};}</pre>
+    5. กด <b>Deploy</b> (มุมขวาบน)<br>
+    6. Copy URL ของ Worker เช่น <code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;">https://lab-line-proxy.xxx.workers.dev</code><br>
+    7. วาง URL ใน <b>Proxy URL</b> ของระบบ → กด <b>ทดสอบ</b><br>
+  </div>`;
+  openM('mView');
+}
 init();
 </script>
 </body>
