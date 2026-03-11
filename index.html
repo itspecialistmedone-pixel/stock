@@ -1885,15 +1885,13 @@ async function confirmUserImport(){
   setBL('bUI',false);
 }
 function downloadUserTemplate(){
-  const header='name,username,password,role,require_request
-';
+  const header='name,username,password,role,require_request\n';
   const example=[
     'สมชาย ใจดี,somchai,password123,staff,true',
     'สมหญิง รักดี,somying,password456,staff,true',
     'ผู้จัดการ,manager1,mgr2024,admin,false',
     'แพทย์ มองดู,doctor1,view2024,viewer,true'
-  ].join('
-');
+  ].join('\n');
   const content='﻿'+header+example;
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([content],{type:'text/csv;charset=utf-8'}));
@@ -2021,8 +2019,7 @@ async function sendManualNotif(){
     low.length?`⚠️ ใกล้หมด: ${low.length} รายการ → ${low.slice(0,3).map(i=>i.name).join(', ')}${low.length>3?'...':''}`:null,
     exp.length?`📅 ใกล้หมดอายุ: ${exp.length} รายการ`:null,
     pend.length?`📋 Request รอ Approve: ${pend.length} รายการ`:null,
-  ].filter(Boolean).join('
-');
+  ].filter(Boolean).join('\n');
   const results=await sendNotif('report','รายงานสรุป',-1,lines);
   toast(results.length?results.join(' | '):'⚠️ ไม่มีช่องทางที่เปิดใช้',results.some(r=>r.includes('✅'))?'ok':'err');
 }
