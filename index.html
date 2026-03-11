@@ -6,326 +6,294 @@
 <title>Lab Stock System</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
-
-:root {
-  --red:#c0001a; --red2:#e8001f; --red3:#ff1a35;
-  --red-light:#fff0f2; --red-dim:rgba(192,0,26,.08); --red-dim2:rgba(192,0,26,.05);
-  --red-border:rgba(192,0,26,.2);
-  --bg:#f7f8fa; --white:#ffffff;
-  --s1:#ffffff; --s2:#f2f4f7; --s3:#e8eaed;
-  --border:#e0e3e8; --border2:#d0d4db;
-  --t1:#1a1d23; --t2:#5a6070; --t3:#9aa0ad;
-  --green:#00913a; --green-bg:rgba(0,145,58,.08);
-  --amber:#d97706; --amber-bg:rgba(217,119,6,.08);
-  --blue:#1d6fb8; --blue-bg:rgba(29,111,184,.08);
-  --shadow:0 1px 3px rgba(0,0,0,.08),0 4px 12px rgba(0,0,0,.04);
-  --shadow2:0 2px 8px rgba(0,0,0,.1),0 8px 24px rgba(0,0,0,.06);
-  --font:'Prompt',sans-serif;
-  --mono:'IBM Plex Mono',monospace;
-  --r:10px; --r2:14px; --r3:18px;
+:root{
+  --red:#c0001a;--red2:#e8001f;--redl:#fff0f2;--redb:rgba(192,0,26,.15);--redd:rgba(192,0,26,.07);
+  --bg:#f4f6f9;--w:#fff;--s2:#f0f2f5;--s3:#e4e7ec;
+  --bdr:#e0e4ea;--bdr2:#cdd2db;
+  --t1:#1a1d23;--t2:#5a6272;--t3:#9aa3b2;
+  --grn:#00913a;--grnb:rgba(0,145,58,.1);
+  --amb:#d97706;--ambb:rgba(217,119,6,.1);
+  --blu:#1d6fb8;--blub:rgba(29,111,184,.1);
+  --pur:#7c3aed;--purb:rgba(124,58,237,.1);
+  --sh:0 1px 3px rgba(0,0,0,.07),0 4px 12px rgba(0,0,0,.04);
+  --sh2:0 4px 16px rgba(0,0,0,.1),0 12px 32px rgba(0,0,0,.06);
+  --fn:'Prompt',sans-serif;--mo:'IBM Plex Mono',monospace;
+  --r:10px;--r2:14px;--r3:18px;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:var(--font);background:var(--bg);color:var(--t1);min-height:100vh;font-size:14px;}
-button{font-family:var(--font);cursor:pointer;transition:all .18s;}
-input,select,textarea{font-family:var(--font);}
+body{font-family:var(--fn);background:var(--bg);color:var(--t1);min-height:100vh;font-size:14px;}
+button{font-family:var(--fn);cursor:pointer;transition:all .15s;}
+input,select,textarea{font-family:var(--fn);}
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:var(--s3);}
-::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:2px;}
 
 /* SPLASH */
-#splash{position:fixed;inset:0;background:var(--white);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
-.sp-logo-ring{width:88px;height:88px;border-radius:50%;border:3px solid var(--red-light);display:flex;align-items:center;justify-content:center;animation:ring-pulse 2s ease infinite;}
-.sp-logo-inner{width:68px;height:68px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:32px;color:white;}
-@keyframes ring-pulse{0%,100%{box-shadow:0 0 0 0 rgba(192,0,26,.3);}50%{box-shadow:0 0 0 12px rgba(192,0,26,.0);}}
-.sp-title{font-size:22px;font-weight:700;color:var(--red);}
-.sp-sub{font-size:13px;color:var(--t3);}
-.sp-bar{width:180px;height:3px;background:var(--s3);border-radius:2px;overflow:hidden;}
-.sp-bar-fill{height:100%;background:var(--red);border-radius:2px;animation:sp-load 1.8s ease infinite;}
-@keyframes sp-load{0%{width:0;margin-left:0;}50%{width:60%;margin-left:20%;}100%{width:0;margin-left:100%;}}
+#splash{position:fixed;inset:0;background:var(--w);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;}
+.sp-ring{width:80px;height:80px;border-radius:50%;border:3px solid var(--redl);display:flex;align-items:center;justify-content:center;animation:rpulse 2s ease infinite;}
+.sp-inner{width:60px;height:60px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;overflow:hidden;}
+.sp-inner img{width:100%;height:100%;object-fit:cover;}
+@keyframes rpulse{0%,100%{box-shadow:0 0 0 0 rgba(192,0,26,.3);}50%{box-shadow:0 0 0 10px rgba(192,0,26,.0);}}
+.sp-title{font-size:20px;font-weight:700;color:var(--red);}
+.sp-sub{font-size:12px;color:var(--t3);}
+.sp-bar{width:160px;height:3px;background:var(--s3);border-radius:2px;overflow:hidden;}
+.sp-fill{height:100%;background:var(--red);border-radius:2px;animation:spfill 1.8s ease infinite;}
+@keyframes spfill{0%{width:0;margin-left:0;}50%{width:60%;margin-left:20%;}100%{width:0;margin-left:100%;}}
 
 /* LOGIN */
-#loginWrap{min-height:100vh;display:none;align-items:center;justify-content:center;background:linear-gradient(135deg,#fff5f6 0%,#ffffff 50%,#f7f8ff 100%);}
-.login-box{width:400px;max-width:94vw;background:var(--white);border:1px solid var(--border);border-radius:24px;padding:40px 36px;box-shadow:var(--shadow2);}
-.login-logo-area{text-align:center;margin-bottom:28px;}
-.login-logo-circle{width:72px;height:72px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;box-shadow:0 4px 20px rgba(192,0,26,.3);overflow:hidden;}
-.login-logo-circle img{width:100%;height:100%;object-fit:cover;}
-.login-logo-circle .default-icon{font-size:34px;color:white;}
-#logoUploadArea{cursor:pointer;margin-top:6px;}
-#logoUploadArea span{font-size:11px;color:var(--t3);text-decoration:underline;}
-.login-logo-area h1{font-size:22px;font-weight:700;color:var(--red);}
-.login-logo-area p{font-size:12px;color:var(--t3);margin-top:2px;}
-.fgrp{margin-bottom:14px;}
-.fgrp label{display:block;font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px;}
-.fgrp input,.fgrp select,.fgrp textarea{width:100%;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--r);padding:10px 14px;color:var(--t1);font-size:14px;outline:none;transition:border .18s;}
-.fgrp input:focus,.fgrp select:focus,.fgrp textarea:focus{border-color:var(--red);background:var(--white);}
-.fgrp select option{background:white;}
-.fgrp textarea{resize:vertical;min-height:70px;}
-.btn-login{width:100%;padding:13px;background:var(--red);color:white;border:none;border-radius:var(--r);font-size:15px;font-weight:600;box-shadow:0 4px 16px rgba(192,0,26,.3);}
-.btn-login:hover{background:var(--red2);transform:translateY(-1px);}
-.demo-box{margin-top:16px;background:var(--red-light);border:1px solid var(--red-border);border-radius:var(--r);padding:12px 14px;}
-.demo-box p{font-size:11px;color:var(--red);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
-.demo-row{font-size:12px;color:var(--t2);margin:4px 0;font-family:var(--mono);}
+#loginWrap{min-height:100vh;display:none;align-items:center;justify-content:center;background:linear-gradient(135deg,#fff5f6,#fff,#f5f8ff);}
+.lbox{width:400px;max-width:94vw;background:var(--w);border:1px solid var(--bdr);border-radius:24px;padding:36px 32px;box-shadow:var(--sh2);}
+.llogo{text-align:center;margin-bottom:24px;}
+.llogo-ring{position:relative;display:inline-block;}
+.llogo-circle{width:72px;height:72px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;box-shadow:0 4px 20px rgba(192,0,26,.3);overflow:hidden;font-size:32px;color:#fff;}
+.llogo-circle img{width:100%;height:100%;object-fit:cover;display:none;}
+.logo-edit-btn{position:absolute;bottom:-2px;right:-2px;width:22px;height:22px;border-radius:50%;background:var(--red);color:#fff;border:none;font-size:11px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(192,0,26,.4);}
+.llogo h1{font-size:20px;font-weight:700;color:var(--red);}
+.llogo p{font-size:12px;color:var(--t3);margin-top:2px;}
+.fg{margin-bottom:13px;}
+.fg label{display:block;font-size:11px;font-weight:600;color:var(--t2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;}
+.fg input,.fg select,.fg textarea{width:100%;background:var(--s2);border:1.5px solid var(--bdr);border-radius:var(--r);padding:10px 13px;color:var(--t1);font-size:13px;outline:none;transition:border .15s;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--red);background:var(--w);}
+.fg select option{background:var(--w);}
+.fg textarea{resize:vertical;min-height:68px;}
+.btn-login{width:100%;padding:12px;background:var(--red);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:600;box-shadow:0 4px 14px rgba(192,0,26,.3);}
+.btn-login:hover{background:var(--red2);}
+.demo-box{margin-top:14px;background:var(--redl);border:1px solid var(--redb);border-radius:var(--r);padding:11px 13px;}
+.demo-box p{font-size:10px;color:var(--red);margin-bottom:5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+.demo-row{font-size:11px;color:var(--t2);margin:3px 0;font-family:var(--mo);}
 .demo-row b{color:var(--red);}
-.err-msg{color:var(--red);font-size:12px;margin-top:8px;text-align:center;min-height:16px;}
+.err{color:var(--red);font-size:12px;margin-top:7px;text-align:center;min-height:15px;}
 
 /* APP */
 #app{display:none;min-height:100vh;}
-
-/* TOPBAR */
-.topbar{height:58px;background:var(--white);border-bottom:1.5px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 20px;position:sticky;top:0;z-index:200;box-shadow:0 1px 4px rgba(0,0,0,.06);}
-.topbar-logo{width:36px;height:36px;border-radius:10px;background:var(--red);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;}
-.topbar-logo img{width:100%;height:100%;object-fit:cover;}
-.topbar-logo .ti{font-size:20px;color:white;}
-.brand-text{flex:1;}
-.brand-text .bname{font-size:15px;font-weight:700;color:var(--red);}
-.brand-text .bsub{font-size:11px;color:var(--t3);}
-.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 2px rgba(0,145,58,.2);flex-shrink:0;}
-.sync-dot.off{background:#ccc;box-shadow:none;}
-.role-pill{padding:4px 11px;border-radius:20px;font-size:11px;font-weight:600;background:var(--red-dim);color:var(--red);border:1px solid var(--red-border);}
-.role-pill.admin{background:rgba(29,111,184,.08);color:var(--blue);border-color:rgba(29,111,184,.2);}
-.role-pill.viewer{background:var(--s2);color:var(--t2);border-color:var(--border);}
-.btn-out{background:none;border:1.5px solid var(--border);color:var(--t2);padding:6px 12px;border-radius:8px;font-size:12px;font-weight:500;}
+.topbar{height:54px;background:var(--w);border-bottom:1.5px solid var(--bdr);display:flex;align-items:center;gap:10px;padding:0 16px;position:sticky;top:0;z-index:200;box-shadow:0 1px 4px rgba(0,0,0,.05);}
+.tb-logo{width:34px;height:34px;border-radius:9px;background:var(--red);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;font-size:18px;color:#fff;}
+.tb-logo img{width:100%;height:100%;object-fit:cover;display:none;}
+.tb-brand{flex:1;}
+.tb-name{font-size:14px;font-weight:700;color:var(--red);}
+.tb-sub{font-size:11px;color:var(--t3);}
+.sdot{width:7px;height:7px;border-radius:50%;background:var(--grn);box-shadow:0 0 0 2px rgba(0,145,58,.2);flex-shrink:0;}
+.sdot.off{background:#ccc;box-shadow:none;}
+.rpill{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:var(--redd);color:var(--red);border:1px solid var(--redb);}
+.rpill.admin{background:var(--blub);color:var(--blu);border-color:rgba(29,111,184,.2);}
+.rpill.viewer{background:var(--s2);color:var(--t2);border-color:var(--bdr);}
+.btn-out{background:none;border:1.5px solid var(--bdr);color:var(--t2);padding:5px 10px;border-radius:7px;font-size:12px;}
 .btn-out:hover{border-color:var(--red);color:var(--red);}
 
-/* NAV */
-.navtabs{background:var(--white);border-bottom:1.5px solid var(--border);display:flex;overflow-x:auto;padding:0 12px;gap:0;}
+.navtabs{background:var(--w);border-bottom:1.5px solid var(--bdr);display:flex;overflow-x:auto;padding:0 10px;}
 .navtabs::-webkit-scrollbar{height:0;}
-.ntab{padding:12px 16px;background:none;border:none;color:var(--t3);font-size:13px;font-weight:500;white-space:nowrap;border-bottom:2.5px solid transparent;transition:all .18s;display:flex;align-items:center;gap:5px;}
+.ntab{padding:11px 14px;background:none;border:none;color:var(--t3);font-size:13px;font-weight:500;white-space:nowrap;border-bottom:2.5px solid transparent;transition:all .15s;display:flex;align-items:center;gap:5px;}
 .ntab:hover{color:var(--t1);}
 .ntab.act{color:var(--red);border-bottom-color:var(--red);font-weight:600;}
-.nbadge{background:var(--red);color:white;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;}
+.nbadge{background:var(--red);color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;}
 
-/* MAIN */
-.main{max-width:1100px;margin:0 auto;padding:20px 16px;}
+.main{max-width:1100px;margin:0 auto;padding:18px 14px;}
 .page{display:none;}
 .page.act{display:block;}
 
-/* STAT CARDS */
-.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px;}
-@media(min-width:640px){.stat-grid{grid-template-columns:repeat(4,1fr);}}
-.scard{background:var(--white);border:1.5px solid var(--border);border-radius:var(--r2);padding:18px 16px;position:relative;overflow:hidden;box-shadow:var(--shadow);}
-.scard::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--card-accent,#eee);}
-.scard.c-total{--card-accent:var(--blue);}
-.scard.c-low{--card-accent:var(--amber);}
-.scard.c-out{--card-accent:var(--red);}
-.scard.c-req{--card-accent:var(--green);}
-.scard .snum{font-size:34px;font-weight:700;font-family:var(--mono);line-height:1;margin-top:4px;}
-.scard.c-total .snum{color:var(--blue);}
-.scard.c-low .snum{color:var(--amber);}
-.scard.c-out .snum{color:var(--red);}
-.scard.c-req .snum{color:var(--green);}
-.scard .slbl{font-size:12px;color:var(--t2);margin-top:5px;font-weight:500;}
-.scard .sicon{font-size:28px;position:absolute;right:14px;bottom:14px;opacity:.15;}
+/* CARDS */
+.sg{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:18px;}
+@media(min-width:640px){.sg{grid-template-columns:repeat(4,1fr);}}
+.sc{background:var(--w);border:1.5px solid var(--bdr);border-radius:var(--r2);padding:16px 14px;position:relative;overflow:hidden;box-shadow:var(--sh);}
+.sc::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--ca,#eee);}
+.sc.ct{--ca:var(--blu);}
+.sc.cw{--ca:var(--amb);}
+.sc.co{--ca:var(--red);}
+.sc.cr{--ca:var(--grn);}
+.sc .sn{font-size:32px;font-weight:700;font-family:var(--mo);line-height:1;margin-top:3px;}
+.sc.ct .sn{color:var(--blu);}
+.sc.cw .sn{color:var(--amb);}
+.sc.co .sn{color:var(--red);}
+.sc.cr .sn{color:var(--grn);}
+.sc .sl{font-size:11px;color:var(--t2);margin-top:4px;font-weight:500;}
+.sc .si{font-size:26px;position:absolute;right:12px;bottom:12px;opacity:.12;}
 
-/* CHARTS */
-.chart-grid{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:20px;}
-@media(min-width:700px){.chart-grid{grid-template-columns:1fr 1fr;}}
-.chart-box{background:var(--white);border:1.5px solid var(--border);border-radius:var(--r2);padding:18px;box-shadow:var(--shadow);}
-.chart-box h3{font-size:12px;font-weight:600;color:var(--t2);margin-bottom:14px;text-transform:uppercase;letter-spacing:.6px;display:flex;align-items:center;gap:6px;}
-.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:9px;}
-.bar-label{font-size:12px;color:var(--t2);width:140px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.bar-track{flex:1;height:8px;background:var(--s3);border-radius:4px;overflow:hidden;}
-.bar-fill{height:100%;border-radius:4px;transition:width .7s ease;}
-.bar-val{font-size:11px;font-family:var(--mono);color:var(--t2);width:28px;text-align:right;}
+/* CHART */
+.cgrid{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:18px;}
+@media(min-width:700px){.cgrid{grid-template-columns:1fr 1fr;}}
+.cbox{background:var(--w);border:1.5px solid var(--bdr);border-radius:var(--r2);padding:16px;box-shadow:var(--sh);}
+.cbox h3{font-size:11px;font-weight:700;color:var(--t3);margin-bottom:12px;text-transform:uppercase;letter-spacing:.6px;}
+.br{display:flex;align-items:center;gap:9px;margin-bottom:8px;}
+.bl{font-size:12px;color:var(--t2);width:140px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.bt{flex:1;height:7px;background:var(--s3);border-radius:4px;overflow:hidden;}
+.bf{height:100%;border-radius:4px;transition:width .7s ease;}
+.bv{font-size:11px;font-family:var(--mo);color:var(--t2);width:28px;text-align:right;}
 
 /* ALERTS */
-.alert-list{display:flex;flex-direction:column;gap:8px;}
-.alert-item{background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 16px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);}
-.alert-item.warn{border-left:3px solid var(--amber);}
-.alert-item.out{border-left:3px solid var(--red);}
-.alert-item.exp{border-left:3px solid var(--blue);}
-.ai-name{flex:1;font-weight:500;font-size:13px;}
-.ai-info{font-size:12px;color:var(--t2);}
+.alist{display:flex;flex-direction:column;gap:7px;}
+.aitem{background:var(--w);border:1.5px solid var(--bdr);border-radius:var(--r);padding:11px 14px;display:flex;align-items:center;gap:11px;box-shadow:var(--sh);}
+.aitem.warn{border-left:3px solid var(--amb);}
+.aitem.out{border-left:3px solid var(--red);}
+.aitem.exp{border-left:3px solid var(--blu);}
+.an{flex:1;font-weight:500;font-size:13px;}
+.ai{font-size:12px;color:var(--t2);}
 
 /* TOOLBAR */
-.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:8px;flex-wrap:wrap;}
-.sec-hdr h2{font-size:16px;font-weight:700;color:var(--t1);display:flex;align-items:center;gap:8px;}
-.toolbar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
-.search-inp{flex:1;min-width:160px;background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);padding:9px 14px;color:var(--t1);font-size:13px;outline:none;}
-.search-inp:focus{border-color:var(--red);}
-.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
-.chip{padding:6px 12px;border-radius:20px;border:1.5px solid var(--border);background:var(--white);color:var(--t2);font-size:12px;font-weight:500;transition:all .18s;}
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px;flex-wrap:wrap;}
+.sh h2{font-size:15px;font-weight:700;display:flex;align-items:center;gap:7px;}
+.tb{display:flex;gap:7px;margin-bottom:11px;flex-wrap:wrap;}
+.si2{flex:1;min-width:150px;background:var(--w);border:1.5px solid var(--bdr);border-radius:var(--r);padding:8px 13px;color:var(--t1);font-size:13px;outline:none;}
+.si2:focus{border-color:var(--red);}
+.chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px;}
+.chip{padding:5px 11px;border-radius:20px;border:1.5px solid var(--bdr);background:var(--w);color:var(--t2);font-size:12px;font-weight:500;transition:all .15s;}
 .chip:hover{border-color:var(--red);color:var(--red);}
-.chip.act{background:var(--red);color:white;border-color:var(--red);}
+.chip.act{background:var(--red);color:#fff;border-color:var(--red);}
 
 /* TABLE */
-.tbl-wrap{background:var(--white);border:1.5px solid var(--border);border-radius:var(--r2);overflow:hidden;box-shadow:var(--shadow);}
-.tbl-wrap table{width:100%;border-collapse:collapse;font-size:13px;}
-.tbl-wrap th{padding:11px 16px;text-align:left;background:var(--s2);color:var(--t2);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;border-bottom:1.5px solid var(--border);white-space:nowrap;}
-.tbl-wrap td{padding:12px 16px;border-bottom:1px solid var(--border);vertical-align:middle;}
-.tbl-wrap tr:last-child td{border-bottom:none;}
-.tbl-wrap tr:hover td{background:var(--red-dim2);}
+.tw{background:var(--w);border:1.5px solid var(--bdr);border-radius:var(--r2);overflow:hidden;box-shadow:var(--sh);}
+.tw table{width:100%;border-collapse:collapse;font-size:13px;}
+.tw th{padding:10px 14px;text-align:left;background:var(--s2);color:var(--t2);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;border-bottom:1.5px solid var(--bdr);white-space:nowrap;}
+.tw td{padding:11px 14px;border-bottom:1px solid var(--bdr);vertical-align:middle;}
+.tw tr:last-child td{border-bottom:none;}
+.tw tr:hover td{background:var(--redd);}
 
-/* CATEGORY TAGS */
-.ctag{display:inline-flex;align-items:center;padding:3px 9px;border-radius:6px;font-size:11px;font-weight:600;white-space:nowrap;}
-.ct-coag{background:rgba(192,0,26,.08);color:var(--red);}
-.ct-ctrl{background:var(--blue-bg);color:var(--blue);}
-.ct-uri{background:rgba(124,58,237,.08);color:#7c3aed;}
-.ct-chem{background:var(--amber-bg);color:var(--amber);}
-.ct-esr{background:var(--green-bg);color:var(--green);}
-.ct-spc{background:rgba(192,0,26,.12);color:var(--red);}
-.ct-other{background:var(--s3);color:var(--t2);}
-
-/* QTY & STATUS */
-.qty{font-family:var(--mono);font-weight:700;font-size:15px;}
-.qty.ok{color:var(--green);}
-.qty.low{color:var(--amber);}
+/* TAGS */
+.ctag{display:inline-flex;align-items:center;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;white-space:nowrap;}
+.qty{font-family:var(--mo);font-weight:700;font-size:14px;}
+.qty.ok{color:var(--grn);}
+.qty.low{color:var(--amb);}
 .qty.out{color:var(--red);}
 .exp-tag{font-size:12px;font-weight:500;}
 .exp-tag.ok{color:var(--t2);}
-.exp-tag.near{color:var(--amber);}
-.exp-tag.exp{color:var(--red);font-weight:600;}
+.exp-tag.near{color:var(--amb);}
+.exp-tag.exp{color:var(--red);font-weight:700;}
+.mp{height:3px;background:var(--s3);border-radius:2px;overflow:hidden;margin-top:3px;}
+.mpf{height:100%;border-radius:2px;}
 
-/* BOX INFO — NEW */
-.box-info{display:flex;flex-direction:column;gap:3px;}
-.box-main{font-family:var(--mono);font-weight:700;font-size:15px;}
-.box-detail{font-size:11px;color:var(--t3);display:flex;gap:8px;flex-wrap:wrap;}
-.box-detail .bd-item{display:flex;align-items:center;gap:3px;}
-.box-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:5px;font-size:11px;font-weight:600;}
-.bp-box{background:rgba(29,111,184,.1);color:var(--blue);}
-.bp-used{background:var(--amber-bg);color:var(--amber);}
-.bp-left{background:var(--green-bg);color:var(--green);}
-.mini-prog{height:4px;background:var(--s3);border-radius:2px;overflow:hidden;margin-top:4px;width:90px;}
-.mini-prog-fill{height:100%;border-radius:2px;transition:width .4s ease;}
+/* BTN */
+.ab{padding:5px 10px;border-radius:6px;font-size:12px;font-weight:600;border:1.5px solid;display:inline-flex;align-items:center;gap:4px;}
+.ab-r{background:var(--redd);color:var(--red);border-color:var(--redb);}
+.ab-r:hover{background:rgba(192,0,26,.14);}
+.ab-b{background:var(--blub);color:var(--blu);border-color:rgba(29,111,184,.25);}
+.ab-b:hover{background:rgba(29,111,184,.18);}
+.ab-a{background:var(--ambb);color:var(--amb);border-color:rgba(217,119,6,.25);}
+.ab-a:hover{background:rgba(217,119,6,.18);}
+.ab-g{background:var(--grnb);color:var(--grn);border-color:rgba(0,145,58,.25);}
+.ab-g:hover{background:rgba(0,145,58,.18);}
+.ab-gr{background:var(--s2);color:var(--t2);border-color:var(--bdr);}
+.ab-gr:hover{background:var(--s3);}
+.btn-p{background:var(--red);color:#fff;border:none;padding:9px 16px;border-radius:var(--r);font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(192,0,26,.25);}
+.btn-p:hover{background:var(--red2);}
+.btn-gh{background:var(--w);border:1.5px solid var(--bdr);color:var(--t2);padding:8px 13px;border-radius:var(--r);font-size:13px;font-weight:500;}
+.btn-gh:hover{border-color:var(--red);color:var(--red);}
 
-/* BUTTONS */
-.act-btn{padding:6px 11px;border-radius:7px;font-size:12px;font-weight:600;border:1.5px solid;display:inline-flex;align-items:center;gap:4px;}
-.ab-red{background:var(--red-dim);color:var(--red);border-color:var(--red-border);}
-.ab-red:hover{background:rgba(192,0,26,.15);}
-.ab-blue{background:var(--blue-bg);color:var(--blue);border-color:rgba(29,111,184,.25);}
-.ab-blue:hover{background:rgba(29,111,184,.15);}
-.ab-amber{background:var(--amber-bg);color:var(--amber);border-color:rgba(217,119,6,.25);}
-.ab-amber:hover{background:rgba(217,119,6,.15);}
-.ab-green{background:var(--green-bg);color:var(--green);border-color:rgba(0,145,58,.25);}
-.ab-green:hover{background:rgba(0,145,58,.15);}
-.ab-gray{background:var(--s2);color:var(--t2);border-color:var(--border);}
-.ab-gray:hover{background:var(--s3);}
-.btn-primary{background:var(--red);color:white;border:none;padding:9px 18px;border-radius:var(--r);font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(192,0,26,.25);}
-.btn-primary:hover{background:var(--red2);transform:translateY(-1px);}
-.btn-ghost{background:var(--white);border:1.5px solid var(--border);color:var(--t2);padding:9px 14px;border-radius:var(--r);font-size:13px;font-weight:500;}
-.btn-ghost:hover{border-color:var(--red);color:var(--red);}
-
-/* REQUESTS */
-.rcard{background:var(--white);border:1.5px solid var(--border);border-radius:var(--r2);padding:16px;margin-bottom:10px;box-shadow:var(--shadow);transition:border .18s;}
-.rcard:hover{border-color:var(--red-border);}
-.rcard-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px;}
-.rcard-title{font-weight:600;font-size:14px;}
-.rcard-sub{font-size:12px;color:var(--t2);margin-top:3px;}
-.status-pill{padding:4px 11px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap;flex-shrink:0;}
-.sp-pending{background:var(--amber-bg);color:var(--amber);border:1px solid rgba(217,119,6,.2);}
-.sp-approved{background:var(--green-bg);color:var(--green);border:1px solid rgba(0,145,58,.2);}
-.sp-rejected{background:var(--red-dim);color:var(--red);border:1px solid var(--red-border);}
-.rcard-detail{background:var(--s2);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--t2);margin-bottom:10px;}
-.rcard-actions{display:flex;gap:8px;flex-wrap:wrap;}
+/* REQUEST CARDS */
+.rc{background:var(--w);border:1.5px solid var(--bdr);border-radius:var(--r2);padding:15px;margin-bottom:9px;box-shadow:var(--sh);}
+.rc:hover{border-color:var(--redb);}
+.rch{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:7px;}
+.rct{font-weight:700;font-size:14px;}
+.rcs{font-size:12px;color:var(--t2);margin-top:3px;}
+.sp{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap;flex-shrink:0;}
+.sp-p{background:var(--ambb);color:var(--amb);}
+.sp-a{background:var(--grnb);color:var(--grn);}
+.sp-r{background:var(--redd);color:var(--red);}
+.rcd{background:var(--s2);border-radius:7px;padding:9px 11px;font-size:12px;color:var(--t2);margin-bottom:9px;}
+.rca{display:flex;gap:7px;flex-wrap:wrap;}
 
 /* REPORT */
-.report-grid{display:grid;grid-template-columns:1fr;gap:12px;}
-@media(min-width:640px){.report-grid{grid-template-columns:1fr 1fr;}}
-.rpt-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--r2);padding:18px;box-shadow:var(--shadow);}
-.rpt-card h3{font-size:12px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px;}
-.rpt-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;}
-.rpt-row:last-child{border-bottom:none;}
-.rpt-row .rkey{color:var(--t2);}
-.rpt-row .rval{font-weight:600;font-family:var(--mono);}
+.rgrid{display:grid;grid-template-columns:1fr;gap:12px;}
+@media(min-width:640px){.rgrid{grid-template-columns:1fr 1fr;}}
+.rpc{background:var(--w);border:1.5px solid var(--bdr);border-radius:var(--r2);padding:16px;box-shadow:var(--sh);}
+.rpc h3{font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:11px;}
+.rr{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--bdr);font-size:13px;}
+.rr:last-child{border-bottom:none;}
+.rk{color:var(--t2);}
+.rv{font-weight:600;font-family:var(--mo);}
 
 /* MODALS */
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(3px);}
-.overlay.open{display:flex;}
-.modal{background:var(--white);border:1.5px solid var(--border);border-radius:var(--r3);width:100%;max-width:480px;max-height:92vh;overflow-y:auto;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.18);}
-.modal h3{font-size:17px;font-weight:700;color:var(--red);margin-bottom:20px;display:flex;align-items:center;gap:8px;padding-bottom:14px;border-bottom:1.5px solid var(--border);}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1.5px solid var(--border);}
-.btn-cancel{background:var(--white);border:1.5px solid var(--border);color:var(--t2);padding:9px 16px;border-radius:var(--r);font-size:13px;font-weight:500;}
-.btn-cancel:hover{border-color:var(--red);color:var(--red);}
-.btn-save{background:var(--red);color:white;border:none;padding:9px 22px;border-radius:var(--r);font-size:13px;font-weight:600;box-shadow:0 2px 8px rgba(192,0,26,.25);}
-.btn-save:hover{background:var(--red2);}
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:500;align-items:center;justify-content:center;padding:14px;backdrop-filter:blur(3px);}
+.ov.open{display:flex;}
+.modal{background:var(--w);border:1.5px solid var(--bdr);border-radius:var(--r3);width:100%;max-width:500px;max-height:92vh;overflow-y:auto;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.16);}
+.modal h3{font-size:16px;font-weight:700;color:var(--red);margin-bottom:16px;display:flex;align-items:center;gap:7px;padding-bottom:13px;border-bottom:1.5px solid var(--bdr);}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.mb{display:flex;gap:7px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1.5px solid var(--bdr);}
+.btn-cn{background:var(--w);border:1.5px solid var(--bdr);color:var(--t2);padding:8px 14px;border-radius:var(--r);font-size:13px;}
+.btn-cn:hover{border-color:var(--red);color:var(--red);}
+.btn-sv{background:var(--red);color:#fff;border:none;padding:8px 20px;border-radius:var(--r);font-size:13px;font-weight:600;}
+.btn-sv:hover{background:var(--red2);}
 
 /* SCAN */
-.scan-zone{background:var(--s2);border:2px dashed var(--red-border);border-radius:var(--r2);padding:28px 16px;text-align:center;margin-bottom:14px;}
-.scan-zone .sz-icon{font-size:48px;display:block;margin-bottom:8px;}
-.scan-zone p{font-size:13px;color:var(--t2);}
-.scan-zone input{width:100%;background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px;color:var(--t1);font-size:20px;text-align:center;font-family:var(--mono);letter-spacing:3px;margin-top:12px;outline:none;}
+.scan-zone{background:var(--s2);border:2px dashed var(--redb);border-radius:var(--r2);padding:24px 14px;text-align:center;margin-bottom:12px;}
+.scan-zone input{width:100%;background:var(--w);border:1.5px solid var(--bdr);border-radius:var(--r);padding:11px 14px;color:var(--t1);font-size:20px;text-align:center;font-family:var(--mo);letter-spacing:3px;margin-top:10px;outline:none;}
 .scan-zone input:focus{border-color:var(--red);}
-.scan-found{background:var(--red-light);border:1.5px solid var(--red-border);border-radius:var(--r);padding:16px;margin-bottom:12px;}
-.sf-name{font-weight:700;color:var(--red);font-size:15px;margin-bottom:8px;}
-.sf-detail{font-size:13px;color:var(--t2);line-height:1.8;}
-.scan-notfound{background:#fff8f8;border:1.5px solid var(--red-border);border-radius:var(--r);padding:14px;margin-bottom:12px;color:var(--red);font-size:13px;}
+.sf{background:var(--redl);border:1.5px solid var(--redb);border-radius:var(--r);padding:14px;margin-bottom:11px;}
+.sfn{font-weight:700;color:var(--red);font-size:14px;margin-bottom:6px;}
+.sfd{font-size:13px;color:var(--t2);line-height:1.8;}
+.snf{background:#fff8f8;border:1.5px solid var(--redb);border-radius:var(--r);padding:12px;margin-bottom:11px;color:var(--red);font-size:13px;}
 
 /* QTY CTRL */
-.qty-ctrl{display:flex;align-items:center;gap:8px;}
-.qty-ctrl button{width:32px;height:32px;border-radius:8px;border:1.5px solid var(--border);background:var(--s2);color:var(--t1);font-size:20px;font-weight:700;display:flex;align-items:center;justify-content:center;}
-.qty-ctrl button:hover{border-color:var(--red);color:var(--red);background:var(--red-light);}
-.qty-ctrl input{width:70px;background:var(--white);border:1.5px solid var(--border);border-radius:8px;padding:6px 8px;color:var(--t1);font-size:16px;text-align:center;font-family:var(--mono);outline:none;}
+.qc{display:flex;align-items:center;gap:7px;}
+.qc button{width:30px;height:30px;border-radius:7px;border:1.5px solid var(--bdr);background:var(--s2);color:var(--t1);font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+.qc button:hover{border-color:var(--red);color:var(--red);background:var(--redl);}
+.qc input{width:65px;background:var(--w);border:1.5px solid var(--bdr);border-radius:7px;padding:5px 7px;color:var(--t1);font-size:16px;text-align:center;font-family:var(--mo);outline:none;}
 
-/* BOX SECTION in modal */
-.box-section{background:var(--s2);border-radius:var(--r);padding:14px;margin-bottom:4px;}
-.box-section-title{font-size:12px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
-.box-visual{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px;}
-.bottle-dot{width:20px;height:20px;border-radius:4px;border:1.5px solid var(--border);}
-.bottle-dot.full{background:var(--red);border-color:var(--red);}
-.bottle-dot.empty{background:var(--s3);border-color:var(--border2);}
-.bottle-legend{display:flex;gap:12px;margin-top:8px;font-size:11px;color:var(--t2);}
-.bottle-legend span{display:flex;align-items:center;gap:4px;}
-.bottle-legend .dot{width:10px;height:10px;border-radius:3px;}
+/* BOTTLE VIS */
+.bv-wrap{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0;}
+.bd{width:18px;height:18px;border-radius:4px;border:1.5px solid var(--bdr);}
+.bd.full{background:var(--red);border-color:var(--red);}
+.bd.used{background:var(--s3);border-color:var(--bdr2);}
+.bleg{display:flex;gap:10px;font-size:11px;color:var(--t2);margin-top:5px;}
+.bleg span{display:flex;align-items:center;gap:4px;}
+.bleg .dot{width:10px;height:10px;border-radius:3px;}
 
-/* ADMIN PANEL */
-.admin-section{background:var(--white);border:1.5px solid var(--border);border-radius:var(--r2);padding:20px;margin-bottom:14px;box-shadow:var(--shadow);}
-.admin-section-title{font-size:12px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px;display:flex;align-items:center;gap:6px;}
+/* IMPORT */
+.import-zone{border:2px dashed var(--bdr2);border-radius:var(--r2);padding:24px;text-align:center;cursor:pointer;transition:all .15s;}
+.import-zone:hover,.import-zone.drag{border-color:var(--red);background:var(--redl);}
+.import-zone p{font-size:13px;color:var(--t2);margin-top:8px;}
 
-/* TOAST */
-#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:12px 22px;font-size:13px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.12);z-index:999;display:none;white-space:nowrap;max-width:92vw;text-align:center;}
-#toast.t-ok{border-color:rgba(0,145,58,.4);color:var(--green);}
-#toast.t-err{border-color:var(--red-border);color:var(--red);}
-#toast.t-info{border-color:rgba(29,111,184,.3);color:var(--blue);}
-
-.empty{text-align:center;padding:40px;color:var(--t3);}
-.empty .ei{font-size:40px;display:block;margin-bottom:10px;}
-
-/* LOGO UPLOAD */
-.logo-upload-ring{position:relative;display:inline-block;}
-.logo-upload-ring input[type=file]{display:none;}
-.logo-change-btn{position:absolute;bottom:-4px;right:-4px;width:22px;height:22px;border-radius:50%;background:var(--red);color:white;border:none;font-size:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 6px rgba(192,0,26,.4);}
+/* SECTION BOX */
+.sbox{background:var(--w);border:1.5px solid var(--bdr);border-radius:var(--r2);padding:18px;margin-bottom:13px;box-shadow:var(--sh);}
+.sbox-title{font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:13px;display:flex;align-items:center;justify-content:space-between;}
 
 /* HIST */
-.hist-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px;}
-.hist-row:last-child{border-bottom:none;}
+.hrow{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--bdr);font-size:12px;}
+.hrow:last-child{border-bottom:none;}
 
-@media(max-width:640px){.hide-mobile{display:none!important;}.tbl-wrap{overflow-x:auto;}}
-@media print{.topbar,.navtabs,.toolbar,.chips,.act-btn,.btn-primary,.btn-ghost{display:none!important;}.tbl-wrap{box-shadow:none;}}
+/* PILLS for request info */
+.info-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;background:var(--s2);color:var(--t2);margin:2px;}
+
+.empty{text-align:center;padding:36px;color:var(--t3);}
+.empty .ei{font-size:38px;display:block;margin-bottom:9px;}
+@media(max-width:640px){.hm{display:none!important;}.tw{overflow-x:auto;}}
+@media print{.topbar,.navtabs,.tb,.chips,.ab,.btn-p,.btn-gh{display:none!important;}.tw{box-shadow:none;}}
+.notif-card{background:var(--w);border:1.5px solid var(--bdr);border-radius:var(--r2);margin-bottom:10px;overflow:hidden;box-shadow:var(--sh);}
+.notif-head{display:flex;justify-content:space-between;align-items:center;padding:13px 16px;cursor:pointer;}
+.notif-body{padding:0 16px 14px;border-top:1px solid var(--bdr);}
+.sw{position:relative;display:inline-block;width:42px;height:24px;flex-shrink:0;}
+.sw input{opacity:0;width:0;height:0;}
+.sw-sl{position:absolute;inset:0;background:#ccc;border-radius:24px;cursor:pointer;transition:.25s;}
+.sw-sl:before{content:'';position:absolute;width:18px;height:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.25s;}
+.sw input:checked+.sw-sl{background:var(--grn);}
+.sw input:checked+.sw-sl:before{transform:translateX(18px);}
 </style>
 </head>
 <body>
 
 <div id="splash">
-  <div class="sp-logo-ring">
-    <div class="sp-logo-inner" id="splashIcon">🧪</div>
-  </div>
+  <div class="sp-ring"><div class="sp-inner" id="spIcon">🧪</div></div>
   <div class="sp-title">Lab Stock System</div>
-  <div class="sp-sub" id="splashSub">กำลังเชื่อมต่อ Supabase...</div>
-  <div class="sp-bar"><div class="sp-bar-fill"></div></div>
+  <div class="sp-sub" id="spSub">กำลังเชื่อมต่อ...</div>
+  <div class="sp-bar"><div class="sp-fill"></div></div>
 </div>
 
 <div id="loginWrap">
-  <div class="login-box">
-    <div class="login-logo-area">
-      <div class="logo-upload-ring">
-        <div class="login-logo-circle" id="loginLogoCircle">
-          <span class="default-icon" id="loginLogoIcon">🧪</span>
-          <img id="loginLogoImg" src="" style="display:none">
-        </div>
-        <button class="logo-change-btn" onclick="document.getElementById('logoFileInput').click()" title="เปลี่ยนโลโก้">✎</button>
-        <input type="file" id="logoFileInput" accept="image/*" onchange="handleLogoUpload(event)">
+  <div class="lbox">
+    <div class="llogo">
+      <div class="llogo-ring">
+        <div class="llogo-circle" id="lCircle">🧪<img id="lImg"></div>
+        <button class="logo-edit-btn" onclick="document.getElementById('logoFile').click()">✎</button>
+        <input type="file" id="logoFile" accept="image/*" style="display:none" onchange="uploadLogo(event)">
       </div>
-      <div id="logoUploadArea" onclick="document.getElementById('logoFileInput').click()">
-        <span>📷 คลิกเพื่ออัปโหลดโลโก้โรงพยาบาล</span>
+      <h1 id="orgN">Lab Stock System</h1>
+      <p id="orgS">ระบบจัดการ Reagent — Real-time Sync</p>
+      <div style="margin-top:5px;cursor:pointer;" onclick="document.getElementById('logoFile').click()">
+        <span style="font-size:11px;color:var(--t3);text-decoration:underline;">📷 อัปโหลดโลโก้</span>
       </div>
-      <h1 id="orgName">Lab Stock System</h1>
-      <p id="orgSub">ระบบจัดการ Reagent — Real-time Sync</p>
     </div>
-    <div class="fgrp"><label>Username</label><input type="text" id="lu" placeholder="ชื่อผู้ใช้" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <div class="fgrp"><label>Password</label><input type="password" id="lp" placeholder="รหัสผ่าน" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <button class="btn-login" onclick="doLogin()">🔑 เข้าสู่ระบบ</button>
-    <div class="err-msg" id="lerr"></div>
+    <div class="fg"><label>Username</label><input type="text" id="lu" placeholder="ชื่อผู้ใช้" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="fg"><label>Password</label><input type="password" id="lp" placeholder="รหัสผ่าน" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="btn-login" onclick="doLogin()" id="btnLogin">🔑 เข้าสู่ระบบ</button>
+    <div class="err" id="lerr"></div>
     <div class="demo-box">
       <p>Demo Accounts</p>
       <div class="demo-row">👑 Admin : <b>admin</b> / <b>admin123</b></div>
@@ -337,134 +305,368 @@ input,select,textarea{font-family:var(--font);}
 
 <div id="app">
   <div class="topbar">
-    <div class="topbar-logo" id="topbarLogo">
-      <span class="ti" id="topbarLogoIcon">🧪</span>
-      <img id="topbarLogoImg" src="" style="display:none">
-    </div>
-    <div class="brand-text" style="cursor:pointer;" onclick="openSelfPwd()" title="คลิกเพื่อเปลี่ยนรหัสผ่าน">
-      <div class="bname" id="topOrgName">Lab Stock System</div>
-      <div class="bsub" id="topUser"></div>
-      <div style="font-size:10px;color:var(--blue);margin-top:2px;">🔑 เปลี่ยนรหัสผ่านตนเอง</div>
-    </div>
-    <div class="sync-dot" id="syncDot" title="Real-time connected"></div>
-    <span class="role-pill" id="rPill">Staff</span>
+    <div class="tb-logo" id="tbLogo">🧪<img id="tbImg"></div>
+    <div class="tb-brand"><div class="tb-name" id="tbName">Lab Stock</div><div class="tb-sub" id="tbUser"></div></div>
+    <div class="sdot" id="sdot"></div>
+    <span class="rpill" id="rPill">Staff</span>
+    <button class="btn-out" onclick="openMyAccount()" style="margin-right:2px;">👤 บัญชีฉัน</button>
     <button class="btn-out" onclick="doLogout()">ออก</button>
   </div>
   <div class="navtabs">
     <button class="ntab act" onclick="nav('dash',this)">📊 Dashboard</button>
-    <button class="ntab" onclick="nav('stock',this)">📦 Stock</button>
-    <button class="ntab" onclick="nav('req',this)">📋 Requests <span class="nbadge" id="reqBadge" style="display:none"></span></button>
+    <button class="ntab" onclick="nav('stock',this)">🧪 Stock</button>
+    <button class="ntab" onclick="nav('req',this)">📋 Requests <span class="nbadge" id="rBadge" style="display:none"></span></button>
     <button class="ntab" onclick="nav('report',this)">📈 รายงาน</button>
     <button class="ntab" id="adminTab" style="display:none" onclick="nav('admin',this)">⚙️ Admin</button>
   </div>
   <div class="main">
 
+    <!-- DASHBOARD -->
     <div class="page act" id="pg-dash">
-      <div class="stat-grid">
-        <div class="scard c-total"><span class="sicon">📦</span><div class="slbl">รายการทั้งหมด</div><div class="snum" id="d-total">—</div></div>
-        <div class="scard c-low"><span class="sicon">⚠️</span><div class="slbl">ใกล้หมด</div><div class="snum" id="d-low">—</div></div>
-        <div class="scard c-out"><span class="sicon">🔴</span><div class="slbl">หมดสต็อก</div><div class="snum" id="d-out">—</div></div>
-        <div class="scard c-req"><span class="sicon">📋</span><div class="slbl">รอ Approve</div><div class="snum" id="d-pend">—</div></div>
+      <div class="sg">
+        <div class="sc ct"><span class="si">🧪</span><div class="sl">รายการทั้งหมด</div><div class="sn" id="d-total">—</div></div>
+        <div class="sc cw"><span class="si">⚠️</span><div class="sl">ใกล้หมด</div><div class="sn" id="d-low">—</div></div>
+        <div class="sc co"><span class="si">🔴</span><div class="sl">หมดสต็อก</div><div class="sn" id="d-out">—</div></div>
+        <div class="sc cr"><span class="si">📋</span><div class="sl">รอ Approve</div><div class="sn" id="d-pend">—</div></div>
       </div>
-      <div class="chart-grid">
-        <div class="chart-box"><h3>📊 Stock ตามหมวดหมู่</h3><div id="catChart"></div></div>
-        <div class="chart-box"><h3>🚦 สถานะ Stock</h3><div id="statusChart"></div></div>
+      <div class="cgrid">
+        <div class="cbox"><h3>📊 ขวดตามหมวดหมู่</h3><div id="catChart"></div></div>
+        <div class="cbox"><h3>🚦 สถานะ</h3><div id="stChart"></div></div>
       </div>
-      <div class="sec-hdr"><h2>⚠️ รายการที่ต้องดูแล</h2></div>
+      <div class="sh"><h2>⚠️ รายการที่ต้องดูแล</h2></div>
       <div id="alertList"></div>
     </div>
 
+    <!-- STOCK -->
     <div class="page" id="pg-stock">
-      <div class="sec-hdr">
-        <h2>📦 รายการ Reagent</h2>
-        <div style="display:flex;gap:8px;">
-          <button class="btn-ghost" onclick="openScan()">📷 สแกน</button>
-          <button class="btn-primary" id="btnAdd" onclick="openAdd()" style="display:none">＋ เพิ่ม</button>
+      <div class="sh">
+        <h2>🧪 รายการ Reagent</h2>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;">
+          <button class="btn-gh" onclick="openScan()">📷 สแกน</button>
+          <button class="btn-gh" onclick="document.getElementById('xlFile').click()">📊 Import Excel</button>
+          <input type="file" id="xlFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="importExcel(event)">
+          <button class="btn-p" id="btnAdd" onclick="openAdd()" style="display:none">＋ เพิ่ม</button>
         </div>
       </div>
-      <div class="toolbar">
-        <input class="search-inp" id="srch" type="text" placeholder="🔍 ค้นหาชื่อ, บาร์โค้ด, Lot..." oninput="renderStock()">
+      <div class="tb" style="display:flex;gap:8px;flex-wrap:wrap;">
+        <div style="position:relative;flex:1;min-width:180px;">
+          <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;">🔍</span>
+          <input class="si2" id="srch" type="text" style="padding-left:36px;" placeholder="ค้นหาชื่อ, Lot..." oninput="renderStock()">
+        </div>
+        <div style="position:relative;min-width:180px;flex:1;">
+          <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;">📷</span>
+          <input class="si2" id="bcScan" type="text" inputmode="none" style="padding-left:36px;border-color:rgba(192,0,26,.3);font-family:var(--mo);letter-spacing:2px;" placeholder="สแกนบาร์โค้ดที่นี่..." oninput="onInlineScan()" onfocus="this.value=\'\'" autocomplete="off">
+        </div>
       </div>
+      <div id="inlineScanResult" style="display:none;margin-bottom:10px;"></div>
       <div class="chips" id="catChips"></div>
-      <div class="tbl-wrap">
+      <div class="tw">
         <table>
-          <thead>
-            <tr>
-              <th>ชื่อ Reagent</th>
-              <th>หมวดหมู่</th>
-              <th>กล่อง / ขวด</th>
-              <th class="hide-mobile">หมดอายุ</th>
-              <th class="hide-mobile">Lot</th>
-              <th>จัดการ</th>
-            </tr>
-          </thead>
-          <tbody id="stockTbody"><tr><td colspan="6" style="text-align:center;padding:30px;color:var(--t3);">⏳ กำลังโหลด...</td></tr></tbody>
+          <thead><tr>
+            <th>ชื่อ Reagent</th><th>หมวดหมู่</th><th>ขวดคงเหลือ</th>
+            <th class="hm">Lot</th><th class="hm">หมดอายุ</th><th>จัดการ</th>
+          </tr></thead>
+          <tbody id="stockTbody"><tr><td colspan="6" style="text-align:center;padding:28px;color:var(--t3);">⏳ กำลังโหลด...</td></tr></tbody>
         </table>
       </div>
     </div>
 
+    <!-- REQUESTS -->
     <div class="page" id="pg-req">
-      <div class="sec-hdr">
+      <div class="sh">
         <h2>📋 Request / เบิกของ</h2>
-        <button class="btn-primary" onclick="openReqModal()">＋ สร้าง Request</button>
+        <button class="btn-p" onclick="openReqModal()">＋ สร้าง Request</button>
       </div>
       <div class="chips">
-        <button class="chip act" onclick="filterReq('all',this)">ทั้งหมด</button>
-        <button class="chip" onclick="filterReq('pending',this)">⏳ รอ Approve</button>
-        <button class="chip" onclick="filterReq('approved',this)">✅ อนุมัติแล้ว</button>
-        <button class="chip" onclick="filterReq('rejected',this)">❌ ไม่อนุมัติ</button>
+        <button class="chip act" onclick="fReq('all',this)">ทั้งหมด</button>
+        <button class="chip" onclick="fReq('pending',this)">⏳ รอ</button>
+        <button class="chip" onclick="fReq('approved',this)">✅ อนุมัติ</button>
+        <button class="chip" onclick="fReq('rejected',this)">❌ ไม่อนุมัติ</button>
       </div>
       <div id="reqList"><div class="empty"><span class="ei">⏳</span>กำลังโหลด...</div></div>
     </div>
 
+    <!-- REPORT -->
     <div class="page" id="pg-report">
-      <div class="sec-hdr">
-        <h2>📈 รายงานสรุป</h2>
-        <button class="btn-ghost" onclick="window.print()">🖨️ พิมพ์</button>
-      </div>
+      <div class="sh"><h2>📈 รายงานสรุป</h2><button class="btn-gh" onclick="window.print()">🖨️ พิมพ์</button></div>
       <div id="reportContent"></div>
     </div>
 
+    <!-- ADMIN -->
     <div class="page" id="pg-admin">
-      <div class="sec-hdr"><h2>⚙️ Admin Panel</h2></div>
-      <div class="admin-section">
-        <div class="admin-section-title">🏥 ตั้งค่าองค์กร / โลโก้</div>
-        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
-          <div class="logo-upload-ring">
-            <div class="login-logo-circle" id="adminLogoCircle" style="width:56px;height:56px;">
-              <span class="default-icon" id="adminLogoIcon" style="font-size:26px;">🧪</span>
-              <img id="adminLogoImg" src="" style="display:none;width:100%;height:100%;object-fit:cover;">
-            </div>
-            <button class="logo-change-btn" onclick="document.getElementById('adminLogoFile').click()">✎</button>
-            <input type="file" id="adminLogoFile" accept="image/*" onchange="handleLogoUpload(event)">
+      <div class="sh"><h2>⚙️ Admin Panel</h2></div>
+
+      <!-- BRANDING -->
+      <div class="sbox">
+        <div class="sbox-title">🏥 องค์กร / โลโก้</div>
+        <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;">
+          <div style="position:relative;flex-shrink:0;">
+            <div class="llogo-circle" id="aCircle" style="width:52px;height:52px;font-size:22px;">🧪<img id="aImg" style="display:none;width:100%;height:100%;object-fit:cover;"></div>
+            <button class="logo-edit-btn" onclick="document.getElementById('aLogoFile').click()">✎</button>
+            <input type="file" id="aLogoFile" accept="image/*" style="display:none" onchange="uploadLogo(event)">
           </div>
           <div style="flex:1;">
-            <div class="fgrp" style="margin-bottom:8px;"><label>ชื่อองค์กร / โรงพยาบาล</label><input type="text" id="orgNameInput" placeholder="เช่น โรงพยาบาลสมุทรปราการ" oninput="updateOrgName()"></div>
-            <div class="fgrp" style="margin-bottom:0;"><label>ชื่อหน่วยงาน</label><input type="text" id="orgSubInput" placeholder="เช่น ห้องปฏิบัติการ" oninput="updateOrgSub()"></div>
+            <div class="fg" style="margin-bottom:7px;"><label>ชื่อองค์กร</label><input type="text" id="orgNI" placeholder="ชื่อโรงพยาบาล / องค์กร" oninput="saveOrg()"></div>
+            <div class="fg" style="margin-bottom:0;"><label>หน่วยงาน</label><input type="text" id="orgSI" placeholder="เช่น ห้องปฏิบัติการ" oninput="saveOrg()"></div>
           </div>
         </div>
       </div>
-      <div class="admin-section">
-        <div class="admin-section-title">📋 Requests รอ Approve</div>
-        <div id="adminPendingList"></div>
+
+      <!-- PENDING -->
+      <div class="sbox">
+        <div class="sbox-title">📋 Requests รอ Approve <span id="pendCount"></span></div>
+        <div id="adminPending"></div>
       </div>
-      <div class="admin-section">
-        <div class="admin-section-title">👥 สิทธิ์ผู้ใช้งาน</div>
-        <table style="width:100%;border-collapse:collapse;font-size:13px;">
-          <thead><tr>
-            <th style="padding:9px 12px;background:var(--s2);color:var(--t2);font-size:11px;text-transform:uppercase;letter-spacing:.5px;border-bottom:1.5px solid var(--border);text-align:left;">ชื่อ</th>
-            <th style="padding:9px 12px;background:var(--s2);color:var(--t2);font-size:11px;text-transform:uppercase;letter-spacing:.5px;border-bottom:1.5px solid var(--border);text-align:left;">Username</th>
-            <th style="padding:9px 12px;background:var(--s2);color:var(--t2);font-size:11px;text-transform:uppercase;letter-spacing:.5px;border-bottom:1.5px solid var(--border);text-align:left;">Role</th>
-            <th style="padding:9px 12px;background:var(--s2);color:var(--t2);font-size:11px;text-transform:uppercase;letter-spacing:.5px;border-bottom:1.5px solid var(--border);text-align:left;">สิทธิ์</th>
-          </tr></thead>
+
+      <!-- USER MANAGEMENT -->
+      <div class="sbox">
+        <div class="sbox-title">👥 จัดการผู้ใช้ <button class="ab ab-b" onclick="openAddUser()" style="font-size:11px;">＋ เพิ่ม User</button></div>
+        <div class="tw"><table>
+          <thead><tr><th>ชื่อ</th><th>Username</th><th>Role</th><th>ต้อง Request</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
           <tbody id="userTbody"></tbody>
-        </table>
+        </table></div>
       </div>
-      <div class="admin-section">
-        <div class="admin-section-title">📤 Export ข้อมูล</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button class="btn-ghost" onclick="exportCSV()">📄 Export CSV</button>
-          <button class="btn-ghost" onclick="exportJSON()">⬇️ Export JSON</button>
+
+      <!-- CATEGORIES -->
+      <div class="sbox">
+        <div class="sbox-title">🏷️ หมวดหมู่ <button class="ab ab-b" onclick="openAddCat()" style="font-size:11px;">＋ เพิ่ม</button></div>
+        <div id="catList" style="display:flex;flex-wrap:wrap;gap:7px;"></div>
+      </div>
+
+      <!-- HOSPITALS -->
+      <div class="sbox">
+        <div class="sbox-title">🏥 รายชื่อ รพ. <button class="ab ab-b" onclick="openAddHosp()" style="font-size:11px;">＋ เพิ่ม</button></div>
+        <div id="hospList" style="display:flex;flex-wrap:wrap;gap:7px;"></div>
+      </div>
+
+      <!-- DELIVERY -->
+      <div class="sbox">
+        <div class="sbox-title">🚚 วิธีการส่ง <button class="ab ab-b" onclick="openAddDel()" style="font-size:11px;">＋ เพิ่ม</button></div>
+        <div id="delList" style="display:flex;flex-wrap:wrap;gap:7px;"></div>
+      </div>
+
+      <!-- IMPORT USER -->
+      <div class="sbox">
+        <div class="sbox-title">📥 Import User จาก Excel/CSV</div>
+        <div style="background:var(--s2);border-radius:var(--r);padding:13px;margin-bottom:12px;font-size:12px;line-height:1.8;">
+          <div style="font-weight:700;color:var(--t1);margin-bottom:6px;">📋 รูปแบบไฟล์ที่รองรับ: <span style="color:var(--blu)">.xlsx .xls .csv</span></div>
+          <div style="color:var(--t2);">คอลัมน์ที่ต้องมี (ลำดับไม่สำคัญ — ชื่อคอลัมน์ต้องตรงตามนี้):</div>
+          <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:5px;">
+            <span style="background:var(--redl);color:var(--red);padding:2px 8px;border-radius:5px;font-family:var(--mo);font-size:11px;">name *</span>
+            <span style="background:var(--redl);color:var(--red);padding:2px 8px;border-radius:5px;font-family:var(--mo);font-size:11px;">username *</span>
+            <span style="background:var(--redl);color:var(--red);padding:2px 8px;border-radius:5px;font-family:var(--mo);font-size:11px;">password *</span>
+            <span style="background:var(--blub);color:var(--blu);padding:2px 8px;border-radius:5px;font-family:var(--mo);font-size:11px;">role</span>
+            <span style="background:var(--blub);color:var(--blu);padding:2px 8px;border-radius:5px;font-family:var(--mo);font-size:11px;">require_request</span>
+          </div>
+          <div style="margin-top:8px;color:var(--t3);">role: admin / staff / viewer &nbsp;|&nbsp; require_request: true / false</div>
+          <div style="margin-top:4px;color:var(--t3);">ตัวอย่างแถว: <span style="font-family:var(--mo);color:var(--t2);">สมชาย ใจดี, somchai, pass1234, staff, true</span></div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <button class="btn-gh" onclick="downloadUserTemplate()">⬇️ ดาวน์โหลด Template</button>
+          <button class="btn-p" onclick="document.getElementById('userImportFile').click()">📥 Import User</button>
+          <input type="file" id="userImportFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="importUsers(event)">
+        </div>
+      </div>
+
+      <!-- NOTIFICATIONS -->
+      <div class="sbox">
+        <div class="sbox-title">🔔 ตั้งค่าการแจ้งเตือน</div>
+        <div style="margin-bottom:14px;font-size:12px;color:var(--t2);">แจ้งเตือนเมื่อ Stock ใกล้หมด, หมดสต็อก, ใกล้หมดอายุ และมี Request ใหม่</div>
+
+        <!-- LINE Messaging API -->
+        <div class="notif-card" id="nc-line">
+          <div class="notif-head" onclick="toggleNotifCard('nb-line',this)" style="cursor:pointer;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:22px;">💬</span>
+              <div>
+                <div style="font-weight:700;font-size:13px;">LINE Messaging API</div>
+                <div style="font-size:11px;color:var(--t2);">ส่งข้อความผ่าน LINE Official Account</div>
+              </div>
+            </div>
+            <label class="sw" onclick="event.stopPropagation()"><input type="checkbox" id="nc-line-en" onchange="saveNotifCfg()"><span class="sw-sl"></span></label>
+          </div>
+          <div class="notif-body" id="nb-line" style="display:none;">
+            <!-- ช่องกรอก -->
+            <div class="fg" style="margin-bottom:8px;"><label>Channel Access Token</label>
+              <div style="display:flex;gap:7px;">
+                <input type="text" id="nc-line-token" placeholder="วางToken ที่นี่..." style="flex:1;font-family:var(--mo);font-size:12px;" onchange="saveNotifCfg()">
+                <button class="ab ab-b" onclick="testNotif('line')">ทดสอบ</button>
+              </div>
+            </div>
+            <div class="fg" style="margin-bottom:12px;"><label>User ID / Group ID ผู้รับ</label>
+              <input type="text" id="nc-line-to" placeholder="Uxxxxxxxx หรือ Cxxxxxxxx" style="font-family:var(--mo);font-size:12px;" onchange="saveNotifCfg()">
+              <div style="font-size:11px;color:var(--t3);margin-top:4px;">User ID ขึ้นต้นด้วย U / Group ID ขึ้นต้นด้วย C / Room ID ขึ้นต้นด้วย R</div>
+            </div>
+            <!-- คู่มือขั้นตอน -->
+            <div style="background:linear-gradient(135deg,#f0fff4,#e8f5ff);border:1.5px solid #b2dfdb;border-radius:10px;padding:14px;">
+              <div style="font-size:12px;font-weight:700;color:#00695c;margin-bottom:10px;">📋 ขั้นตอนตั้งค่า LINE Messaging API (ทำครั้งเดียว)</div>
+              <div style="display:flex;flex-direction:column;gap:10px;">
+
+                <div style="display:flex;gap:10px;align-items:flex-start;">
+                  <div style="width:22px;height:22px;border-radius:50%;background:#00913a;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</div>
+                  <div style="font-size:12px;line-height:1.7;">
+                    <b>สร้าง LINE Official Account</b><br>
+                    ไปที่ <a href="https://developers.line.biz" target="_blank" style="color:#1d6fb8;">developers.line.biz</a> → Log in ด้วย LINE → <b>Create a new provider</b> → <b>Create a Messaging API channel</b>
+                  </div>
+                </div>
+
+                <div style="display:flex;gap:10px;align-items:flex-start;">
+                  <div style="width:22px;height:22px;border-radius:50%;background:#00913a;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">2</div>
+                  <div style="font-size:12px;line-height:1.7;">
+                    <b>รับ Channel Access Token</b><br>
+                    เข้า Channel → แท็บ <b>Messaging API</b> → เลื่อนลงหา <b>Channel access token</b> → กด <b>Issue</b> → <b>Copy token</b> แล้ววางในช่องด้านบน
+                  </div>
+                </div>
+
+                <div style="display:flex;gap:10px;align-items:flex-start;">
+                  <div style="width:22px;height:22px;border-radius:50%;background:#00913a;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">3</div>
+                  <div style="font-size:12px;line-height:1.7;">
+                    <b>หา User ID ของตัวเอง</b><br>
+                    เข้า <a href="https://developers.line.biz" target="_blank" style="color:#1d6fb8;">LINE Developers Console</a> → เลือก Channel → แท็บ <b>Messaging API</b> → <b>เพิ่มเพื่อน</b> Bot ก่อน (scan QR) → แล้วเช็ค User ID ได้จาก webhook หรือใช้วิธีด้านล่าง
+                  </div>
+                </div>
+
+                <div style="display:flex;gap:10px;align-items:flex-start;">
+                  <div style="width:22px;height:22px;border-radius:50%;background:#00913a;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">4</div>
+                  <div style="font-size:12px;line-height:1.7;">
+                    <b>วิธีรับ User ID ง่ายๆ</b><br>
+                    เพิ่มเพื่อน Bot แล้วส่งข้อความใดก็ได้ → เปิด <a href="https://developers.line.biz/console" target="_blank" style="color:#1d6fb8;">Developers Console</a> → <b>Webhook URL</b> ใส่ <code style="background:#eee;padding:1px 5px;border-radius:4px;">https://webhook.site/your-id</code> จาก <a href="https://webhook.site" target="_blank" style="color:#1d6fb8;">webhook.site</a> → ดู userId ใน JSON ที่ได้รับ
+                  </div>
+                </div>
+
+                <div style="display:flex;gap:10px;align-items:flex-start;">
+                  <div style="width:22px;height:22px;border-radius:50%;background:#1d6fb8;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">5</div>
+                  <div style="font-size:12px;line-height:1.7;">
+                    <b>ส่งหา Group / ห้องแชท</b><br>
+                    เพิ่ม Bot เข้า Group LINE → Bot จะได้รับ groupId (ขึ้นต้น C) → ใช้ webhook.site รับ event แล้วก็อป groupId ใส่ช่อง User/Group ID ด้านบน
+                  </div>
+                </div>
+
+                <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:7px;padding:9px 11px;font-size:11px;line-height:1.7;">
+                  ⚠️ <b>หมายเหตุสำคัญ:</b> LINE Messaging API ส่งจาก browser ตรงๆ ไม่ได้เพราะ CORS<br>
+                  ✅ <b>วิธีแก้:</b> ใช้ <b>Cloudflare Worker</b> เป็น proxy (ฟรี) หรือ <b>Make.com / n8n</b> รับ Webhook แล้วส่งต่อ LINE<br>
+                  👉 กด <button onclick="openLineProxyGuide()" style="background:var(--red);color:#fff;border:none;padding:2px 9px;border-radius:5px;font-size:11px;cursor:pointer;font-family:var(--fn);">ดูวิธีตั้งค่า Proxy</button>
+                </div>
+
+                <div class="fg" style="margin-bottom:0;"><label>Proxy URL (Cloudflare Worker / Make / n8n)</label>
+                  <input type="text" id="nc-line-proxy" placeholder="https://your-worker.workers.dev/line" style="font-family:var(--mo);font-size:12px;" onchange="saveNotifCfg()">
+                  <div style="font-size:11px;color:var(--t3);margin-top:3px;">ถ้าไม่มี Proxy ระบบจะส่งตรงไป api.line.me (อาจถูกบล็อก CORS บางเบราว์เซอร์)</div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Telegram -->
+        <div class="notif-card" id="nc-tg">
+          <div class="notif-head">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:22px;">✈️</span>
+              <div><div style="font-weight:700;font-size:13px;">Telegram Bot</div><div style="font-size:11px;color:var(--t2);">ส่งข้อความผ่าน Bot Telegram</div></div>
+            </div>
+            <label class="sw"><input type="checkbox" id="nc-tg-en" onchange="saveNotifCfg()"><span class="sw-sl"></span></label>
+          </div>
+          <div class="notif-body" id="nb-tg" style="display:none;">
+            <div class="r2">
+              <div class="fg" style="margin-bottom:8px;"><label>Bot Token</label>
+                <input type="text" id="nc-tg-token" placeholder="123456:ABC-xxx" style="font-family:var(--mo);font-size:12px;" onchange="saveNotifCfg()">
+              </div>
+              <div class="fg" style="margin-bottom:8px;"><label>Chat ID</label>
+                <input type="text" id="nc-tg-chat" placeholder="-100xxxxxxxxxx" style="font-family:var(--mo);font-size:12px;" onchange="saveNotifCfg()">
+              </div>
+            </div>
+            <div style="display:flex;gap:7px;align-items:center;">
+              <button class="ab ab-b" onclick="testNotif('telegram')">ทดสอบ</button>
+              <span style="font-size:11px;color:var(--t3);">สร้าง Bot → @BotFather | Chat ID → เพิ่ม @userinfobot เข้ากลุ่ม</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Email (mailto / SMTP via webhook) -->
+        <div class="notif-card" id="nc-email">
+          <div class="notif-head">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:22px;">📧</span>
+              <div><div style="font-weight:700;font-size:13px;">Email (ผ่าน EmailJS)</div><div style="font-size:11px;color:var(--t2);">ส่ง Email แจ้งเตือน</div></div>
+            </div>
+            <label class="sw"><input type="checkbox" id="nc-email-en" onchange="saveNotifCfg()"><span class="sw-sl"></span></label>
+          </div>
+          <div class="notif-body" id="nb-email" style="display:none;">
+            <div class="fg" style="margin-bottom:8px;"><label>EmailJS Service ID</label>
+              <input type="text" id="nc-email-svc" placeholder="service_xxxxxxx" style="font-family:var(--mo);font-size:12px;" onchange="saveNotifCfg()">
+            </div>
+            <div class="fg" style="margin-bottom:8px;"><label>EmailJS Template ID</label>
+              <input type="text" id="nc-email-tpl" placeholder="template_xxxxxxx" style="font-family:var(--mo);font-size:12px;" onchange="saveNotifCfg()">
+            </div>
+            <div class="fg" style="margin-bottom:8px;"><label>EmailJS Public Key</label>
+              <input type="text" id="nc-email-key" placeholder="xxxxxxxxxxxxxxxx" style="font-family:var(--mo);font-size:12px;" onchange="saveNotifCfg()">
+            </div>
+            <div class="fg" style="margin-bottom:8px;"><label>อีเมลผู้รับ (คั่นด้วย ,)</label>
+              <input type="text" id="nc-email-to" placeholder="lab@hospital.com, admin@hospital.com" onchange="saveNotifCfg()">
+            </div>
+            <div style="display:flex;gap:7px;align-items:center;">
+              <button class="ab ab-b" onclick="testNotif('email')">ทดสอบ</button>
+              <span style="font-size:11px;color:var(--t3);"><a href="https://emailjs.com" target="_blank" style="color:var(--blu);">emailjs.com</a> — ฟรี 200 อีเมล/เดือน</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Webhook (Generic) -->
+        <div class="notif-card" id="nc-wh">
+          <div class="notif-head">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:22px;">🔗</span>
+              <div><div style="font-weight:700;font-size:13px;">Webhook (Custom URL)</div><div style="font-size:11px;color:var(--t2);">Make, Zapier, n8n, Discord, Slack ฯลฯ</div></div>
+            </div>
+            <label class="sw"><input type="checkbox" id="nc-wh-en" onchange="saveNotifCfg()"><span class="sw-sl"></span></label>
+          </div>
+          <div class="notif-body" id="nb-wh" style="display:none;">
+            <div class="fg" style="margin-bottom:8px;"><label>Webhook URL</label>
+              <div style="display:flex;gap:7px;">
+                <input type="text" id="nc-wh-url" placeholder="https://hooks.zapier.com/..." style="flex:1;font-family:var(--mo);font-size:12px;" onchange="saveNotifCfg()">
+                <button class="ab ab-b" onclick="testNotif('webhook')">ทดสอบ</button>
+              </div>
+            </div>
+            <div style="font-size:11px;color:var(--t3);">ส่ง POST JSON: {type, item_name, bottles, message, timestamp}</div>
+          </div>
+        </div>
+
+        <!-- เงื่อนไขการแจ้งเตือน -->
+        <div style="margin-top:14px;background:var(--s2);border-radius:var(--r);padding:13px;">
+          <div style="font-size:12px;font-weight:700;color:var(--t1);margin-bottom:10px;">⚙️ เงื่อนไขการแจ้งเตือน</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer;">
+              <input type="checkbox" id="nc-cond-low" onchange="saveNotifCfg()" style="width:16px;height:16px;accent-color:var(--red);">
+              <span>⚠️ แจ้งเตือนเมื่อ Stock ใกล้หมด (≤ ขั้นต่ำ)</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer;">
+              <input type="checkbox" id="nc-cond-out" onchange="saveNotifCfg()" style="width:16px;height:16px;accent-color:var(--red);">
+              <span>🔴 แจ้งเตือนเมื่อ Stock หมด (0 ขวด)</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer;">
+              <input type="checkbox" id="nc-cond-exp" onchange="saveNotifCfg()" style="width:16px;height:16px;accent-color:var(--red);">
+              <span>📅 แจ้งเตือนเมื่อใกล้หมดอายุ (&lt; 60 วัน)</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer;">
+              <input type="checkbox" id="nc-cond-req" onchange="saveNotifCfg()" style="width:16px;height:16px;accent-color:var(--red);">
+              <span>📋 แจ้งเตือนเมื่อมี Request ใหม่</span>
+            </label>
+          </div>
+        </div>
+
+        <div style="margin-top:12px;display:flex;gap:8px;">
+          <button class="btn-p" onclick="sendManualNotif()">📤 ส่งรายงานสรุปตอนนี้</button>
+          <button class="btn-gh" onclick="loadNotifCfg()">🔄 โหลดการตั้งค่า</button>
+        </div>
+      </div>
+
+      <!-- EXPORT -->
+      <div class="sbox">
+        <div class="sbox-title">📤 Export</div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;">
+          <button class="btn-gh" onclick="exportCSV()">📄 Export CSV</button>
+          <button class="btn-gh" onclick="exportJSON()">⬇️ Export JSON</button>
         </div>
       </div>
     </div>
@@ -472,355 +674,341 @@ input,select,textarea{font-family:var(--font);}
   </div>
 </div>
 
-<div class="overlay" id="mPwd">
-  <div class="modal" style="max-width:380px;">
-    <h3>🔑 เปลี่ยน Password</h3>
-    <div class="fgrp"><label>Password ใหม่</label><input type="password" id="pwd-new" placeholder="Password ใหม่"></div>
-    <div class="fgrp"><label>ยืนยัน Password</label><input type="password" id="pwd-con" placeholder="พิมพ์ซ้ำ"></div>
-    <div class="modal-btns">
-      <button class="btn-cancel" onclick="closeM('mPwd')">ยกเลิก</button>
-      <button class="btn-save" onclick="savePwd()" id="bSP">✅ บันทึก</button>
-    </div>
-  </div>
-</div>
-
-<div class="overlay" id="mScan">
+<!-- SCAN -->
+<div class="ov" id="mScan">
   <div class="modal">
     <h3>📷 สแกน Barcode</h3>
     <div class="scan-zone">
-      <span class="sz-icon">📱</span>
-      <p>ชี้กล้องมือถือที่บาร์โค้ด หรือพิมพ์รหัสด้านล่าง</p>
+      <div style="font-size:40px;">📱</div>
+      <p style="font-size:13px;color:var(--t2);">ชี้กล้องมือถือที่บาร์โค้ด หรือพิมพ์รหัส</p>
       <input type="text" id="scanInp" placeholder="สแกน / พิมพ์บาร์โค้ด" oninput="onScan()" autocomplete="off">
     </div>
-    <div id="scanFound" style="display:none;" class="scan-found">
-      <div class="sf-name" id="sfName"></div>
-      <div class="sf-detail" id="sfDetail"></div>
-      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;" id="scanActions"></div>
+    <div id="scanFound" style="display:none" class="sf">
+      <div class="sfn" id="sfN"></div>
+      <div class="sfd" id="sfD"></div>
+      <div style="margin-top:10px;display:flex;gap:7px;flex-wrap:wrap;" id="sfA"></div>
     </div>
-    <div id="scanNF" style="display:none;" class="scan-notfound">❌ ไม่พบบาร์โค้ดนี้ในระบบ</div>
-    <div class="modal-btns"><button class="btn-cancel" onclick="closeM('mScan')">ปิด</button></div>
+    <div id="scanNF" style="display:none" class="snf">❌ ไม่พบบาร์โค้ดในระบบ</div>
+    <div class="mb"><button class="btn-cn" onclick="closeM('mScan')">ปิด</button></div>
   </div>
 </div>
 
-<div class="overlay" id="mItem">
-  <div class="modal">
-    <h3 id="mItemTitle">➕ เพิ่ม Reagent</h3>
-    
-    <div class="fgrp"><label>บาร์โค้ด *</label>
-      <div style="display:flex;gap:8px;">
-        <input type="text" id="fi-bc" placeholder="เช่น 8850001234567" style="flex:1;">
-        <button class="btn-ghost" onclick="openScanFor('fi-bc')" style="padding:0 12px;" title="เปิดกล้องสแกน">📷 สแกน</button>
-      </div>
+<!-- ADD/EDIT ITEM -->
+<div class="ov" id="mItem">
+  <div class="modal" style="max-width:520px;">
+    <h3 id="mIT">➕ เพิ่ม Reagent</h3>
+    <div class="fg"><label>บาร์โค้ด *</label><input type="text" id="fi-bc" placeholder="เช่น BC001"></div>
+    <div class="fg"><label>ชื่อ Reagent *</label><input type="text" id="fi-name" placeholder="ชื่อ Reagent"></div>
+    <div class="fg"><label>หมวดหมู่</label><select id="fi-cat"></select></div>
+    <div class="r2">
+      <div class="fg"><label>ขวดคงเหลือ</label><input type="number" id="fi-bt" placeholder="0" min="0" oninput="updateBtlPrev()"></div>
+      <div class="fg"><label>ขวดขั้นต่ำ (แจ้งเตือน)</label><input type="number" id="fi-min" placeholder="5" min="0"></div>
     </div>
-    
-    <div class="fgrp"><label>ชื่อ Reagent *</label><input type="text" id="fi-name" placeholder="ชื่อ Reagent"></div>
-    <div class="fgrp"><label>หมวดหมู่</label>
-      <select id="fi-cat">
-        <option>Coagulation Reagent</option><option>Coagulation Control</option>
-        <option>Urinalysis Reagent</option><option>Chemistry Reagent</option>
-        <option>Special Coagulation</option><option>ESR</option><option>อื่นๆ</option>
-      </select>
+    <div id="btlPrev" style="display:none;margin-bottom:12px;">
+      <div style="font-size:11px;color:var(--t2);margin-bottom:5px;">แผนผังขวด:</div>
+      <div class="bv-wrap" id="btlDots"></div>
     </div>
-
-    <div class="box-section">
-      <div class="box-section-title">📦 ข้อมูลกล่อง / ขวด</div>
-      <div class="row2">
-        <div class="fgrp" style="margin-bottom:0;"><label>จำนวนกล่องทั้งหมด</label><input type="number" id="fi-boxes" placeholder="0" min="0" oninput="updateBoxPreview()"></div>
-        <div class="fgrp" style="margin-bottom:0;"><label>ขวดต่อกล่อง</label><input type="number" id="fi-per-box" placeholder="1" min="1" oninput="updateBoxPreview()"></div>
-      </div>
-      <div class="row2" style="margin-top:10px;">
-        <div class="fgrp" style="margin-bottom:0;"><label>ขวดที่ใช้ไปแล้ว (กล่องเปิด)</label><input type="number" id="fi-used" placeholder="0" min="0" oninput="updateBoxPreview()"></div>
-        <div class="fgrp" style="margin-bottom:0;"><label>จำนวนขั้นต่ำ (กล่อง)</label><input type="number" id="fi-min" placeholder="1" min="0"></div>
-      </div>
-      <div id="boxPreview" style="margin-top:12px;display:none;">
-        <div style="font-size:12px;color:var(--t2);margin-bottom:6px;">ตัวอย่างสถานะ:</div>
-        <div id="boxPreviewContent"></div>
-      </div>
+    <div class="r2">
+      <div class="fg"><label>วันหมดอายุ</label><input type="date" id="fi-exp"></div>
+      <div class="fg"><label>Lot / Batch</label><input type="text" id="fi-lot" placeholder="Lot No."></div>
     </div>
-
-    <div class="row2" style="margin-top:10px;">
-      <div class="fgrp"><label>วันหมดอายุ</label><input type="date" id="fi-exp"></div>
-      <div class="fgrp"><label>Lot / Batch</label><input type="text" id="fi-lot" placeholder="Lot No."></div>
-    </div>
-    <div class="fgrp"><label>ผู้ผลิต / ยี่ห้อ</label><input type="text" id="fi-brand" placeholder="Brand"></div>
-    <div class="fgrp"><label>หมายเหตุ</label><textarea id="fi-note" placeholder="หมายเหตุ..."></textarea></div>
-    <div class="modal-btns">
-      <button class="btn-cancel" onclick="closeM('mItem')">ยกเลิก</button>
-      <button class="btn-save" onclick="saveItem()" id="btnSaveItem">💾 บันทึก</button>
+    <div class="fg"><label>ผู้ผลิต</label><input type="text" id="fi-brand" placeholder="Brand"></div>
+    <div class="fg"><label>หมายเหตุ</label><textarea id="fi-note" placeholder="หมายเหตุ..."></textarea></div>
+    <div class="mb">
+      <button class="btn-cn" onclick="closeM('mItem')">ยกเลิก</button>
+      <button class="btn-sv" onclick="saveItem()" id="bSI">💾 บันทึก</button>
     </div>
   </div>
 </div>
 
-<div class="overlay" id="mAdj">
+<!-- ADJUST -->
+<div class="ov" id="mAdj">
   <div class="modal">
-    <h3>🔄 ปรับจำนวน Stock</h3>
-    <div style="background:var(--red-light);border:1.5px solid var(--red-border);border-radius:var(--r);padding:14px;margin-bottom:16px;">
-      <div style="font-weight:700;font-size:15px;color:var(--red);" id="adjName"></div>
-      <div style="font-size:13px;color:var(--t2);margin-top:4px;" id="adjCurrent"></div>
+    <h3>🔄 ปรับจำนวนขวด</h3>
+    <div style="background:var(--redl);border:1.5px solid var(--redb);border-radius:var(--r);padding:13px;margin-bottom:14px;">
+      <div style="font-weight:700;font-size:14px;color:var(--red);" id="adjN"></div>
+      <div style="font-size:12px;color:var(--t2);margin-top:3px;" id="adjC"></div>
     </div>
-    <div class="fgrp"><label>ประเภท</label>
-      <select id="adj-type" onchange="toggleAdjFields()">
-        <option value="use">📤 หยิบออกใช้ (ขวด)</option>
-        <option value="add_box">📥 รับกล่องใหม่เข้า</option>
-        <option value="open_box">📂 เปิดกล่องใหม่</option>
+    <div class="fg"><label>ประเภท</label>
+      <select id="adj-type">
+        <option value="out">📤 หยิบออกใช้ (ขวด)</option>
+        <option value="in">📥 รับเข้า (ขวด)</option>
         <option value="set">🔧 ตั้งค่าใหม่</option>
       </select>
     </div>
-    <div id="adjUseField">
-      <div class="fgrp"><label>จำนวนขวดที่หยิบออก</label>
-        <div class="qty-ctrl">
-          <button onclick="adjStep(-1)">−</button>
-          <input type="number" id="adj-qty" value="1" min="1">
-          <button onclick="adjStep(1)">+</button>
-        </div>
+    <div class="fg"><label>จำนวนขวด</label>
+      <div class="qc">
+        <button onclick="qStep(-1)">−</button>
+        <input type="number" id="adj-q" value="1" min="0">
+        <button onclick="qStep(1)">+</button>
       </div>
     </div>
-    <div id="adjBoxField" style="display:none;">
-      <div class="fgrp"><label>จำนวนกล่องที่รับเข้า</label>
-        <div class="qty-ctrl">
-          <button onclick="adjBoxStep(-1)">−</button>
-          <input type="number" id="adj-boxes" value="1" min="1">
-          <button onclick="adjBoxStep(1)">+</button>
-        </div>
-      </div>
-    </div>
-    <div id="adjSetField" style="display:none;">
-      <div class="row2">
-        <div class="fgrp"><label>กล่องทั้งหมด</label><input type="number" id="adj-set-boxes" min="0" placeholder="0"></div>
-        <div class="fgrp"><label>ขวดที่ใช้ไป</label><input type="number" id="adj-set-used" min="0" placeholder="0"></div>
-      </div>
-    </div>
-    <div class="fgrp"><label>หมายเหตุ</label><input type="text" id="adj-note" placeholder="เหตุผล..."></div>
-    <div class="modal-btns">
-      <button class="btn-cancel" onclick="closeM('mAdj')">ยกเลิก</button>
-      <button class="btn-save" onclick="saveAdj()" id="btnSaveAdj">✅ บันทึก</button>
+    <div class="fg"><label>Lot ที่ใช้</label><select id="adj-lot"><option value="">-- เลือก Lot --</option></select></div>
+    <div class="fg"><label>หมายเหตุ</label><input type="text" id="adj-note" placeholder="เหตุผล..."></div>
+    <div class="mb">
+      <button class="btn-cn" onclick="closeM('mAdj')">ยกเลิก</button>
+      <button class="btn-sv" onclick="saveAdj()" id="bSA">✅ บันทึก</button>
     </div>
   </div>
 </div>
 
-<div class="overlay" id="mView">
+<!-- VIEW -->
+<div class="ov" id="mView">
   <div class="modal" style="max-width:520px;">
     <h3>🔍 รายละเอียด</h3>
     <div id="viewContent"></div>
-    <div class="modal-btns"><button class="btn-cancel" onclick="closeM('mView')">ปิด</button></div>
+    <div class="mb"><button class="btn-cn" onclick="closeM('mView')">ปิด</button></div>
   </div>
 </div>
 
-<div class="overlay" id="mReq">
-  <div class="modal">
+<!-- REQUEST -->
+<div class="ov" id="mReq">
+  <div class="modal" style="max-width:520px;">
     <h3>📋 สร้าง Request</h3>
-    <div class="fgrp"><label>Reagent ที่ต้องการ</label>
-      <select id="rq-item"><option value="">-- เลือก Reagent --</option></select>
+    <div class="fg"><label>Reagent *</label><select id="rq-item" onchange="loadLots()"><option value="">-- เลือก Reagent --</option></select></div>
+    <div class="fg"><label>Lot ที่ต้องการ</label><select id="rq-lot"><option value="">-- เลือก Lot --</option></select></div>
+    <div class="r2">
+      <div class="fg"><label>จำนวน (ขวด)</label><input type="number" id="rq-qty" value="1" min="1"></div>
+      <div class="fg"><label>ประเภท</label>
+        <select id="rq-type">
+          <option value="restock">📦 เติม Stock</option>
+          <option value="borrow">🔄 ยืม</option>
+          <option value="return">↩️ คืน</option>
+          <option value="other">💬 อื่นๆ</option>
+        </select>
+      </div>
     </div>
-    <div class="fgrp"><label>จำนวนที่ขอ (กล่อง)</label><input type="number" id="rq-qty" value="1" min="1"></div>
-    <div class="fgrp"><label>ประเภท</label>
-      <select id="rq-type">
-        <option value="restock">📦 เติม Stock</option>
-        <option value="borrow">🔄 ยืม</option>
-        <option value="return">↩️ คืน</option>
-        <option value="other">💬 อื่นๆ</option>
-      </select>
-    </div>
-    <div class="fgrp"><label>ความเร่งด่วน</label>
-      <select id="rq-priority">
+    <div class="fg"><label>ส่งให้ รพ. *</label><select id="rq-hosp"><option value="">-- เลือก รพ. --</option></select></div>
+    <div class="fg"><label>วิธีการส่ง *</label><select id="rq-del"><option value="">-- เลือกวิธี --</option></select></div>
+    <div class="fg"><label>ความเร่งด่วน</label>
+      <select id="rq-pri">
         <option value="normal">🟢 ปกติ</option>
         <option value="high">🟡 เร่งด่วน</option>
         <option value="urgent">🔴 ด่วนมาก</option>
       </select>
     </div>
-    <div class="fgrp"><label>เหตุผล / รายละเอียด</label><textarea id="rq-note" placeholder="อธิบายเหตุผล..."></textarea></div>
-    <div class="modal-btns">
-      <button class="btn-cancel" onclick="closeM('mReq')">ยกเลิก</button>
-      <button class="btn-save" onclick="submitReq()" id="btnSubmitReq">📤 ส่ง Request</button>
+    <div class="fg"><label>เหตุผล / รายละเอียด</label><textarea id="rq-note" placeholder="อธิบายเหตุผล..."></textarea></div>
+    <div class="mb">
+      <button class="btn-cn" onclick="closeM('mReq')">ยกเลิก</button>
+      <button class="btn-sv" style="background:var(--blu)" onclick="submitReq()" id="bSR">📤 ส่ง Request</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHANGE PASSWORD -->
+<div class="ov" id="mPwd">
+  <div class="modal" style="max-width:380px;">
+    <h3>🔑 เปลี่ยน Password</h3>
+    <input type="hidden" id="pwd-uid">
+    <div class="fg"><label>Password ใหม่</label><input type="password" id="pwd-new" placeholder="Password ใหม่"></div>
+    <div class="fg"><label>ยืนยัน Password</label><input type="password" id="pwd-con" placeholder="พิมพ์ซ้ำ"></div>
+    <div class="mb">
+      <button class="btn-cn" onclick="closeM('mPwd')">ยกเลิก</button>
+      <button class="btn-sv" onclick="savePwd()" id="bSP">✅ บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD USER -->
+<div class="ov" id="mUser">
+  <div class="modal" style="max-width:420px;">
+    <h3 id="mUT">👤 เพิ่ม User</h3>
+    <input type="hidden" id="u-id">
+    <div class="fg"><label>ชื่อ-นามสกุล *</label><input type="text" id="u-name" placeholder="ชื่อผู้ใช้"></div>
+    <div class="fg"><label>Username *</label><input type="text" id="u-uname" placeholder="username"></div>
+    <div class="fg" id="u-pwd-fg"><label>Password *</label><input type="password" id="u-pwd" placeholder="password"></div>
+    <div class="fg"><label>Role</label>
+      <select id="u-role">
+        <option value="staff">🧑‍🔬 Staff</option>
+        <option value="admin">👑 Admin</option>
+        <option value="viewer">👁 Viewer</option>
+      </select>
+    </div>
+    <div class="fg"><label>ต้อง Request ก่อนหยิบของ</label>
+      <select id="u-req">
+        <option value="true">✅ ต้อง Request</option>
+        <option value="false">❌ หยิบได้เลย (ไม่ต้อง Request)</option>
+      </select>
+    </div>
+    <div class="mb">
+      <button class="btn-cn" onclick="closeM('mUser')">ยกเลิก</button>
+      <button class="btn-sv" onclick="saveUser()" id="bSU">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD CAT/HOSP/DEL -->
+<div class="ov" id="mMeta">
+  <div class="modal" style="max-width:360px;">
+    <h3 id="mMetaTitle">เพิ่ม</h3>
+    <div class="fg"><label id="mMetaLabel">ชื่อ</label><input type="text" id="mMetaVal" placeholder="พิมพ์ชื่อ..."></div>
+    <div class="mb">
+      <button class="btn-cn" onclick="closeM('mMeta')">ยกเลิก</button>
+      <button class="btn-sv" onclick="saveMeta()" id="bSMeta">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- IMPORT PREVIEW -->
+<div class="ov" id="mImport">
+  <div class="modal" style="max-width:600px;">
+    <h3>📊 Preview Import Excel</h3>
+    <div style="font-size:12px;color:var(--t2);margin-bottom:12px;" id="importInfo"></div>
+    <div style="max-height:300px;overflow-y:auto;" class="tw">
+      <table><thead><tr id="importHead"></tr></thead><tbody id="importBody"></tbody></table>
+    </div>
+    <div class="mb">
+      <button class="btn-cn" onclick="closeM('mImport')">ยกเลิก</button>
+      <button class="btn-sv" onclick="confirmImport()" id="bImport">📥 นำเข้าข้อมูล</button>
+    </div>
+  </div>
+</div>
+
+<!-- MY ACCOUNT MODAL -->
+<div class="ov" id="mMyAcc">
+  <div class="modal" style="max-width:400px;">
+    <h3>👤 บัญชีของฉัน</h3>
+    <div style="background:var(--s2);border-radius:var(--r);padding:13px;margin-bottom:16px;">
+      <div style="font-size:15px;font-weight:700;" id="myAccName"></div>
+      <div style="font-size:12px;color:var(--t2);margin-top:3px;" id="myAccInfo"></div>
+    </div>
+    <div style="font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">🔐 เปลี่ยนรหัสผ่าน</div>
+    <div class="fg"><label>รหัสผ่านปัจจุบัน *</label><input type="password" id="my-old-pw" placeholder="รหัสผ่านเดิม"></div>
+    <div class="fg"><label>รหัสผ่านใหม่ *</label><input type="password" id="my-new-pw" placeholder="รหัสผ่านใหม่ (อย่างน้อย 6 ตัว)"></div>
+    <div class="fg"><label>ยืนยันรหัสผ่านใหม่ *</label><input type="password" id="my-con-pw" placeholder="พิมพ์รหัสผ่านใหม่อีกครั้ง"></div>
+    <div class="mb">
+      <button class="btn-cn" onclick="closeM('mMyAcc')">ปิด</button>
+      <button class="btn-sv" onclick="changeMyPw()" id="bMyPw">🔐 เปลี่ยนรหัสผ่าน</button>
+    </div>
+  </div>
+</div>
+
+<!-- IMPORT USER PREVIEW -->
+<div class="ov" id="mUserImport">
+  <div class="modal" style="max-width:640px;">
+    <h3>👥 Preview Import User</h3>
+    <div id="uiInfo" style="font-size:12px;color:var(--t2);margin-bottom:10px;"></div>
+    <div style="max-height:280px;overflow-y:auto;" class="tw">
+      <table><thead><tr id="uiHead"></tr></thead><tbody id="uiBody"></tbody></table>
+    </div>
+    <div class="mb">
+      <button class="btn-cn" onclick="closeM('mUserImport')">ยกเลิก</button>
+      <button class="btn-sv" onclick="confirmUserImport()" id="bUI">📥 Import User</button>
     </div>
   </div>
 </div>
 
 <div id="toast"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
-// ══════ SUPABASE ══════
-const SUPA_URL='https://uvjawvyixljcfqbyjlbg.supabase.co';
-const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2amF3dnlpeGxqY2ZxYnlqbGJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxOTI5NTIsImV4cCI6MjA4ODc2ODk1Mn0.4wBruDIiiuaphKz4iV1HqZey6AiF0B2oIqJwECzVV80';
-const H={'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY};
-async function db(table,method='GET',body=null,query=''){
-  const res=await fetch(`${SUPA_URL}/rest/v1/${table}${query}`,{
-    method,headers:{...H,...(method!=='GET'?{'Prefer':'return=representation'}:{})},
-    body:body?JSON.stringify(body):null
+// ══ SUPABASE ══
+const SU='https://uvjawvyixljcfqbyjlbg.supabase.co';
+const SK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2amF3dnlpeGxqY2ZxYnlqbGJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxOTI5NTIsImV4cCI6MjA4ODc2ODk1Mn0.4wBruDIiiuaphKz4iV1HqZey6AiF0B2oIqJwECzVV80';
+const H={'Content-Type':'application/json','apikey':SK,'Authorization':'Bearer '+SK};
+async function db(t,m='GET',b=null,q=''){
+  const r=await fetch(`${SU}/rest/v1/${t}${q}`,{
+    method:m,headers:{...H,...(m!=='GET'?{'Prefer':'return=representation'}:{})},
+    body:b?JSON.stringify(b):null
   });
-  if(!res.ok){const e=await res.text();throw new Error(e);}
-  return method==='DELETE'?null:res.json();
+  if(!r.ok)throw new Error(await r.text());
+  return m==='DELETE'?null:r.json();
 }
 
-// ══════ USERS ══════
-const USERS=[
-  {username:'admin', password:'admin123',name:'Admin หัวหน้า',role:'admin'},
-  {username:'staff1',password:'staff123',name:'น้องแลป A',    role:'staff'},
-  {username:'viewer',password:'view123', name:'แพทย์ดูข้อมูล',role:'viewer'},
-];
+// ══ STATE ══
+let S={user:null,items:[],requests:[],cats:[],hosps:[],dels:[],users:[],
+       catF:'all',reqF:'all',editId:null,scanItem:null,curPage:'dash',
+       metaType:null,importRows:[]};
 
-const CATS=['Coagulation Reagent','Coagulation Control','Urinalysis Reagent','Chemistry Reagent','Special Coagulation','ESR','อื่นๆ'];
-const CAT_CLS={'Coagulation Reagent':'ct-coag','Coagulation Control':'ct-ctrl','Urinalysis Reagent':'ct-uri','Chemistry Reagent':'ct-chem','Special Coagulation':'ct-spc','ESR':'ct-esr','อื่นๆ':'ct-other'};
-const COLORS=['#c0001a','#1d6fb8','#7c3aed','#d97706','#00913a','#dc2626','#64748b'];
-
-let S={user:null,items:[],requests:[],catFilter:'all',reqFilter:'all',editId:null,scanItem:null,currentPage:'dash'};
-
-// ══════ LOGO ══════
-function handleLogoUpload(e){
-  const file=e.target.files[0]; if(!file) return;
-  const reader=new FileReader();
-  reader.onload=ev=>{
-    const url=ev.target.result;
-    localStorage.setItem('lab_logo',url);
-    applyLogo(url);
-    toast('✅ อัปโหลดโลโก้เรียบร้อย','t-ok');
-  };
-  reader.readAsDataURL(file);
+// ══ LOGO ══
+function uploadLogo(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{localStorage.setItem('lab_logo',ev.target.result);applyLogo(ev.target.result);toast('✅ อัปโหลดโลโก้แล้ว','ok');}
+  r.readAsDataURL(f);
 }
 function applyLogo(url){
-  if(!url) return;
-  // Login
-  document.getElementById('loginLogoImg').src=url;
-  document.getElementById('loginLogoImg').style.display='block';
-  document.getElementById('loginLogoIcon').style.display='none';
-  // Admin
-  document.getElementById('adminLogoImg').src=url;
-  document.getElementById('adminLogoImg').style.display='block';
-  document.getElementById('adminLogoIcon').style.display='none';
-  // Splash
-  document.getElementById('splashIcon').innerHTML=`<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-  // Topbar
-  document.getElementById('topbarLogoImg').src=url;
-  document.getElementById('topbarLogoImg').style.display='block';
-  document.getElementById('topbarLogoIcon').style.display='none';
+  if(!url)return;
+  ['lCircle','aCircle'].forEach(id=>{const e=document.getElementById(id);if(e){const i=e.querySelector('img');if(i){i.src=url;i.style.display='block';}}});
+  const tbi=document.getElementById('tbImg');if(tbi){tbi.src=url;tbi.style.display='block';}
+  const si=document.getElementById('spIcon');if(si)si.innerHTML=`<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
 }
-function updateOrgName(){
-  const v=document.getElementById('orgNameInput').value||'Lab Stock System';
-  localStorage.setItem('lab_orgname',v);
-  document.getElementById('orgName').textContent=v;
-  document.getElementById('topOrgName').textContent=v;
+function saveOrg(){
+  const n=document.getElementById('orgNI').value||'Lab Stock System';
+  const s=document.getElementById('orgSI').value||'ระบบจัดการ Reagent';
+  localStorage.setItem('lab_on',n);localStorage.setItem('lab_os',s);
+  ['orgN','tbName'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=n;});
+  document.getElementById('orgS').textContent=s;
 }
-function updateOrgSub(){
-  const v=document.getElementById('orgSubInput').value||'ระบบจัดการ Reagent — Real-time Sync';
-  localStorage.setItem('lab_orgsub',v);
-  document.getElementById('orgSub').textContent=v;
-}
-function loadBranding(){
+function loadBrand(){
   const logo=localStorage.getItem('lab_logo');
-  const name=localStorage.getItem('lab_orgname');
-  const sub=localStorage.getItem('lab_orgsub');
-  if(logo) applyLogo(logo);
-  if(name){
-    document.getElementById('orgName').textContent=name;
-    document.getElementById('topOrgName').textContent=name;
-    document.getElementById('orgNameInput').value=name;
-  }
-  if(sub){
-    document.getElementById('orgSub').textContent=sub;
-    document.getElementById('orgSubInput').value=sub;
-  }
+  const n=localStorage.getItem('lab_on');
+  const s=localStorage.getItem('lab_os');
+  if(logo)applyLogo(logo);
+  if(n){['orgN','tbName'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=n;});document.getElementById('orgNI').value=n;}
+  if(s){document.getElementById('orgS').textContent=s;document.getElementById('orgSI').value=s;}
 }
 
-// ══════ INIT ══════
+// ══ INIT ══
 async function init(){
-  loadBranding();
+  loadBrand();
   try{
     await db('items','GET',null,'?limit=1');
-    setTimeout(()=>{
-      document.getElementById('splash').style.display='none';
-      document.getElementById('loginWrap').style.display='flex';
-    },900);
-    setInterval(async()=>{if(S.user){await loadAll();renderPage(S.currentPage);}},12000);
-    document.getElementById('syncDot').classList.remove('off');
-  }catch{
-    document.getElementById('splashSub').textContent='❌ เชื่อมต่อไม่ได้ ตรวจสอบ Network';
-  }
+    setTimeout(()=>{document.getElementById('splash').style.display='none';document.getElementById('loginWrap').style.display='flex';},900);
+    document.getElementById('sdot').classList.remove('off');
+    setInterval(async()=>{if(S.user){await loadAll();renderPage(S.curPage);}},15000);
+  }catch{document.getElementById('spSub').textContent='❌ เชื่อมต่อไม่ได้';}
 }
 
-// ══════ AUTH ══════
+// ══ AUTH ══
 async function doLogin(){
   const u=document.getElementById('lu').value.trim();
   const p=document.getElementById('lp').value.trim();
-  document.getElementById('lerr').textContent='⏳ กำลังตรวจสอบ...';
-  
-  let user = null;
-  // เพื่อรองรับการเปลี่ยนพาสเวิร์ด เราจะเช็ค Database ก่อน หากมี error หรือไม่พบจะกลับมาใช้ USERS พื้นฐาน
-  try {
-    const dbUsers = await db('users','GET',null,`?username=eq.${u}&password=eq.${p}`);
-    if(dbUsers && dbUsers.length > 0) user = dbUsers[0];
-  } catch(e) {}
-  
-  if(!user) {
-    user=USERS.find(x=>x.username===u&&x.password===p);
-  }
-
-  if(!user){document.getElementById('lerr').textContent='❌ Username หรือ Password ไม่ถูกต้อง';return;}
   document.getElementById('lerr').textContent='';
-  
-  S.user=user;
-  document.getElementById('loginWrap').style.display='none';
-  document.getElementById('app').style.display='block';
-  document.getElementById('topUser').textContent=user.name+' · '+user.role;
-  const rp=document.getElementById('rPill');
-  rp.textContent=user.role==='admin'?'👑 Admin':user.role==='staff'?'🧑‍🔬 Staff':'👁 Viewer';
-  rp.className='role-pill'+(user.role==='admin'?' admin':user.role==='viewer'?' viewer':'');
-  
-  // ⚠️ แก้ไข: ซ่อน/แสดง เมนูแอดมินให้ถูกต้องตาม Role เสมอ
-  document.getElementById('btnAdd').style.display = user.role==='admin' ? '' : 'none';
-  document.getElementById('adminTab').style.display = user.role==='admin' ? '' : 'none';
-  
-  renderUserTable();
-  loadAll().then(()=>nav('dash',document.querySelector('.ntab')));
+  setBL('btnLogin',true);
+  try{
+    const users=await db('users','GET',null,`?username=eq.${encodeURIComponent(u)}&password=eq.${encodeURIComponent(p)}&active=eq.true`);
+    if(!users||!users.length){document.getElementById('lerr').textContent='❌ Username หรือ Password ไม่ถูกต้อง';setBL('btnLogin',false);return;}
+    const user=users[0];
+    S.user=user;
+    document.getElementById('loginWrap').style.display='none';
+    document.getElementById('app').style.display='block';
+    document.getElementById('tbUser').textContent=user.name+' · '+user.role;
+    const rp=document.getElementById('rPill');
+    rp.textContent=user.role==='admin'?'👑 Admin':user.role==='staff'?'🧑‍🔬 Staff':'👁 Viewer';
+    rp.className='rpill'+(user.role==='admin'?' admin':user.role==='viewer'?' viewer':'');
+    if(user.role==='admin'){document.getElementById('btnAdd').style.display='';document.getElementById('adminTab').style.display='';}
+    await loadAll();
+    nav('dash',document.querySelector('.ntab'));
+    setTimeout(loadNotifCfg,500);
+  }catch(e){document.getElementById('lerr').textContent='❌ เกิดข้อผิดพลาด';}
+  setBL('btnLogin',false);
 }
 function doLogout(){
   S.user=null;
   document.getElementById('app').style.display='none';
   document.getElementById('loginWrap').style.display='flex';
   document.getElementById('lu').value='';document.getElementById('lp').value='';
-  // ⚠️ เคลียร์ปุ่มเมนู Admin ทุกครั้งที่ออก
-  document.getElementById('btnAdd').style.display='none';
-  document.getElementById('adminTab').style.display='none';
 }
 
-// ══════ PASSWORD CHANGE ══════
-function openSelfPwd(){
-  if(!S.user) return;
-  document.getElementById('pwd-new').value='';
-  document.getElementById('pwd-con').value='';
-  openM('mPwd');
+// ══ LOAD ══
+async function loadAll(){
+  await Promise.all([loadItems(),loadRequests(),loadCats(),loadHosps(),loadDels(),loadUsers()]);
 }
-async function savePwd(){
-  const np=document.getElementById('pwd-new').value;
-  const cp=document.getElementById('pwd-con').value;
-  if(!np){toast('กรุณากรอก Password ใหม่','t-err');return;}
-  if(np!==cp){toast('Password ไม่ตรงกัน','t-err');return;}
-  setBtnLoading('bSP',true);
-  try{
-    if(S.user.id) {
-       await db('users','PATCH',{password:np},`?id=eq.${S.user.id}`);
-    } else {
-       // อัพเดตใน object ถ้าเป็น user แบบ hardcoded
-       S.user.password = np;
-    }
-    toast('✅ เปลี่ยน Password เรียบร้อยแล้ว','t-ok');
-    closeM('mPwd');
-  }catch{toast('❌ เปลี่ยนไม่ได้ ลองใหม่อีกครั้ง','t-err');}
-  setBtnLoading('bSP',false);
-}
+async function loadItems(){try{S.items=await db('items','GET',null,'?order=name.asc');}catch{}}
+async function loadRequests(){try{S.requests=await db('requests','GET',null,'?order=created_at.desc');}catch{}}
+async function loadCats(){try{S.cats=await db('categories','GET',null,'?order=name.asc');}catch{S.cats=[];}}
+async function loadHosps(){try{S.hosps=await db('hospitals','GET',null,'?active=eq.true&order=name.asc');}catch{S.hosps=[];}}
+async function loadDels(){try{S.dels=await db('delivery_methods','GET',null,'?active=eq.true&order=name.asc');}catch{S.dels=[];}}
+async function loadUsers(){try{S.users=await db('users','GET',null,'?order=name.asc');}catch{S.users=[];}}
 
-// ══════ DATA ══════
-async function loadAll(){await Promise.all([loadItems(),loadRequests()]);}
-async function loadItems(){try{S.items=await db('items','GET',null,'?order=name.asc');}catch(e){}}
-async function loadRequests(){try{S.requests=await db('requests','GET',null,'?order=created_at.desc');}catch(e){}}
-
-// ══════ NAV ══════
+// ══ NAV ══
 function nav(pg,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('act'));
   document.querySelectorAll('.ntab').forEach(b=>b.classList.remove('act'));
   document.getElementById('pg-'+pg).classList.add('act');
   if(btn)btn.classList.add('act');
-  S.currentPage=pg;
-  renderPage(pg);
+  S.curPage=pg;renderPage(pg);
 }
 function renderPage(pg){
   if(pg==='dash')renderDash();
@@ -828,144 +1016,116 @@ function renderPage(pg){
   if(pg==='req')renderReqs();
   if(pg==='report')renderReport();
   if(pg==='admin')renderAdmin();
-  updateBadge();
+  updBadge();
 }
 
-// ══════ BADGE ══════
-function updateBadge(){
+// ══ BADGE ══
+function updBadge(){
   const n=S.requests.filter(r=>r.status==='pending').length;
-  const b=document.getElementById('reqBadge');
+  const b=document.getElementById('rBadge');
   n>0?(b.style.display='',b.textContent=n):b.style.display='none';
   document.getElementById('d-pend').textContent=n;
 }
 
-// ══════ BOX HELPERS ══════
-// qty in DB = total bottles = boxes * per_box - used
-// We store: boxes (int), per_box (int), used_bottles (int) separately
-// qty = boxes * per_box - used_bottles (computed)
-function computeQty(item){
-  const boxes=item.boxes||0, perBox=item.per_box||1, used=item.used_bottles||0;
-  return Math.max(0, boxes*perBox - used);
-}
-function bottlesLeft(item){
-  // bottles in current open box
-  const perBox=item.per_box||1, used=item.used_bottles||0;
-  return perBox - (used % perBox);
-}
-function closedBoxes(item){
-  const perBox=item.per_box||1, used=item.used_bottles||0;
-  return Math.max(0,(item.boxes||0) - Math.ceil(used/perBox));
-}
-
-// ══════ DASHBOARD ══════
+// ══ DASHBOARD ══
 function renderDash(){
   const items=S.items;
   document.getElementById('d-total').textContent=items.length;
-  const low=items.filter(i=>computeQty(i)>0&&computeQty(i)<=(i.min_qty||1)*(i.per_box||1)).length;
-  const out=items.filter(i=>computeQty(i)===0).length;
+  const low=items.filter(i=>i.bottles>0&&i.bottles<=(i.min_qty||5)).length;
+  const out=items.filter(i=>!i.bottles||i.bottles===0).length;
   document.getElementById('d-low').textContent=low;
   document.getElementById('d-out').textContent=out;
-  updateBadge();
-
-  const bycat={};
-  CATS.forEach(c=>bycat[c]=items.filter(i=>i.category===c).reduce((s,x)=>s+computeQty(x),0));
+  updBadge();
+  const COLS=['#c0001a','#1d6fb8','#7c3aed','#d97706','#00913a','#dc2626','#64748b'];
+  const catNames=S.cats.map(c=>c.name);
+  const bycat={};catNames.forEach(c=>bycat[c]=0);
+  items.forEach(i=>bycat[i.category]=(bycat[i.category]||0)+(i.bottles||0));
   const maxv=Math.max(...Object.values(bycat),1);
-  document.getElementById('catChart').innerHTML=CATS.map((c,i)=>`
-    <div class="bar-row">
-      <div class="bar-label" title="${c}">${c}</div>
-      <div class="bar-track"><div class="bar-fill" style="width:${bycat[c]/maxv*100}%;background:${COLORS[i%COLORS.length]};"></div></div>
-      <div class="bar-val">${bycat[c]}</div>
-    </div>`).join('');
-
-  const total=items.length||1;
-  const ok=items.filter(i=>computeQty(i)>(i.min_qty||1)*(i.per_box||1)).length;
-  document.getElementById('statusChart').innerHTML=
+  document.getElementById('catChart').innerHTML=catNames.map((c,i)=>`
+    <div class="br"><div class="bl" title="${c}">${c}</div>
+    <div class="bt"><div class="bf" style="width:${(bycat[c]||0)/maxv*100}%;background:${COLS[i%COLS.length]};"></div></div>
+    <div class="bv">${bycat[c]||0}</div></div>`).join('');
+  const tot=items.length||1;
+  const ok=items.filter(i=>(i.bottles||0)>(i.min_qty||5)).length;
+  document.getElementById('stChart').innerHTML=
     [{l:'✅ ปกติ',n:ok,c:'#00913a'},{l:'⚠️ ใกล้หมด',n:low,c:'#d97706'},{l:'🔴 หมด',n:out,c:'#c0001a'}]
-    .map(p=>`<div class="bar-row">
-      <div class="bar-label">${p.l}</div>
-      <div class="bar-track"><div class="bar-fill" style="width:${p.n/total*100}%;background:${p.c};"></div></div>
-      <div class="bar-val">${p.n}</div>
-    </div>`).join('');
-
+    .map(p=>`<div class="br"><div class="bl">${p.l}</div>
+      <div class="bt"><div class="bf" style="width:${p.n/tot*100}%;background:${p.c};"></div></div>
+      <div class="bv">${p.n}</div></div>`).join('');
   const today=new Date(),soon=new Date();soon.setDate(soon.getDate()+60);
   const alerts=[];
   items.forEach(i=>{
-    const qty=computeQty(i);
     const exp=i.expiry_date?new Date(i.expiry_date):null;
-    const minBottles=(i.min_qty||1)*(i.per_box||1);
-    if(qty===0)alerts.push({type:'out',name:i.name,info:'หมดสต็อก',id:i.id});
-    else if(qty<=minBottles)alerts.push({type:'warn',name:i.name,info:`คงเหลือ ${i.boxes||0} กล่อง / ${qty} ขวด`,id:i.id});
-    if(exp&&exp<today)alerts.push({type:'exp',name:i.name,info:`หมดอายุแล้ว: ${fmtDate(i.expiry_date)}`,id:i.id});
-    else if(exp&&exp<soon)alerts.push({type:'exp',name:i.name,info:`ใกล้หมดอายุ: ${fmtDate(i.expiry_date)}`,id:i.id});
+    const bt=i.bottles||0,mn=i.min_qty||5;
+    if(bt===0)alerts.push({t:'out',name:i.name,info:'หมดสต็อก',id:i.id});
+    else if(bt<=mn)alerts.push({t:'warn',name:i.name,info:`คงเหลือ ${bt} ขวด (ขั้นต่ำ ${mn})`,id:i.id});
+    if(exp&&exp<today)alerts.push({t:'exp',name:i.name,info:`หมดอายุ: ${fd(i.expiry_date)}`,id:i.id});
+    else if(exp&&exp<soon)alerts.push({t:'exp',name:i.name,info:`ใกล้หมดอายุ: ${fd(i.expiry_date)}`,id:i.id});
   });
   const al=document.getElementById('alertList');
-  if(!alerts.length){al.innerHTML='<div class="empty"><span class="ei">✅</span>ทุกรายการอยู่ในเกณฑ์ปกติ</div>';return;}
-  al.innerHTML='<div class="alert-list">'+alerts.slice(0,12).map(a=>`
-    <div class="alert-item ${a.type}">
-      <div class="ai-name">${a.name}</div>
-      <div class="ai-info">${a.info}</div>
-      <button class="act-btn ab-red" onclick="viewItem(${a.id})">ดู</button>
+  if(!alerts.length){al.innerHTML='<div class="empty"><span class="ei">✅</span>ทุกรายการปกติ</div>';return;}
+  al.innerHTML='<div class="alist">'+alerts.slice(0,12).map(a=>`
+    <div class="aitem ${a.t}">
+      <div class="an">${a.name}</div><div class="ai">${a.info}</div>
+      <button class="ab ab-r" onclick="viewItem(${a.id})">ดู</button>
     </div>`).join('')+'</div>';
 }
 
-// ══════ STOCK ══════
+// ══ STOCK ══
+function catClass(cat){
+  const idx=S.cats.findIndex(c=>c.name===cat);
+  const cls=['ct-coag','ct-ctrl','ct-uri','ct-chem','ct-spc','ct-esr','ct-other'];
+  const colors=['rgba(192,0,26,.1)','rgba(29,111,184,.1)','rgba(124,58,237,.1)','rgba(217,119,6,.1)','rgba(220,38,38,.1)','rgba(0,145,58,.1)','rgba(100,116,139,.1)'];
+  const tcols=['#c0001a','#1d6fb8','#7c3aed','#d97706','#dc2626','#00913a','#64748b'];
+  const i=idx>=0?idx:6;
+  return `background:${colors[i%colors.length]};color:${tcols[i%tcols.length]};`;
+}
 function renderCatChips(){
-  document.getElementById('catChips').innerHTML=['all',...CATS].map(c=>`
-    <button class="chip${S.catFilter===c?' act':''}" onclick="setCat('${c}',this)">${c==='all'?'ทั้งหมด':c}</button>`).join('');
+  document.getElementById('catChips').innerHTML=
+    ['all',...S.cats.map(c=>c.name)].map(c=>`
+      <button class="chip${S.catF===c?' act':''}" onclick="setCat('${c.replace(/'/g,"\\'")}',this)">${c==='all'?'ทั้งหมด':c}</button>`).join('');
 }
 function setCat(c,btn){
-  S.catFilter=c;
+  S.catF=c;
   document.querySelectorAll('#catChips .chip').forEach(b=>b.classList.remove('act'));
   btn.classList.add('act');renderStock();
 }
 function renderStock(){
   renderCatChips();
   const srch=(document.getElementById('srch')||{value:''}).value.toLowerCase();
-  const isAdmin=S.user&&S.user.role==='admin';
-  const isStaff=S.user&&(S.user.role==='admin'||S.user.role==='staff');
+  const isA=S.user&&S.user.role==='admin';
+  const isSt=S.user&&(S.user.role==='admin'||S.user.role==='staff');
+  const needReq=S.user&&S.user.require_request;
   const today=new Date(),soon=new Date();soon.setDate(soon.getDate()+60);
   let items=[...S.items];
-  if(S.catFilter!=='all')items=items.filter(i=>i.category===S.catFilter);
+  if(S.catF!=='all')items=items.filter(i=>i.category===S.catF);
   if(srch)items=items.filter(i=>i.name.toLowerCase().includes(srch)||i.barcode.toLowerCase().includes(srch)||(i.lot||'').toLowerCase().includes(srch));
-
   const rows=items.map(i=>{
-    const qty=computeQty(i);
-    const boxes=i.boxes||0, perBox=i.per_box||1, used=i.used_bottles||0;
-    const minBottles=(i.min_qty||1)*perBox;
+    const bt=i.bottles||0,mn=i.min_qty||5;
     const exp=i.expiry_date?new Date(i.expiry_date):null;
     const expCls=!exp?'ok':exp<today?'exp':exp<soon?'near':'ok';
-    const qCls=qty===0?'out':qty<=minBottles?'low':'ok';
-    const pct=minBottles>0?Math.min(qty/minBottles*100,100):100;
-    const pc=qty===0?'#c0001a':qty<=minBottles?'#d97706':'#00913a';
-    const bottlesInOpenBox=used%perBox>0?perBox-(used%perBox):0;
-
+    const qCls=bt===0?'out':bt<=mn?'low':'ok';
+    const pct=mn>0?Math.min(bt/mn*100,100):100;
+    const pc=bt===0?'#c0001a':bt<=mn?'#d97706':'#00913a';
     return `<tr>
       <td>
         <div style="font-weight:600;font-size:13px;">${i.name}</div>
-        <div style="font-size:11px;color:var(--t3);font-family:var(--mono);">${i.barcode}${i.brand?` · ${i.brand}`:''}</div>
+        <div style="font-size:11px;color:var(--t3);font-family:var(--mo);">${i.barcode}${i.brand?` · ${i.brand}`:''}</div>
+        <div class="mp"><div class="mpf" style="width:${pct}%;background:${pc};"></div></div>
       </td>
-      <td><span class="ctag ${CAT_CLS[i.category]||'ct-other'}">${i.category}</span></td>
+      <td><span class="ctag" style="${catClass(i.category)}">${i.category||'—'}</span></td>
       <td>
-        <div class="box-info">
-          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-            <span class="box-pill bp-box">📦 ${boxes} กล่อง</span>
-            <span class="box-pill bp-used">📤 ใช้ ${used} ขวด</span>
-            <span class="box-pill bp-left" style="${qty===0?'background:rgba(192,0,26,.08);color:var(--red);':''}">เหลือ ${qty} ขวด</span>
-          </div>
-          <div class="mini-prog" style="width:100%;max-width:160px;margin-top:5px;">
-            <div class="mini-prog-fill" style="width:${pct}%;background:${pc};"></div>
-          </div>
-          ${bottlesInOpenBox>0?`<div style="font-size:11px;color:var(--amber);margin-top:2px;">🔓 กล่องเปิด: เหลืออีก ${bottlesInOpenBox} ขวด</div>`:''}
-        </div>
+        <span class="qty ${qCls}">${bt} ขวด</span>
+        <div style="font-size:11px;color:var(--t3);">min: ${mn}</div>
       </td>
-      <td class="hide-mobile"><span class="exp-tag ${expCls}">${i.expiry_date?fmtDate(i.expiry_date):'—'}</span></td>
-      <td class="hide-mobile" style="font-size:11px;color:var(--t3);font-family:var(--mono);">${i.lot||'—'}</td>
+      <td class="hm" style="font-size:11px;color:var(--t3);font-family:var(--mo);">${i.lot||'—'}</td>
+      <td class="hm"><span class="exp-tag ${expCls}">${i.expiry_date?fd(i.expiry_date):'—'}</span></td>
       <td>
         <div style="display:flex;gap:5px;flex-wrap:wrap;">
-          <button class="act-btn ab-gray" onclick="viewItem(${i.id})">👁</button>
-          ${isStaff?`<button class="act-btn ab-red" onclick="openAdj(${i.id})">📤 หยิบ</button>`:''}
-          ${isAdmin?`<button class="act-btn ab-blue" onclick="openEdit(${i.id})">✏️</button>`:''}
-          ${isAdmin?`<button class="act-btn ab-gray" onclick="delItem(${i.id})">🗑</button>`:''}
+          <button class="ab ab-gr" onclick="viewItem(${i.id})">👁</button>
+          ${isSt&&!needReq?`<button class="ab ab-r" onclick="openAdj(${i.id})">📤 หยิบ</button>`:''}
+          ${isA?`<button class="ab ab-b" onclick="openEdit(${i.id})">✏️</button>`:''}
+          ${isA?`<button class="ab ab-gr" onclick="delItem(${i.id})">🗑</button>`:''}
         </div>
       </td>
     </tr>`;
@@ -973,344 +1133,331 @@ function renderStock(){
   document.getElementById('stockTbody').innerHTML=rows||`<tr><td colspan="6"><div class="empty"><span class="ei">📭</span>ไม่พบรายการ</div></td></tr>`;
 }
 
-// ══════ BOX PREVIEW ══════
-function updateBoxPreview(){
-  const boxes=+document.getElementById('fi-boxes').value||0;
-  const perBox=+document.getElementById('fi-per-box').value||1;
-  const used=+document.getElementById('fi-used').value||0;
-  const total=boxes*perBox;
-  const left=Math.max(0,total-used);
-  const prev=document.getElementById('boxPreview');
-  if(boxes===0){prev.style.display='none';return;}
+// ══ BOTTLE PREVIEW ══
+function updateBtlPrev(){
+  const n=+document.getElementById('fi-bt').value||0;
+  const min=+document.getElementById('fi-min').value||5;
+  const prev=document.getElementById('btlPrev');
+  if(n===0){prev.style.display='none';return;}
   prev.style.display='block';
-  // bottle dots (max 60)
-  const show=Math.min(total,60);
+  const show=Math.min(n,80);
   let dots='';
-  for(let i=0;i<show;i++) dots+=`<div class="bottle-dot ${i<(total-left)?'empty':'full'}"></div>`;
-  document.getElementById('boxPreviewContent').innerHTML=`
-    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;">
-      <span class="box-pill bp-box">📦 ${boxes} กล่อง × ${perBox} ขวด = ${total} ขวด</span>
-      <span class="box-pill bp-used">📤 ใช้แล้ว ${used} ขวด</span>
-      <span class="box-pill bp-left">เหลือ ${left} ขวด</span>
-    </div>
-    ${show<total?`<div style="font-size:11px;color:var(--t3);margin-bottom:6px;">(แสดง ${show} จาก ${total} ขวด)</div>`:''}
-    <div class="box-visual">${dots}</div>
-    <div class="bottle-legend">
-      <span><div class="dot" style="background:var(--red);"></div> ขวดที่เหลือ (${left})</span>
-      <span><div class="dot" style="background:var(--s3);border:1px solid var(--border2);"></div> ขวดที่ใช้ไป (${used})</span>
-    </div>`;
+  for(let i=0;i<show;i++)dots+=`<div class="bd full"></div>`;
+  document.getElementById('btlDots').innerHTML=dots;
 }
 
-// ══════ ITEM CRUD ══════
+// ══ ITEM CRUD ══
 function openAdd(){
   S.editId=null;
-  document.getElementById('mItemTitle').textContent='➕ เพิ่ม Reagent';
+  document.getElementById('mIT').textContent='➕ เพิ่ม Reagent';
   ['fi-bc','fi-name','fi-lot','fi-brand','fi-note'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('fi-boxes').value='0';
-  document.getElementById('fi-per-box').value='1';
-  document.getElementById('fi-used').value='0';
-  document.getElementById('fi-min').value='1';
+  document.getElementById('fi-bt').value='0';
+  document.getElementById('fi-min').value='5';
   document.getElementById('fi-exp').value='';
-  document.getElementById('fi-cat').value='Coagulation Reagent';
-  document.getElementById('boxPreview').style.display='none';
+  buildCatSel('fi-cat');
+  document.getElementById('btlPrev').style.display='none';
   openM('mItem');
 }
 function openEdit(id){
   const i=S.items.find(x=>x.id===id);if(!i)return;
   S.editId=id;
-  document.getElementById('mItemTitle').textContent='✏️ แก้ไข Reagent';
+  document.getElementById('mIT').textContent='✏️ แก้ไข Reagent';
   document.getElementById('fi-bc').value=i.barcode;
   document.getElementById('fi-name').value=i.name;
-  document.getElementById('fi-cat').value=i.category;
-  document.getElementById('fi-boxes').value=i.boxes||0;
-  document.getElementById('fi-per-box').value=i.per_box||1;
-  document.getElementById('fi-used').value=i.used_bottles||0;
-  document.getElementById('fi-min').value=i.min_qty||1;
+  document.getElementById('fi-bt').value=i.bottles||0;
+  document.getElementById('fi-min').value=i.min_qty||5;
   document.getElementById('fi-exp').value=i.expiry_date||'';
   document.getElementById('fi-lot').value=i.lot||'';
   document.getElementById('fi-brand').value=i.brand||'';
   document.getElementById('fi-note').value=i.note||'';
-  updateBoxPreview();
+  buildCatSel('fi-cat',i.category);
+  updateBtlPrev();
   openM('mItem');
 }
 async function saveItem(){
   const bc=document.getElementById('fi-bc').value.trim();
   const name=document.getElementById('fi-name').value.trim();
-  if(!bc||!name){toast('กรุณากรอกบาร์โค้ดและชื่อ','t-err');return;}
-  const boxes=+document.getElementById('fi-boxes').value||0;
-  const perBox=+document.getElementById('fi-per-box').value||1;
-  const used=+document.getElementById('fi-used').value||0;
-  const qty=Math.max(0,boxes*perBox-used);
+  if(!bc||!name){toast('กรุณากรอกบาร์โค้ดและชื่อ','err');return;}
   const payload={barcode:bc,name,category:document.getElementById('fi-cat').value,
-    boxes,per_box:perBox,used_bottles:used,qty,
-    min_qty:+document.getElementById('fi-min').value||1,
+    bottles:+document.getElementById('fi-bt').value||0,
+    qty:+document.getElementById('fi-bt').value||0,
+    min_qty:+document.getElementById('fi-min').value||5,
     expiry_date:document.getElementById('fi-exp').value||null,
     lot:document.getElementById('fi-lot').value||null,
     brand:document.getElementById('fi-brand').value||null,
     note:document.getElementById('fi-note').value||null,
     updated_at:new Date().toISOString()};
-  setBtnLoading('btnSaveItem',true);
+  setBL('bSI',true);
   try{
-    if(S.editId){await db('items','PATCH',payload,`?id=eq.${S.editId}`);}
-    else{await db('items','POST',payload);}
-    toast(S.editId?'✅ อัปเดตเรียบร้อย':'✅ เพิ่มรายการเรียบร้อย','t-ok');
+    if(S.editId)await db('items','PATCH',payload,`?id=eq.${S.editId}`);
+    else await db('items','POST',payload);
+    toast(S.editId?'✅ อัปเดตแล้ว':'✅ เพิ่มแล้ว','ok');
     await loadItems();closeM('mItem');renderStock();
-  }catch(e){toast('❌ บันทึกไม่ได้','t-err');}
-  setBtnLoading('btnSaveItem',false);
+  }catch(e){toast('❌ บันทึกไม่ได้','err');}
+  setBL('bSI',false);
 }
 async function delItem(id){
   const i=S.items.find(x=>x.id===id);
   if(!confirm(`ลบ "${i?.name}" ?`))return;
-  try{await db('items','DELETE',null,`?id=eq.${id}`);toast('🗑️ ลบเรียบร้อย','t-info');await loadItems();renderStock();}
-  catch{toast('❌ ลบไม่ได้','t-err');}
+  try{await db('items','DELETE',null,`?id=eq.${id}`);toast('🗑️ ลบแล้ว','info');await loadItems();renderStock();}
+  catch{toast('❌ ลบไม่ได้','err');}
 }
 async function viewItem(id){
   const i=S.items.find(x=>x.id===id);if(!i)return;
-  const qty=computeQty(i);
-  const boxes=i.boxes||0,perBox=i.per_box||1,used=i.used_bottles||0;
-  const qc=qty===0?'var(--red)':qty<=(i.min_qty||1)*perBox?'var(--amber)':'var(--green)';
+  const bt=i.bottles||0,mn=i.min_qty||5;
+  const qc=bt===0?'var(--red)':bt<=mn?'var(--amb)':'var(--grn)';
   const today=new Date(),soon=new Date();soon.setDate(soon.getDate()+60);
   const exp=i.expiry_date?new Date(i.expiry_date):null;
-  const expLabel=!exp?'ไม่ระบุ':exp<today?`<span style="color:var(--red)">⚠️ ${fmtDate(i.expiry_date)} (หมดอายุ)</span>`:
-    exp<soon?`<span style="color:var(--amber)">⚠️ ${fmtDate(i.expiry_date)} (ใกล้หมดอายุ)</span>`:fmtDate(i.expiry_date);
-  // bottle visual
-  const total=boxes*perBox, show=Math.min(total,80);
-  let dots='';
-  for(let j=0;j<show;j++) dots+=`<div class="bottle-dot ${j<(total-qty)?'empty':'full'}" style="width:16px;height:16px;"></div>`;
-
+  const expL=!exp?'ไม่ระบุ':exp<today?`<span style="color:var(--red)">⚠️ ${fd(i.expiry_date)} (หมดอายุ)</span>`:
+    exp<soon?`<span style="color:var(--amb)">⚠️ ${fd(i.expiry_date)} (ใกล้หมด)</span>`:fd(i.expiry_date);
+  const show=Math.min(bt,80);let dots='';
+  for(let j=0;j<show;j++)dots+=`<div class="bd full" style="width:14px;height:14px;"></div>`;
   let hist=[];
   try{hist=await db('stock_history','GET',null,`?item_id=eq.${id}&order=created_at.desc&limit=6`);}catch{}
   document.getElementById('viewContent').innerHTML=`
-    <div style="background:var(--red-light);border:1.5px solid var(--red-border);border-radius:var(--r);padding:14px;margin-bottom:14px;">
-      <div style="font-size:17px;font-weight:700;margin-bottom:6px;">${i.name}</div>
-      <span class="ctag ${CAT_CLS[i.category]||'ct-other'}">${i.category}</span>
+    <div style="background:var(--redl);border:1.5px solid var(--redb);border-radius:var(--r);padding:13px;margin-bottom:13px;">
+      <div style="font-size:16px;font-weight:700;margin-bottom:5px;">${i.name}</div>
+      <span class="ctag" style="${catClass(i.category)}">${i.category}</span>
       ${i.brand?`<span style="font-size:12px;color:var(--t2);margin-left:8px;">🏭 ${i.brand}</span>`:''}
     </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
-      <span class="box-pill bp-box" style="font-size:13px;padding:6px 12px;">📦 ${boxes} กล่อง</span>
-      <span class="box-pill" style="background:rgba(29,111,184,.1);color:var(--blue);font-size:13px;padding:6px 12px;">× ${perBox} ขวด/กล่อง</span>
-      <span class="box-pill bp-used" style="font-size:13px;padding:6px 12px;">📤 ใช้ไป ${used} ขวด</span>
-      <span class="box-pill bp-left" style="font-size:13px;padding:6px 12px;${qty===0?'background:rgba(192,0,26,.08);color:var(--red);':''}">✅ เหลือ <strong>${qty}</strong> ขวด</span>
+    <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:13px;">
+      <span class="ctag" style="background:var(--grnb);color:var(--grn);font-size:14px;padding:6px 12px;">🧪 <strong style="color:${qc}">${bt}</strong> ขวด</span>
+      <span class="ctag" style="background:var(--s2);color:var(--t2);font-size:13px;padding:6px 12px;">⚠️ min ${mn} ขวด</span>
     </div>
-    ${total>0?`<div style="margin-bottom:14px;">
-      <div style="font-size:11px;color:var(--t2);margin-bottom:6px;">แผนผังขวด ${show<total?`(แสดง ${show}/${total})`:''}:</div>
-      <div class="box-visual">${dots}</div>
-      <div class="bottle-legend" style="margin-top:6px;">
-        <span><div class="dot" style="background:var(--red);"></div> เหลือ (${qty})</span>
-        <span><div class="dot" style="background:var(--s3);border:1px solid var(--border2);"></div> ใช้ไป (${used})</span>
-      </div>
-    </div>`:''}
+    ${bt>0?`<div style="margin-bottom:12px;"><div class="bv-wrap">${dots}</div></div>`:''}
     <table style="width:100%;font-size:13px;border-collapse:collapse;">
-      ${drow('📦 บาร์โค้ด',`<code style="font-family:var(--mono)">${i.barcode}</code>`)}
-      ${drow('🔢 ขั้นต่ำ',`${i.min_qty||1} กล่อง`)}
-      ${drow('📅 หมดอายุ',expLabel)}
-      ${drow('🏷️ Lot',i.lot||'—')}
-      ${drow('📝 หมายเหตุ',i.note||'—')}
+      ${dr('📦 บาร์โค้ด',`<code style="font-family:var(--mo)">${i.barcode}</code>`)}
+      ${dr('📅 หมดอายุ',expL)}
+      ${dr('🏷️ Lot',i.lot||'—')}
+      ${dr('📝 หมายเหตุ',i.note||'—')}
     </table>
-    ${hist.length?`<div style="margin-top:14px;"><div style="font-size:11px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">ประวัติล่าสุด</div>
-    ${hist.map(h=>`<div class="hist-row">
-      <span style="color:var(--t2)">${h.type==='use'?'📤':h.type==='add_box'?'📥':'🔧'} ${h.note||h.type} <span style="color:var(--t3)">(${h.by_name})</span></span>
-      <span style="font-family:var(--mono);font-size:12px;color:${(h.delta||0)>=0?'var(--green)':'var(--red)'}">${(h.delta||0)>=0?'+':''}${h.delta} ขวด</span>
+    ${hist.length?`<div style="margin-top:13px;"><div style="font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;">ประวัติล่าสุด</div>
+    ${hist.map(h=>`<div class="hrow">
+      <span style="color:var(--t2)">${h.type==='out'?'📤':h.type==='in'?'📥':'🔧'} ${h.note||h.type} <span style="color:var(--t3)">(${h.by_name})</span></span>
+      <span style="font-family:var(--mo);font-size:12px;color:${(h.delta||0)>=0?'var(--grn)':'var(--red)'}">${(h.delta||0)>=0?'+':''}${h.delta}</span>
     </div>`).join('')}</div>`:''}`;
   openM('mView');
 }
-function drow(k,v){return `<tr><td style="padding:8px 0;color:var(--t2);border-bottom:1px solid var(--border);width:38%">${k}</td><td style="padding:8px 0;border-bottom:1px solid var(--border);">${v}</td></tr>`;}
+function dr(k,v){return `<tr><td style="padding:7px 0;color:var(--t2);border-bottom:1px solid var(--bdr);width:38%">${k}</td><td style="padding:7px 0;border-bottom:1px solid var(--bdr);">${v}</td></tr>`;}
 
-// ══════ ADJUST ══════
-function toggleAdjFields(){
-  const type=document.getElementById('adj-type').value;
-  document.getElementById('adjUseField').style.display=type==='use'?'':'none';
-  document.getElementById('adjBoxField').style.display=type==='add_box'?'':'none';
-  document.getElementById('adjSetField').style.display=type==='set'?'':'none';
-}
+// ══ ADJUST ══
 function openAdj(id){
   const i=S.items.find(x=>x.id===id);if(!i)return;
   S.editId=id;
-  const qty=computeQty(i);
-  document.getElementById('adjName').textContent=i.name;
-  document.getElementById('adjCurrent').innerHTML=`📦 ${i.boxes||0} กล่อง × ${i.per_box||1} ขวด | 📤 ใช้ไป ${i.used_bottles||0} ขวด | <strong>เหลือ ${qty} ขวด</strong>`;
-  document.getElementById('adj-qty').value=1;
-  document.getElementById('adj-boxes').value=1;
+  document.getElementById('adjN').textContent=i.name;
+  document.getElementById('adjC').innerHTML=`🧪 คงเหลือ <strong>${i.bottles||0} ขวด</strong> | ขั้นต่ำ: ${i.min_qty||5} ขวด`;
+  document.getElementById('adj-q').value=1;
   document.getElementById('adj-note').value='';
-  document.getElementById('adj-type').value='use';
-  toggleAdjFields();
+  document.getElementById('adj-type').value='out';
+  // lots for this item
+  const lots=[...new Set(S.items.filter(x=>x.id===id&&x.lot).map(x=>x.lot))];
+  if(i.lot)lots.unshift(i.lot);
+  const uniqueLots=[...new Set(lots)];
+  document.getElementById('adj-lot').innerHTML='<option value="">-- เลือก Lot --</option>'+uniqueLots.map(l=>`<option value="${l}">${l}</option>`).join('');
   openM('mAdj');
 }
-function adjStep(d){const inp=document.getElementById('adj-qty');inp.value=Math.max(1,(+inp.value||1)+d);}
-function adjBoxStep(d){const inp=document.getElementById('adj-boxes');inp.value=Math.max(1,(+inp.value||1)+d);}
+function qStep(d){const inp=document.getElementById('adj-q');inp.value=Math.max(0,(+inp.value||0)+d);}
 async function saveAdj(){
   const id=S.editId;
   const i=S.items.find(x=>x.id===id);if(!i)return;
   const type=document.getElementById('adj-type').value;
+  const n=+document.getElementById('adj-q').value||0;
   const note=document.getElementById('adj-note').value;
-  const perBox=i.per_box||1;
-  let payload={updated_at:new Date().toISOString()}, delta=0, histType=type;
-
-  if(type==='use'){
-    const n=+document.getElementById('adj-qty').value||1;
-    const newUsed=Math.min((i.used_bottles||0)+n, (i.boxes||0)*perBox);
-    payload.used_bottles=newUsed;
-    payload.qty=Math.max(0,(i.boxes||0)*perBox-newUsed);
-    delta=-n; histType='use';
-  } else if(type==='add_box'){
-    const n=+document.getElementById('adj-boxes').value||1;
-    payload.boxes=(i.boxes||0)+n;
-    payload.qty=payload.boxes*perBox-(i.used_bottles||0);
-    delta=n*perBox; histType='add_box';
-  } else if(type==='open_box'){
-    // just a note, no qty change
-    delta=0; histType='open_box';
-  } else if(type==='set'){
-    const newBoxes=+document.getElementById('adj-set-boxes').value||0;
-    const newUsed=+document.getElementById('adj-set-used').value||0;
-    payload.boxes=newBoxes; payload.used_bottles=newUsed;
-    payload.qty=Math.max(0,newBoxes*perBox-newUsed);
-    delta=payload.qty-computeQty(i); histType='set';
-  }
-
-  setBtnLoading('btnSaveAdj',true);
+  const cur=i.bottles||0;
+  let newBt=cur,delta=0;
+  if(type==='out'){delta=-n;newBt=Math.max(0,cur-n);}
+  else if(type==='in'){delta=n;newBt=cur+n;}
+  else{delta=n-cur;newBt=n;}
+  setBL('bSA',true);
   try{
-    await db('items','PATCH',payload,`?id=eq.${id}`);
-    await db('stock_history','POST',{item_id:id,item_name:i.name,type:histType,delta,
-      qty_after:payload.qty??computeQty(i),note:note||type,by_name:S.user.name});
-    toast(`✅ บันทึกเรียบร้อย — ${i.name}`,'t-ok');
+    await db('items','PATCH',{bottles:newBt,qty:newBt,updated_at:new Date().toISOString()},`?id=eq.${id}`);
+    try{
+      await db('stock_history','POST',{item_id:id,item_name:i.name,type,delta,qty_after:newBt,note:note||type,by_name:S.user.name});
+    }catch{}// ถ้า history fail ก็ไม่เป็นไร ของ PATCH สำเร็จแล้ว
+    toast(`✅ ${i.name} → เหลือ ${newBt} ขวด`,'ok');
     await loadItems();closeM('mAdj');renderStock();
-  }catch(e){toast('❌ บันทึกไม่ได้','t-err');}
-  setBtnLoading('btnSaveAdj',false);
+  }catch(e){toast('❌ บันทึกไม่ได้: '+e.message,'err');}
+  setBL('bSA',false);
 }
 
-// ══════ SCAN ══════
-let scanTmr=null;
-let scanTargetInput=null; // ⚠️ เก็บไว้เพื่อรู้ว่าสแกนให้ช่อง input หรือสแกนเพื่อค้นหา
-
-// ⚠️ ฟังก์ชันเปิดสแกนเพื่อใส่ค่าลงใน input
-function openScanFor(inputId){
-  scanTargetInput = inputId;
-  document.getElementById('scanInp').value='';
-  document.getElementById('scanFound').style.display='none';
-  document.getElementById('scanNF').style.display='none';
-  openM('mScan');
-  setTimeout(()=>document.getElementById('scanInp').focus(),200);
-}
-
-// ฟังก์ชันสแกนเพื่อค้นหา (แบบดั้งเดิม)
+// ══ SCAN ══
+let sTmr=null;
 function openScan(){
-  scanTargetInput = null;
   document.getElementById('scanInp').value='';
   document.getElementById('scanFound').style.display='none';
   document.getElementById('scanNF').style.display='none';
   S.scanItem=null;openM('mScan');
   setTimeout(()=>document.getElementById('scanInp').focus(),200);
 }
-
 function onScan(){
   const v=document.getElementById('scanInp').value.trim();
-  if(scanTmr)clearTimeout(scanTmr);
+  if(sTmr)clearTimeout(sTmr);
   document.getElementById('scanFound').style.display='none';
   document.getElementById('scanNF').style.display='none';
   if(!v)return;
-
-  // ⚠️ ถ้าเป็นการสแกนเพื่อกรอกฟอร์ม ให้นำค่าไปใส่แล้วปิดหน้าต่างทันที
-  if(scanTargetInput) {
-    document.getElementById(scanTargetInput).value = v;
-    closeM('mScan');
-    scanTargetInput = null;
-    toast('✅ สแกนบาร์โค้ดสำเร็จ', 't-ok');
-    return;
-  }
-
-  scanTmr=setTimeout(()=>{
+  sTmr=setTimeout(()=>{
     const item=S.items.find(i=>i.barcode.toLowerCase()===v.toLowerCase());
     if(item){
       S.scanItem=item;
-      const qty=computeQty(item);
-      const qc=qty===0?'var(--red)':qty<=(item.min_qty||1)*(item.per_box||1)?'var(--amber)':'var(--green)';
-      document.getElementById('sfName').innerHTML=`${item.name} <span class="ctag ${CAT_CLS[item.category]||'ct-other'}" style="font-size:10px;">${item.category}</span>`;
-      document.getElementById('sfDetail').innerHTML=`
-        📦 ${item.boxes||0} กล่อง × ${item.per_box||1} ขวด<br>
-        📤 ใช้ไปแล้ว: ${item.used_bottles||0} ขวด<br>
-        ✅ คงเหลือ: <strong style="color:${qc}">${qty} ขวด</strong><br>
-        📅 หมดอายุ: ${item.expiry_date?fmtDate(item.expiry_date):'—'}`;
-      const isStaff=S.user&&(S.user.role==='admin'||S.user.role==='staff');
-      document.getElementById('scanActions').innerHTML=isStaff?`
-        <button class="act-btn ab-red" onclick="scanUse(1)">📤 หยิบ 1 ขวด</button>
-        <button class="act-btn ab-blue" onclick="closeM('mScan');openAdj(${item.id})">ปรับจำนวน</button>
-        <button class="act-btn ab-gray" onclick="closeM('mScan');viewItem(${item.id})">ดูรายละเอียด</button>`:'';
+      const bt=item.bottles||0,mn=item.min_qty||5;
+      const qc=bt===0?'var(--red)':bt<=mn?'var(--amb)':'var(--grn)';
+      document.getElementById('sfN').innerHTML=`${item.name} <span class="ctag" style="${catClass(item.category)};font-size:10px;">${item.category}</span>`;
+      document.getElementById('sfD').innerHTML=`🧪 คงเหลือ: <strong style="color:${qc}">${bt} ขวด</strong> | min: ${mn}<br>📅 หมดอายุ: ${item.expiry_date?fd(item.expiry_date):'—'} | Lot: ${item.lot||'—'}`;
+      const isSt=S.user&&(S.user.role==='admin'||S.user.role==='staff');
+      const needReq=S.user&&S.user.require_request;
+      document.getElementById('sfA').innerHTML=isSt&&!needReq?`
+        <button class="ab ab-r" onclick="scanOut(1)">📤 หยิบ 1 ขวด</button>
+        <button class="ab ab-b" onclick="closeM('mScan');openAdj(${item.id})">ปรับจำนวน</button>
+        <button class="ab ab-gr" onclick="closeM('mScan');viewItem(${item.id})">ดูรายละเอียด</button>`:
+        isSt?`<button class="ab ab-b" onclick="closeM('mScan');openReqFromScan(${item.id})">📋 สร้าง Request</button>
+        <button class="ab ab-gr" onclick="closeM('mScan');viewItem(${item.id})">ดูรายละเอียด</button>`:'';
       document.getElementById('scanFound').style.display='block';
     }else{document.getElementById('scanNF').style.display='block';}
   },400);
 }
-async function scanUse(n){
+async function scanOut(n){
   if(!S.scanItem)return;
   const i=S.scanItem;
-  const newUsed=Math.min((i.used_bottles||0)+n,(i.boxes||0)*(i.per_box||1));
-  const newQty=Math.max(0,(i.boxes||0)*(i.per_box||1)-newUsed);
+  const newBt=Math.max(0,(i.bottles||0)-n);
   try{
-    await db('items','PATCH',{used_bottles:newUsed,qty:newQty,updated_at:new Date().toISOString()},`?id=eq.${i.id}`);
-    await db('stock_history','POST',{item_id:i.id,item_name:i.name,type:'use',delta:-n,qty_after:newQty,note:'สแกน',by_name:S.user.name});
-    await loadItems();
-    S.scanItem=S.items.find(x=>x.id===i.id);
-    const qc=newQty===0?'var(--red)':newQty<=(i.min_qty||1)*(i.per_box||1)?'var(--amber)':'var(--green)';
-    document.getElementById('sfDetail').innerHTML=`
-      📦 ${i.boxes||0} กล่อง × ${i.per_box||1} ขวด<br>
-      📤 ใช้ไปแล้ว: ${newUsed} ขวด<br>
-      ✅ คงเหลือ: <strong style="color:${qc}">${newQty} ขวด</strong><br>
-      📅 หมดอายุ: ${i.expiry_date?fmtDate(i.expiry_date):'—'}`;
-    toast(`📤 หยิบออก 1 ขวด — ${i.name} เหลือ ${newQty} ขวด`,'t-ok');
-  }catch{toast('❌ บันทึกไม่ได้','t-err');}
+    await db('items','PATCH',{bottles:newBt,qty:newBt,updated_at:new Date().toISOString()},`?id=eq.${i.id}`);
+    try{await db('stock_history','POST',{item_id:i.id,item_name:i.name,type:'out',delta:-n,qty_after:newBt,note:'สแกน',by_name:S.user.name});}catch{}
+    await loadItems();S.scanItem=S.items.find(x=>x.id===i.id);
+    const bt=newBt,mn=i.min_qty||5;
+    const qc=bt===0?'var(--red)':bt<=mn?'var(--amb)':'var(--grn)';
+    document.getElementById('sfD').innerHTML=`🧪 คงเหลือ: <strong style="color:${qc}">${bt} ขวด</strong> | min: ${mn}<br>📅 หมดอายุ: ${i.expiry_date?fd(i.expiry_date):'—'} | Lot: ${i.lot||'—'}`;
+    toast(`📤 หยิบ ${n} ขวด — ${i.name} เหลือ ${newBt}`,'ok');
+  }catch(e){toast('❌ บันทึกไม่ได้: '+e.message,'err');}
 }
 
-// ══════ REQUESTS ══════
-function openReqModal(){
+// ══ INLINE BARCODE SCAN in Stock page ══
+let bcTmr=null;
+function onInlineScan(){
+  const v=document.getElementById('bcScan').value.trim();
+  const res=document.getElementById('inlineScanResult');
+  if(bcTmr)clearTimeout(bcTmr);
+  if(!v){res.style.display='none';return;}
+  bcTmr=setTimeout(()=>{
+    const item=S.items.find(i=>(i.barcode||'').toLowerCase()===v.toLowerCase());
+    if(!item){res.innerHTML='<div style="background:#fff0f2;border:1.5px solid rgba(192,0,26,.25);border-radius:10px;padding:11px 14px;font-size:13px;color:var(--red);">❌ ไม่พบบาร์โค้ด <strong>'+v+'</strong> ในระบบ</div>';res.style.display='block';return;}
+    const bt=item.bottles||0,mn=item.min_qty||0;
+    const qc=bt===0?'var(--red)':bt<=mn?'var(--amb)':'var(--grn)';
+    const isSt=S.user&&S.user.role!=='viewer';
+    const canAdj=S.user&&(S.user.role==='admin'||!S.user.require_request);
+    res.innerHTML=`<div style="background:#fff0f2;border:1.5px solid rgba(192,0,26,.3);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <div style="flex:1;">
+        <div style="font-weight:700;font-size:14px;color:var(--red);margin-bottom:3px;">${item.name}</div>
+        <div style="font-size:12px;color:var(--t2);">🧪 คงเหลือ: <strong style="color:${qc}">${bt} ขวด</strong> | Lot: ${item.lot||'—'} | หมดอายุ: ${item.expiry_date?fd(item.expiry_date):'—'}</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        ${canAdj?`<button class="ab ab-r" onclick="inlinePick(${item.id})">📤 หยิบ 1 ขวด</button>`:''}
+        ${canAdj?`<button class="ab ab-b" onclick="openAdj(${item.id});clearInlineScan()">± ปรับ</button>`:''}
+        <button class="ab ab-gr" onclick="viewItem(${item.id});clearInlineScan()">👁 ดู</button>
+        <button class="ab ab-gr" onclick="clearInlineScan()">✕</button>
+      </div>
+    </div>`;
+    res.style.display='block';
+  },300);
+}
+function clearInlineScan(){
+  document.getElementById('bcScan').value='';
+  document.getElementById('inlineScanResult').style.display='none';
+}
+async function inlinePick(id){
+  const i=S.items.find(x=>x.id===id);if(!i)return;
+  const newBt=Math.max(0,(i.bottles||0)-1);
+  try{
+    await db('items','PATCH',{bottles:newBt,qty:newBt,updated_at:new Date().toISOString()},`?id=eq.${id}`);
+    try{await db('stock_history','POST',{item_id:id,item_name:i.name,type:'out',delta:-1,qty_after:newBt,note:'สแกน inline',by_name:S.user.name});}catch{}
+    await loadItems();
+    toast(`📤 หยิบ 1 ขวด — ${i.name} เหลือ ${newBt} ขวด`,'ok');
+    clearInlineScan();renderStock();
+  }catch(e){toast('❌ บันทึกไม่ได้','err');}
+}
+function openReqFromScan(id){openReqModal(id);}
+
+// ══ REQUESTS ══
+function loadLots(){
+  const itemId=+document.getElementById('rq-item').value;
+  const item=S.items.find(x=>x.id===itemId);
+  const sel=document.getElementById('rq-lot');
+  if(!item){sel.innerHTML='<option value="">-- เลือก Lot --</option>';return;}
+  const lots=item.lot?[item.lot]:[];
+  sel.innerHTML='<option value="">-- เลือก Lot --</option>'+lots.map(l=>`<option value="${l}">${l}</option>`).join('');
+}
+function openReqModal(preId=null){
   document.getElementById('rq-item').innerHTML='<option value="">-- เลือก Reagent --</option>'+
-    S.items.map(i=>`<option value="${i.id}">${i.name} (เหลือ ${computeQty(i)} ขวด)</option>`).join('');
+    S.items.map(i=>`<option value="${i.id}" ${preId===i.id?'selected':''}>${i.name} (${i.bottles||0} ขวด) ${i.lot?'| Lot:'+i.lot:''}</option>`).join('');
+  document.getElementById('rq-hosp').innerHTML='<option value="">-- เลือก รพ. --</option>'+
+    S.hosps.map(h=>`<option value="${h.name}">${h.name}</option>`).join('');
+  document.getElementById('rq-del').innerHTML='<option value="">-- เลือกวิธี --</option>'+
+    S.dels.map(d=>`<option value="${d.name}">${d.name}</option>`).join('');
   document.getElementById('rq-qty').value=1;
   document.getElementById('rq-note').value='';
+  if(preId){loadLots();}else{document.getElementById('rq-lot').innerHTML='<option value="">-- เลือก Lot --</option>';}
   openM('mReq');
 }
 async function submitReq(){
   const itemId=+document.getElementById('rq-item').value;
-  if(!itemId){toast('กรุณาเลือก Reagent','t-err');return;}
+  const hosp=document.getElementById('rq-hosp').value;
+  const del=document.getElementById('rq-del').value;
+  if(!itemId){toast('กรุณาเลือก Reagent','err');return;}
+  if(!hosp){toast('กรุณาเลือก รพ.','err');return;}
+  if(!del){toast('กรุณาเลือกวิธีการส่ง','err');return;}
   const item=S.items.find(x=>x.id===itemId);
-  const payload={item_id:itemId,item_name:item.name,qty:+document.getElementById('rq-qty').value||1,
-    type:document.getElementById('rq-type').value,priority:document.getElementById('rq-priority').value,
-    note:document.getElementById('rq-note').value||null,by_username:S.user.username,by_name:S.user.name,status:'pending'};
-  setBtnLoading('btnSubmitReq',true);
+  const payload={item_id:itemId,item_name:item.name,
+    qty:+document.getElementById('rq-qty').value||1,
+    type:document.getElementById('rq-type').value,
+    priority:document.getElementById('rq-pri').value,
+    note:document.getElementById('rq-note').value||null,
+    hospital:hosp,delivery_method:del,
+    lot:document.getElementById('rq-lot').value||item.lot||null,
+    by_username:S.user.username,by_name:S.user.name,
+    requester_name:S.user.name,status:'pending'};
+  setBL('bSR',true);
   try{
     await db('requests','POST',payload);
-    toast('📤 ส่ง Request เรียบร้อย รอ Admin อนุมัติ','t-ok');
-    await loadRequests();closeM('mReq');renderReqs();updateBadge();
-  }catch{toast('❌ ส่งไม่ได้','t-err');}
-  setBtnLoading('btnSubmitReq',false);
+    toast('📤 ส่ง Request เรียบร้อย','ok');
+    await loadRequests();closeM('mReq');renderReqs();updBadge();
+  }catch{toast('❌ ส่งไม่ได้','err');}
+  setBL('bSR',false);
 }
-function filterReq(f,btn){
-  S.reqFilter=f;
+function fReq(f,btn){
+  S.reqF=f;
   document.querySelectorAll('#pg-req .chip').forEach(b=>b.classList.remove('act'));
   btn.classList.add('act');renderReqs();
 }
 function renderReqs(){
-  const isAdmin=S.user.role==='admin';
+  const isA=S.user.role==='admin';
   let reqs=[...S.requests];
-  if(!isAdmin)reqs=reqs.filter(r=>r.by_username===S.user.username);
-  if(S.reqFilter!=='all')reqs=reqs.filter(r=>r.status===S.reqFilter);
+  if(!isA)reqs=reqs.filter(r=>r.by_username===S.user.username);
+  if(S.reqF!=='all')reqs=reqs.filter(r=>r.status===S.reqF);
   const pmap={normal:'🟢 ปกติ',high:'🟡 เร่งด่วน',urgent:'🔴 ด่วนมาก'};
   const tmap={restock:'📦 เติม Stock',borrow:'🔄 ยืม',return:'↩️ คืน',other:'💬 อื่นๆ'};
   const el=document.getElementById('reqList');
   if(!reqs.length){el.innerHTML='<div class="empty"><span class="ei">📭</span>ไม่มี Request</div>';return;}
   el.innerHTML=reqs.map(r=>`
-    <div class="rcard">
-      <div class="rcard-head">
+    <div class="rc">
+      <div class="rch">
         <div>
-          <div class="rcard-title">${r.item_name} <span style="font-size:12px;color:var(--t2);font-weight:400">${tmap[r.type]||r.type}</span></div>
-          <div class="rcard-sub">จำนวน: <b>${r.qty} กล่อง</b> | ${pmap[r.priority]||r.priority} | ${r.by_name} | ${fmtDateTime(r.created_at)}</div>
+          <div class="rct">${r.item_name} <span style="font-size:12px;color:var(--t2);font-weight:400">${tmap[r.type]||r.type}</span></div>
+          <div class="rcs">${fdt(r.created_at)}</div>
+          <div style="margin-top:5px;display:flex;flex-wrap:wrap;gap:2px;">
+            <span class="info-pill">👤 ${r.requester_name||r.by_name}</span>
+            <span class="info-pill">🧪 ${r.qty} ขวด</span>
+            ${r.lot?`<span class="info-pill">🏷️ ${r.lot}</span>`:''}
+            <span class="info-pill">🏥 ${r.hospital||'—'}</span>
+            <span class="info-pill">🚚 ${r.delivery_method||'—'}</span>
+            <span class="info-pill">${pmap[r.priority]||r.priority}</span>
+          </div>
         </div>
-        <span class="status-pill sp-${r.status}">${r.status==='pending'?'⏳ รอ':r.status==='approved'?'✅ อนุมัติ':'❌ ไม่อนุมัติ'}</span>
+        <span class="sp sp-${r.status}">${r.status==='pending'?'⏳ รอ':r.status==='approved'?'✅ อนุมัติ':'❌ ไม่อนุมัติ'}</span>
       </div>
-      ${r.note?`<div class="rcard-detail">📝 ${r.note}</div>`:''}
-      ${r.admin_note?`<div class="rcard-detail" style="background:rgba(0,145,58,.06);border:1px solid rgba(0,145,58,.15);">👑 Admin: ${r.admin_note}</div>`:''}
-      ${isAdmin&&r.status==='pending'?`<div class="rcard-actions">
-        <button class="act-btn ab-green" onclick="approveReq(${r.id})">✅ อนุมัติ</button>
-        <button class="act-btn ab-red" onclick="rejectReq(${r.id})">❌ ปฏิเสธ</button>
+      ${r.note?`<div class="rcd">📝 ${r.note}</div>`:''}
+      ${r.admin_note?`<div class="rcd" style="background:var(--grnb);">👑 Admin: ${r.admin_note}</div>`:''}
+      ${isA&&r.status==='pending'?`<div class="rca">
+        <button class="ab ab-g" onclick="approveReq(${r.id})">✅ อนุมัติ</button>
+        <button class="ab ab-r" onclick="rejectReq(${r.id})">❌ ปฏิเสธ</button>
       </div>`:''}
     </div>`).join('');
 }
@@ -1322,151 +1469,632 @@ async function approveReq(id){
     if(r.type==='restock'){
       const item=S.items.find(x=>x.id===r.item_id);
       if(item){
-        const newBoxes=(item.boxes||0)+r.qty;
-        const newQty=newBoxes*(item.per_box||1)-(item.used_bottles||0);
-        await db('items','PATCH',{boxes:newBoxes,qty:newQty,updated_at:new Date().toISOString()},`?id=eq.${item.id}`);
-        await db('stock_history','POST',{item_id:item.id,item_name:item.name,type:'add_box',delta:r.qty*(item.per_box||1),qty_after:newQty,note:'Auto จาก Request #'+id,by_name:'Admin'});
+        const newBt=(item.bottles||0)+r.qty;
+        await db('items','PATCH',{bottles:newBt,qty:newBt,updated_at:new Date().toISOString()},`?id=eq.${item.id}`);
+        await db('stock_history','POST',{item_id:item.id,item_name:item.name,type:'in',delta:r.qty,qty_after:newBt,note:`Auto จาก Request #${id}`,by_name:'Admin'});
       }
     }
-    toast('✅ อนุมัติเรียบร้อย Stock อัปเดตแล้ว','t-ok');
-    await loadAll();renderReqs();renderAdmin();updateBadge();
-  }catch{toast('❌ เกิดข้อผิดพลาด','t-err');}
+    toast('✅ อนุมัติแล้ว Stock อัปเดต','ok');
+    await loadAll();renderReqs();renderAdmin();updBadge();
+  }catch{toast('❌ เกิดข้อผิดพลาด','err');}
 }
 async function rejectReq(id){
-  const note=prompt('เหตุผลที่ไม่อนุมัติ:','')||'ไม่อนุมัติ';
+  const note=prompt('เหตุผล:','')||'ไม่อนุมัติ';
   try{
     await db('requests','PATCH',{status:'rejected',admin_note:note},`?id=eq.${id}`);
-    toast('❌ ปฏิเสธ Request แล้ว','t-info');
-    await loadRequests();renderReqs();renderAdmin();updateBadge();
-  }catch{toast('❌ เกิดข้อผิดพลาด','t-err');}
+    toast('❌ ปฏิเสธแล้ว','info');
+    await loadRequests();renderReqs();renderAdmin();updBadge();
+  }catch{toast('❌ เกิดข้อผิดพลาด','err');}
 }
 
-// ══════ REPORT ══════
+// ══ REPORT ══
 function renderReport(){
   const items=S.items,reqs=S.requests;
   const today=new Date(),soon=new Date();soon.setDate(soon.getDate()+60);
-  const out=items.filter(i=>computeQty(i)===0);
-  const low=items.filter(i=>{const q=computeQty(i);return q>0&&q<=(i.min_qty||1)*(i.per_box||1);});
-  const expItems=items.filter(i=>i.expiry_date&&new Date(i.expiry_date)<today);
-  const nearItems=items.filter(i=>i.expiry_date&&new Date(i.expiry_date)>=today&&new Date(i.expiry_date)<soon);
-  const totalBoxes=items.reduce((s,i)=>s+(i.boxes||0),0);
-  const totalBottles=items.reduce((s,i)=>s+computeQty(i),0);
+  const out=items.filter(i=>!i.bottles||i.bottles===0);
+  const low=items.filter(i=>i.bottles>0&&i.bottles<=(i.min_qty||5));
+  const expI=items.filter(i=>i.expiry_date&&new Date(i.expiry_date)<today);
+  const nearI=items.filter(i=>i.expiry_date&&new Date(i.expiry_date)>=today&&new Date(i.expiry_date)<soon);
+  const totBt=items.reduce((s,i)=>s+(i.bottles||0),0);
   document.getElementById('reportContent').innerHTML=`
-  <div class="report-grid">
-    <div class="rpt-card">
-      <h3>📦 สรุป Stock</h3>
-      ${rrow('รายการทั้งหมด',items.length+' รายการ')}
-      ${rrow('กล่องรวมทั้งหมด',totalBoxes+' กล่อง')}
-      ${rrow('ขวดคงเหลือรวม',totalBottles+' ขวด')}
-      ${rrow('หมดสต็อก','<span style="color:var(--red)">'+out.length+' รายการ</span>')}
-      ${rrow('ใกล้หมด','<span style="color:var(--amber)">'+low.length+' รายการ</span>')}
-      ${rrow('หมดอายุแล้ว','<span style="color:var(--red)">'+expItems.length+' รายการ</span>')}
-      ${rrow('ใกล้หมดอายุ (<60d)','<span style="color:var(--amber)">'+nearItems.length+' รายการ</span>')}
+  <div class="rgrid">
+    <div class="rpc"><h3>🧪 สรุป Stock</h3>
+      ${rr('รายการทั้งหมด',items.length+' รายการ')}
+      ${rr('ขวดคงเหลือรวม',totBt+' ขวด')}
+      ${rr('ปกติ','<span style="color:var(--grn)">'+items.filter(i=>(i.bottles||0)>(i.min_qty||5)).length+'</span>')}
+      ${rr('หมดสต็อก','<span style="color:var(--red)">'+out.length+'</span>')}
+      ${rr('ใกล้หมด','<span style="color:var(--amb)">'+low.length+'</span>')}
+      ${rr('หมดอายุแล้ว','<span style="color:var(--red)">'+expI.length+'</span>')}
+      ${rr('ใกล้หมดอายุ (<60d)','<span style="color:var(--amb)">'+nearI.length+'</span>')}
     </div>
-    <div class="rpt-card">
-      <h3>📋 สรุป Request</h3>
-      ${rrow('ทั้งหมด',reqs.length)}
-      ${rrow('รอ Approve','<span style="color:var(--amber)">'+reqs.filter(r=>r.status==='pending').length+'</span>')}
-      ${rrow('อนุมัติ','<span style="color:var(--green)">'+reqs.filter(r=>r.status==='approved').length+'</span>')}
-      ${rrow('ไม่อนุมัติ','<span style="color:var(--red)">'+reqs.filter(r=>r.status==='rejected').length+'</span>')}
+    <div class="rpc"><h3>📋 สรุป Request</h3>
+      ${rr('ทั้งหมด',reqs.length)}
+      ${rr('รอ Approve','<span style="color:var(--amb)">'+reqs.filter(r=>r.status==='pending').length+'</span>')}
+      ${rr('อนุมัติ','<span style="color:var(--grn)">'+reqs.filter(r=>r.status==='approved').length+'</span>')}
+      ${rr('ไม่อนุมัติ','<span style="color:var(--red)">'+reqs.filter(r=>r.status==='rejected').length+'</span>')}
     </div>
-    <div class="rpt-card">
-      <h3>🔴 หมด / ใกล้หมด</h3>
-      ${[...out,...low].map(i=>`<div class="rpt-row"><span class="rkey">${i.name}</span><span class="rval" style="color:${computeQty(i)===0?'var(--red)':'var(--amber)'}">${i.boxes||0} กล่อง / ${computeQty(i)} ขวด</span></div>`).join('')||'<div style="color:var(--t3);font-size:13px;padding:8px 0;">ไม่มีรายการ ✅</div>'}
+    <div class="rpc"><h3>🔴 หมด / ใกล้หมด</h3>
+      ${[...out,...low].map(i=>`<div class="rr"><span class="rk">${i.name}</span><span class="rv" style="color:${(i.bottles||0)===0?'var(--red)':'var(--amb)'}">${i.bottles||0} ขวด</span></div>`).join('')||'<div style="color:var(--t3);padding:8px 0;font-size:13px;">ไม่มี ✅</div>'}
     </div>
-    <div class="rpt-card">
-      <h3>⏰ ใกล้หมดอายุ / หมดแล้ว</h3>
-      ${[...expItems,...nearItems].map(i=>`<div class="rpt-row"><span class="rkey">${i.name}</span><span class="rval" style="color:${new Date(i.expiry_date)<today?'var(--red)':'var(--amber)'};font-size:12px;">${fmtDate(i.expiry_date)}</span></div>`).join('')||'<div style="color:var(--t3);font-size:13px;padding:8px 0;">ไม่มีรายการ ✅</div>'}
+    <div class="rpc"><h3>⏰ ใกล้หมดอายุ</h3>
+      ${[...expI,...nearI].map(i=>`<div class="rr"><span class="rk">${i.name}</span><span class="rv" style="color:${new Date(i.expiry_date)<today?'var(--red)':'var(--amb)'};font-size:12px;">${fd(i.expiry_date)}</span></div>`).join('')||'<div style="color:var(--t3);padding:8px 0;font-size:13px;">ไม่มี ✅</div>'}
     </div>
-    <div class="rpt-card" style="grid-column:1/-1;">
-      <h3>📊 Stock ตามหมวดหมู่</h3>
+    <div class="rpc" style="grid-column:1/-1;"><h3>📊 ตามหมวดหมู่</h3>
       <div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:13px;">
-        <thead><tr>
-          <th style="padding:8px 12px;text-align:left;background:var(--s2);border-bottom:1.5px solid var(--border);color:var(--t2);font-size:11px;text-transform:uppercase;">หมวดหมู่</th>
-          <th style="padding:8px 12px;text-align:center;background:var(--s2);border-bottom:1.5px solid var(--border);color:var(--t2);font-size:11px;text-transform:uppercase;">รายการ</th>
-          <th style="padding:8px 12px;text-align:center;background:var(--s2);border-bottom:1.5px solid var(--border);color:var(--t2);font-size:11px;text-transform:uppercase;">กล่องรวม</th>
-          <th style="padding:8px 12px;text-align:center;background:var(--s2);border-bottom:1.5px solid var(--border);color:var(--t2);font-size:11px;text-transform:uppercase;">ขวดคงเหลือ</th>
-          <th style="padding:8px 12px;text-align:center;background:var(--s2);border-bottom:1.5px solid var(--border);color:var(--t2);font-size:11px;text-transform:uppercase;">สถานะ</th>
-        </tr></thead>
-        <tbody>${CATS.map(c=>{
-          const ci=items.filter(x=>x.category===c);
-          const boxes=ci.reduce((s,x)=>s+(x.boxes||0),0);
-          const qty=ci.reduce((s,x)=>s+computeQty(x),0);
-          const hasOut=ci.some(x=>computeQty(x)===0);
-          const hasLow=ci.some(x=>{const q=computeQty(x);return q>0&&q<=(x.min_qty||1)*(x.per_box||1);});
-          return `<tr><td style="padding:9px 12px;border-bottom:1px solid var(--border);"><span class="ctag ${CAT_CLS[c]||'ct-other'}">${c}</span></td>
-            <td style="padding:9px 12px;border-bottom:1px solid var(--border);text-align:center;font-family:var(--mono);">${ci.length}</td>
-            <td style="padding:9px 12px;border-bottom:1px solid var(--border);text-align:center;font-family:var(--mono);">${boxes}</td>
-            <td style="padding:9px 12px;border-bottom:1px solid var(--border);text-align:center;font-family:var(--mono);font-weight:700;color:${qty===0?'var(--red)':'var(--t1)'};">${qty}</td>
-            <td style="padding:9px 12px;border-bottom:1px solid var(--border);text-align:center;">${hasOut?'🔴 มีหมด':hasLow?'🟡 ใกล้หมด':'✅ ปกติ'}</td>
-          </tr>`;}).join('')}</tbody>
+        <thead><tr>${['หมวดหมู่','รายการ','ขวดคงเหลือ','สถานะ'].map(h=>`<th style="padding:8px 12px;text-align:left;background:var(--s2);border-bottom:1.5px solid var(--bdr);color:var(--t2);font-size:11px;text-transform:uppercase;">${h}</th>`).join('')}</tr></thead>
+        <tbody>${S.cats.map(c=>{
+          const ci=items.filter(x=>x.category===c.name);
+          const qty=ci.reduce((s,x)=>s+(x.bottles||0),0);
+          const hasOut=ci.some(x=>!x.bottles||x.bottles===0);
+          const hasLow=ci.some(x=>x.bottles>0&&x.bottles<=(x.min_qty||5));
+          return `<tr><td style="padding:8px 12px;border-bottom:1px solid var(--bdr);"><span class="ctag" style="${catClass(c.name)}">${c.name}</span></td>
+            <td style="padding:8px 12px;border-bottom:1px solid var(--bdr);font-family:var(--mo);">${ci.length}</td>
+            <td style="padding:8px 12px;border-bottom:1px solid var(--bdr);font-family:var(--mo);font-weight:700;color:${qty===0?'var(--red)':'var(--t1)'};">${qty}</td>
+            <td style="padding:8px 12px;border-bottom:1px solid var(--bdr);">${hasOut?'🔴 มีหมด':hasLow?'🟡 ใกล้หมด':'✅ ปกติ'}</td></tr>`;}).join('')}
+        </tbody>
       </table></div>
     </div>
   </div>`;
 }
-function rrow(k,v){return `<div class="rpt-row"><span class="rkey">${k}</span><span class="rval">${v}</span></div>`;}
+function rr(k,v){return `<div class="rr"><span class="rk">${k}</span><span class="rv">${v}</span></div>`;}
 
-// ══════ ADMIN ══════
+// ══ ADMIN ══
 function renderAdmin(){
-  updateBadge();
+  updBadge();
   const pending=S.requests.filter(r=>r.status==='pending');
-  const pmap={normal:'🟢 ปกติ',high:'🟡 เร่งด่วน',urgent:'🔴 ด่วนมาก'};
-  document.getElementById('adminPendingList').innerHTML=pending.length
+  const pmap={normal:'🟢',high:'🟡',urgent:'🔴'};
+  document.getElementById('pendCount').textContent=pending.length?`(${pending.length})`:''
+  document.getElementById('adminPending').innerHTML=pending.length
     ?pending.map(r=>`
-      <div class="rcard" style="margin-bottom:8px;">
-        <div class="rcard-head">
+      <div class="rc" style="margin-bottom:8px;">
+        <div class="rch">
           <div>
-            <div class="rcard-title">${r.item_name}</div>
-            <div class="rcard-sub">จำนวน: ${r.qty} กล่อง | ${pmap[r.priority]||r.priority} | ${r.by_name} | ${fmtDateTime(r.created_at)}</div>
+            <div class="rct">${r.item_name}</div>
+            <div class="rcs">${fdt(r.created_at)}</div>
+            <div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:2px;">
+              <span class="info-pill">👤 ${r.requester_name||r.by_name}</span>
+              <span class="info-pill">🧪 ${r.qty} ขวด</span>
+              ${r.lot?`<span class="info-pill">🏷️ ${r.lot}</span>`:''}
+              <span class="info-pill">🏥 ${r.hospital||'—'}</span>
+              <span class="info-pill">🚚 ${r.delivery_method||'—'}</span>
+              <span class="info-pill">${pmap[r.priority]||''} ${r.priority}</span>
+            </div>
             ${r.note?`<div style="font-size:12px;color:var(--t2);margin-top:4px;">📝 ${r.note}</div>`:''}
           </div>
-          <span class="status-pill sp-pending">⏳ รอ</span>
+          <span class="sp sp-p">⏳ รอ</span>
         </div>
-        <div class="rcard-actions">
-          <button class="act-btn ab-green" onclick="approveReq(${r.id})">✅ อนุมัติ</button>
-          <button class="act-btn ab-red" onclick="rejectReq(${r.id})">❌ ปฏิเสธ</button>
+        <div class="rca">
+          <button class="ab ab-g" onclick="approveReq(${r.id})">✅ อนุมัติ</button>
+          <button class="ab ab-r" onclick="rejectReq(${r.id})">❌ ปฏิเสธ</button>
         </div>
       </div>`).join('')
-    :'<div class="empty" style="padding:20px;"><span class="ei">✅</span>ไม่มี Request รอ Approve</div>';
-}
-function renderUserTable(){
-  const map={admin:'แก้ไข/ลบ/อนุมัติ/ดูทั้งหมด',staff:'ดู+ปรับจำนวน+Request',viewer:'ดูอย่างเดียว+Request'};
-  document.getElementById('userTbody').innerHTML=USERS.map(u=>`<tr>
-    <td style="padding:9px 12px;border-bottom:1px solid var(--border);">${u.name}</td>
-    <td style="padding:9px 12px;border-bottom:1px solid var(--border);font-family:var(--mono);color:var(--red)">${u.username}</td>
-    <td style="padding:9px 12px;border-bottom:1px solid var(--border);"><span class="role-pill ${u.role==='admin'?'admin':u.role==='viewer'?'viewer':''}">${u.role}</span></td>
-    <td style="padding:9px 12px;border-bottom:1px solid var(--border);font-size:12px;color:var(--t2);">${map[u.role]}</td>
+    :'<div class="empty" style="padding:18px;"><span class="ei">✅</span>ไม่มีรอ Approve</div>';
+
+  // Users
+  document.getElementById('userTbody').innerHTML=S.users.map(u=>`<tr>
+    <td style="padding:9px 12px;border-bottom:1px solid var(--bdr);font-weight:500;">${u.name}</td>
+    <td style="padding:9px 12px;border-bottom:1px solid var(--bdr);font-family:var(--mo);color:var(--red);">${u.username}</td>
+    <td style="padding:9px 12px;border-bottom:1px solid var(--bdr);"><span class="rpill ${u.role==='admin'?'admin':u.role==='viewer'?'viewer':''}">${u.role}</span></td>
+    <td style="padding:9px 12px;border-bottom:1px solid var(--bdr);font-size:12px;">${u.require_request?'✅ ต้อง Request':'❌ หยิบได้เลย'}</td>
+    <td style="padding:9px 12px;border-bottom:1px solid var(--bdr);"><span style="font-size:12px;color:${u.active?'var(--grn)':'var(--red)'};">${u.active?'✅ ใช้งาน':'🚫 ปิด'}</span></td>
+    <td style="padding:9px 12px;border-bottom:1px solid var(--bdr);">
+      <div style="display:flex;gap:4px;flex-wrap:wrap;">
+        <button class="ab ab-b" onclick="openEditUser(${u.id})">✏️</button>
+        <button class="ab ab-a" onclick="openChangePwd(${u.id})">🔑</button>
+        ${u.username!=='admin'?`<button class="ab ab-r" onclick="toggleUser(${u.id},${!u.active})">${u.active?'🚫':'✅'}</button>`:''}
+      </div>
+    </td>
   </tr>`).join('');
+
+  // Cats
+  document.getElementById('catList').innerHTML=S.cats.map(c=>`
+    <div style="display:flex;align-items:center;gap:5px;background:var(--s2);border:1px solid var(--bdr);border-radius:20px;padding:4px 10px;">
+      <span class="ctag" style="${catClass(c.name)};padding:2px 6px;font-size:11px;">${c.name}</span>
+      <button class="ab ab-r" style="padding:2px 6px;font-size:11px;" onclick="delMeta('categories',${c.id})">✕</button>
+    </div>`).join('');
+
+  // Hosps
+  document.getElementById('hospList').innerHTML=S.hosps.map(h=>`
+    <div style="display:flex;align-items:center;gap:5px;background:var(--s2);border:1px solid var(--bdr);border-radius:20px;padding:4px 12px;font-size:12px;">
+      🏥 ${h.name}
+      <button class="ab ab-r" style="padding:2px 6px;font-size:11px;" onclick="delMeta('hospitals',${h.id})">✕</button>
+    </div>`).join('');
+
+  // Dels
+  document.getElementById('delList').innerHTML=S.dels.map(d=>`
+    <div style="display:flex;align-items:center;gap:5px;background:var(--s2);border:1px solid var(--bdr);border-radius:20px;padding:4px 12px;font-size:12px;">
+      🚚 ${d.name}
+      <button class="ab ab-r" style="padding:2px 6px;font-size:11px;" onclick="delMeta('delivery_methods',${d.id})">✕</button>
+    </div>`).join('');
 }
 
-// ══════ EXPORT ══════
-function exportCSV(){
-  const hdr='ID,Barcode,Name,Category,Boxes,PerBox,UsedBottles,QtyLeft,MinQty,Expiry,Lot,Brand,Note\n';
-  const rows=S.items.map(i=>[i.id,i.barcode,`"${i.name}"`,`"${i.category}"`,i.boxes||0,i.per_box||1,i.used_bottles||0,computeQty(i),i.min_qty||1,i.expiry_date||'',i.lot||'',i.brand||'',`"${i.note||''}"`].join(',')).join('\n');
-  dl('\uFEFF'+hdr+rows,'text/csv',`labstock_${td()}.csv`);toast('📄 Export CSV เรียบร้อย','t-ok');
+// ══ USER MANAGEMENT ══
+function openAddUser(){
+  document.getElementById('mUT').textContent='👤 เพิ่ม User';
+  document.getElementById('u-id').value='';
+  ['u-name','u-uname','u-pwd'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('u-role').value='staff';
+  document.getElementById('u-req').value='true';
+  document.getElementById('u-pwd-fg').style.display='';
+  S.editId=null;openM('mUser');
 }
-function exportJSON(){
-  dl(JSON.stringify({items:S.items,requests:S.requests},null,2),'application/json',`labstock_${td()}.json`);
-  toast('⬇️ Export JSON เรียบร้อย','t-ok');
+function openEditUser(id){
+  const u=S.users.find(x=>x.id===id);if(!u)return;
+  S.editId=id;
+  document.getElementById('mUT').textContent='✏️ แก้ไข User';
+  document.getElementById('u-id').value=id;
+  document.getElementById('u-name').value=u.name;
+  document.getElementById('u-uname').value=u.username;
+  document.getElementById('u-pwd').value='';
+  document.getElementById('u-role').value=u.role;
+  document.getElementById('u-req').value=u.require_request?'true':'false';
+  document.getElementById('u-pwd-fg').style.display='none';
+  openM('mUser');
 }
-function dl(c,t,n){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([c],{type:t}));a.download=n;a.click();}
-function td(){return new Date().toISOString().slice(0,10);}
+async function saveUser(){
+  const name=document.getElementById('u-name').value.trim();
+  const uname=document.getElementById('u-uname').value.trim();
+  const pwd=document.getElementById('u-pwd').value.trim();
+  const role=document.getElementById('u-role').value;
+  const req=document.getElementById('u-req').value==='true';
+  if(!name||!uname){toast('กรุณากรอกชื่อและ Username','err');return;}
+  const payload={name,username:uname,role,require_request:req,active:true};
+  if(!S.editId&&!pwd){toast('กรุณากรอก Password','err');return;}
+  if(pwd)payload.password=pwd;
+  setBL('bSU',true);
+  try{
+    if(S.editId)await db('users','PATCH',payload,`?id=eq.${S.editId}`);
+    else await db('users','POST',payload);
+    toast(S.editId?'✅ อัปเดต User แล้ว':'✅ เพิ่ม User แล้ว','ok');
+    await loadUsers();closeM('mUser');renderAdmin();
+  }catch(e){toast('❌ บันทึกไม่ได้ (Username ซ้ำ?)','err');}
+  setBL('bSU',false);
+}
+function openChangePwd(id){
+  document.getElementById('pwd-uid').value=id;
+  document.getElementById('pwd-new').value='';
+  document.getElementById('pwd-con').value='';
+  openM('mPwd');
+}
+async function savePwd(){
+  const id=+document.getElementById('pwd-uid').value;
+  const np=document.getElementById('pwd-new').value;
+  const cp=document.getElementById('pwd-con').value;
+  if(!np){toast('กรุณากรอก Password ใหม่','err');return;}
+  if(np!==cp){toast('Password ไม่ตรงกัน','err');return;}
+  setBL('bSP',true);
+  try{
+    await db('users','PATCH',{password:np},`?id=eq.${id}`);
+    toast('✅ เปลี่ยน Password แล้ว','ok');
+    closeM('mPwd');
+  }catch{toast('❌ เปลี่ยนไม่ได้','err');}
+  setBL('bSP',false);
+}
+async function toggleUser(id,active){
+  try{
+    await db('users','PATCH',{active},`?id=eq.${id}`);
+    toast(active?'✅ เปิดใช้งาน User':'🚫 ปิดใช้งาน User','info');
+    await loadUsers();renderAdmin();
+  }catch{toast('❌ เกิดข้อผิดพลาด','err');}
+}
 
-// ══════ HELPERS ══════
-function fmtDate(d){if(!d)return'—';try{const[y,m,day]=d.slice(0,10).split('-');return`${day}/${m}/${+y+543}`;}catch{return d;}}
-function fmtDateTime(d){if(!d)return'—';try{const dt=new Date(d);return`${String(dt.getDate()).padStart(2,'0')}/${String(dt.getMonth()+1).padStart(2,'0')}/${dt.getFullYear()+543} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;}catch{return d;}}
+// ══ META (CAT/HOSP/DEL) ══
+function openAddCat(){S.metaType='categories';document.getElementById('mMetaTitle').textContent='🏷️ เพิ่มหมวดหมู่';document.getElementById('mMetaLabel').textContent='ชื่อหมวดหมู่';document.getElementById('mMetaVal').value='';openM('mMeta');}
+function openAddHosp(){S.metaType='hospitals';document.getElementById('mMetaTitle').textContent='🏥 เพิ่ม รพ.';document.getElementById('mMetaLabel').textContent='ชื่อโรงพยาบาล';document.getElementById('mMetaVal').value='';openM('mMeta');}
+function openAddDel(){S.metaType='delivery_methods';document.getElementById('mMetaTitle').textContent='🚚 เพิ่มวิธีส่ง';document.getElementById('mMetaLabel').textContent='ชื่อวิธีการส่ง';document.getElementById('mMetaVal').value='';openM('mMeta');}
+async function saveMeta(){
+  const v=document.getElementById('mMetaVal').value.trim();
+  if(!v){toast('กรุณากรอกชื่อ','err');return;}
+  setBL('bSMeta',true);
+  try{
+    await db(S.metaType,'POST',{name:v,...(S.metaType!=='categories'?{active:true}:{})});
+    toast('✅ เพิ่มแล้ว','ok');
+    await loadCats();await loadHosps();await loadDels();
+    closeM('mMeta');renderAdmin();
+  }catch{toast('❌ เพิ่มไม่ได้ (ชื่อซ้ำ?)','err');}
+  setBL('bSMeta',false);
+}
+async function delMeta(table,id){
+  if(!confirm('ลบรายการนี้?'))return;
+  try{
+    await db(table,'DELETE',null,`?id=eq.${id}`);
+    toast('🗑️ ลบแล้ว','info');
+    await loadCats();await loadHosps();await loadDels();renderAdmin();
+  }catch{toast('❌ ลบไม่ได้','err');}
+}
+
+// ══ EXCEL IMPORT ══
+let importData=[];
+function importExcel(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const wb=XLSX.read(ev.target.result,{type:'binary'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws,{header:1});
+      if(rows.length<2){toast('ไฟล์ว่างเปล่า','err');return;}
+      const headers=rows[0];
+      const data=rows.slice(1).filter(r=>r.some(c=>c));
+      importData=data;
+      // show preview
+      document.getElementById('importInfo').textContent=`พบข้อมูล ${data.length} แถว | คอลัมน์: ${headers.join(', ')}`;
+      document.getElementById('importHead').innerHTML=headers.map(h=>`<th style="padding:8px 12px;background:var(--s2);border-bottom:1.5px solid var(--bdr);color:var(--t2);font-size:11px;">${h}</th>`).join('');
+      document.getElementById('importBody').innerHTML=data.slice(0,10).map(r=>`<tr>${headers.map((_,i)=>`<td style="padding:7px 12px;border-bottom:1px solid var(--bdr);font-size:12px;">${r[i]||''}</td>`).join('')}</tr>`).join('');
+      // store headers for mapping
+      S.importHeaders=headers;
+      S.importRows=data;
+      openM('mImport');
+    }catch(err){toast('❌ อ่านไฟล์ไม่ได้','err');}
+  };
+  reader.readAsBinaryString(file);
+  e.target.value='';
+}
+async function confirmImport(){
+  const headers=S.importHeaders||[];
+  const rows=S.importRows||[];
+  // auto map columns (case-insensitive)
+  const hi=k=>headers.findIndex(h=>h.toLowerCase().includes(k.toLowerCase()));
+  const iBC=hi('barcode')||hi('รหัส')||hi('bc');
+  const iName=hi('name')||hi('ชื่อ');
+  const iCat=hi('cat')||hi('หมวด');
+  const iBt=hi('bottle')||hi('ขวด')||hi('qty')||hi('จำนวน');
+  const iMin=hi('min')||hi('ขั้นต่ำ');
+  const iExp=hi('exp')||hi('หมดอายุ')||hi('expiry');
+  const iLot=hi('lot');
+  const iBrand=hi('brand')||hi('ผู้ผลิต');
+  let ok=0,fail=0;
+  setBL('bImport',true);
+  for(const r of rows){
+    const name=(iName>=0?r[iName]:'')||'';
+    const bc=(iBC>=0?r[iBC]:'')||'';
+    if(!name&&!bc){fail++;continue;}
+    const payload={
+      name:String(name),barcode:String(bc||name).replace(/\s/g,'_').substring(0,20),
+      category:iCat>=0&&r[iCat]?String(r[iCat]):'อื่นๆ',
+      bottles:iBt>=0&&r[iBt]?+r[iBt]:0,
+      qty:iBt>=0&&r[iBt]?+r[iBt]:0,
+      min_qty:iMin>=0&&r[iMin]?+r[iMin]:5,
+      expiry_date:iExp>=0&&r[iExp]?parseExcelDate(r[iExp]):null,
+      lot:iLot>=0&&r[iLot]?String(r[iLot]):null,
+      brand:iBrand>=0&&r[iBrand]?String(r[iBrand]):null,
+      updated_at:new Date().toISOString()
+    };
+    try{await db('items','POST',payload);ok++;}catch{fail++;}
+  }
+  await loadItems();closeM('mImport');renderStock();
+  toast(`📥 Import: ✅ ${ok} แถว ${fail>0?`❌ ${fail} แถวผิดพลาด`:''}`,ok>0?'ok':'err');
+  setBL('bImport',false);
+}
+function parseExcelDate(v){
+  if(!v)return null;
+  if(typeof v==='number'){
+    const d=new Date((v-25569)*86400000);
+    return d.toISOString().slice(0,10);
+  }
+  const s=String(v);
+  if(s.includes('/')){const p=s.split('/');if(p.length===3)return `${p[2].length===2?'25'+p[2]:p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;}
+  if(s.includes('-')&&s.length===10)return s;
+  return null;
+}
+
+// ══ HELPERS ══
+function buildCatSel(selId,val=''){
+  document.getElementById(selId).innerHTML=S.cats.map(c=>`<option value="${c.name}" ${c.name===val?'selected':''}>${c.name}</option>`).join('');
+}
+function fd(d){if(!d)return'—';try{const[y,m,day]=d.slice(0,10).split('-');return`${day}/${m}/${+y+543}`;}catch{return d;}}
+function fdt(d){if(!d)return'—';try{const dt=new Date(d);return`${String(dt.getDate()).padStart(2,'0')}/${String(dt.getMonth()+1).padStart(2,'0')}/${dt.getFullYear()+543} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;}catch{return d;}}
 function openM(id){document.getElementById(id).classList.add('open');}
 function closeM(id){document.getElementById(id).classList.remove('open');}
-document.addEventListener('click',e=>{if(e.target.classList.contains('overlay'))e.target.classList.remove('open');});
-function setBtnLoading(id,on){const b=document.getElementById(id);if(b){b.disabled=on;b.style.opacity=on?.6:1;}}
-let toastTmr=null;
-function toast(msg,cls='t-info'){
-  const el=document.getElementById('toast');el.textContent=msg;el.className=cls;el.style.display='block';
-  if(toastTmr)clearTimeout(toastTmr);
-  toastTmr=setTimeout(()=>el.style.display='none',3500);
+document.addEventListener('click',e=>{if(e.target.classList.contains('ov'))e.target.classList.remove('open');});
+function setBL(id,on){const b=document.getElementById(id);if(b){b.disabled=on;b.style.opacity=on?.6:1;}}
+function exportCSV(){
+  const h='ID,Barcode,Name,Category,Bottles,MinQty,Expiry,Lot,Brand,Note\n';
+  const r=S.items.map(i=>[i.id,i.barcode,`"${i.name}"`,`"${i.category}"`,i.bottles||0,i.min_qty||5,i.expiry_date||'',i.lot||'',i.brand||'',`"${i.note||''}"`].join(',')).join('\n');
+  dl('\uFEFF'+h+r,'text/csv',`stock_${td()}.csv`);toast('📄 Export CSV','ok');
+}
+function exportJSON(){dl(JSON.stringify({items:S.items,requests:S.requests},null,2),'application/json',`stock_${td()}.json`);toast('⬇️ Export JSON','ok');}
+function dl(c,t,n){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([c],{type:t}));a.download=n;a.click();}
+function td(){return new Date().toISOString().slice(0,10);}
+let tTmr=null;
+function toast(msg,type='info'){
+  const el=document.getElementById('toast');
+  el.textContent=msg;
+  el.style.cssText=`position:fixed;bottom:22px;left:50%;transform:translateX(-50%);padding:11px 20px;border-radius:11px;font-size:13px;font-weight:500;box-shadow:0 8px 28px rgba(0,0,0,.12);z-index:999;display:block;white-space:nowrap;max-width:92vw;text-align:center;background:var(--w);border:1.5px solid ${type==='ok'?'rgba(0,145,58,.4)':type==='err'?'var(--redb)':'rgba(29,111,184,.3)'};color:${type==='ok'?'var(--grn)':type==='err'?'var(--red)':'var(--blu)'};`;
+  if(tTmr)clearTimeout(tTmr);
+  tTmr=setTimeout(()=>el.style.display='none',3500);
 }
 
-// ══════ START ══════
+// ══ MY ACCOUNT (เปลี่ยน password ตัวเอง) ══
+function openMyAccount(){
+  if(!S.user)return;
+  document.getElementById('myAccName').textContent=S.user.name;
+  const rmap={admin:'👑 Admin',staff:'🧑‍🔬 Staff',viewer:'👁 Viewer'};
+  document.getElementById('myAccInfo').innerHTML=`${rmap[S.user.role]||S.user.role} &nbsp;|&nbsp; Username: <span style="font-family:var(--mo);color:var(--red);">${S.user.username}</span>`;
+  document.getElementById('my-old-pw').value='';
+  document.getElementById('my-new-pw').value='';
+  document.getElementById('my-con-pw').value='';
+  openM('mMyAcc');
+}
+async function changeMyPw(){
+  const oldPw=document.getElementById('my-old-pw').value;
+  const newPw=document.getElementById('my-new-pw').value;
+  const conPw=document.getElementById('my-con-pw').value;
+  if(!oldPw||!newPw||!conPw){toast('กรุณากรอกข้อมูลให้ครบ','err');return;}
+  if(S.user.password!==oldPw){toast('❌ รหัสผ่านปัจจุบันไม่ถูกต้อง','err');return;}
+  if(newPw.length<6){toast('❌ รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร','err');return;}
+  if(newPw!==conPw){toast('❌ รหัสผ่านใหม่ไม่ตรงกัน','err');return;}
+  setBL('bMyPw',true);
+  try{
+    await db('users','PATCH',{password:newPw},`?id=eq.${S.user.id}`);
+    S.user.password=newPw;
+    toast('✅ เปลี่ยนรหัสผ่านเรียบร้อยแล้ว','ok');
+    closeM('mMyAcc');
+  }catch(e){toast('❌ เปลี่ยนไม่ได้: '+e.message,'err');}
+  setBL('bMyPw',false);
+}
+
+// ══ IMPORT USER ══
+let userImportRows=[];
+async function importUsers(e){
+  const file=e.target.files[0];if(!file)return;
+  e.target.value='';
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const wb=XLSX.read(ev.target.result,{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const data=XLSX.utils.sheet_to_json(ws,{defval:''});
+      if(!data.length){toast('❌ ไม่พบข้อมูลในไฟล์','err');return;}
+      userImportRows=data;
+      const keys=Object.keys(data[0]);
+      document.getElementById('uiHead').innerHTML=keys.map(k=>`<th style="padding:8px 11px;background:var(--s2);color:var(--t2);font-size:11px;text-align:left;">${k}</th>`).join('');
+      document.getElementById('uiBody').innerHTML=data.slice(0,8).map(r=>`<tr>${keys.map(k=>`<td style="padding:7px 11px;border-bottom:1px solid var(--bdr);font-size:12px;">${r[k]}</td>`).join('')}</tr>`).join('');
+      document.getElementById('uiInfo').innerHTML=`พบ <strong>${data.length} User</strong> (แสดงตัวอย่าง ${Math.min(data.length,8)} แถว)`;
+      openM('mUserImport');
+    }catch(err){toast('❌ ไม่สามารถอ่านไฟล์: '+err.message,'err');}
+  };
+  reader.readAsArrayBuffer(file);
+}
+async function confirmUserImport(){
+  if(!userImportRows.length)return;
+  setBL('bUI',true);
+  let ok=0,skip=0,fail=0;
+  for(const row of userImportRows){
+    const name=String(row.name||row.ชื่อ||row.Name||'').trim();
+    const username=String(row.username||row.Username||row.user||'').trim().toLowerCase();
+    const password=String(row.password||row.Password||row.รหัสผ่าน||'').trim();
+    if(!name||!username||!password){skip++;continue;}
+    const role=['admin','staff','viewer'].includes(String(row.role||'staff').toLowerCase())?String(row.role).toLowerCase():'staff';
+    const req=String(row.require_request||row.require||'true').toLowerCase()!=='false';
+    const payload={name,username,password,role,require_request:req,active:true};
+    try{await db('users','POST',payload);ok++;}
+    catch{
+      // ลอง PATCH ถ้า username ซ้ำ
+      try{
+        const existing=await db('users','GET',null,`?username=eq.${encodeURIComponent(username)}`);
+        if(existing&&existing.length){
+          await db('users','PATCH',{name,password,role,require_request:req},`?username=eq.${encodeURIComponent(username)}`);
+          ok++;
+        }else{fail++;}
+      }catch{fail++;}
+    }
+  }
+  await loadUsers();closeM('mUserImport');renderAdmin();
+  toast(`📥 Import: ✅ ${ok} คน${skip>0?` ⚠️ ข้าม ${skip}`:''} ${fail>0?`❌ ผิด ${fail}`:''}`,ok>0?'ok':'err');
+  setBL('bUI',false);
+}
+function downloadUserTemplate(){
+  const header='name,username,password,role,require_request
+';
+  const example=[
+    'สมชาย ใจดี,somchai,password123,staff,true',
+    'สมหญิง รักดี,somying,password456,staff,true',
+    'ผู้จัดการ,manager1,mgr2024,admin,false',
+    'แพทย์ มองดู,doctor1,view2024,viewer,true'
+  ].join('
+');
+  const content='﻿'+header+example;
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([content],{type:'text/csv;charset=utf-8'}));
+  a.download='user_import_template.csv';a.click();
+  toast('⬇️ ดาวน์โหลด Template แล้ว','ok');
+}
+
+// ══ NOTIFICATIONS ══
+const NOTIF_KEY='lab_notif_cfg';
+function saveNotifCfg(){
+  const cfg={
+    line:{
+      enabled:document.getElementById('nc-line-en').checked,
+      token:document.getElementById('nc-line-token').value,
+      to:document.getElementById('nc-line-to').value,
+      proxy:document.getElementById('nc-line-proxy').value
+    },
+    telegram:{enabled:document.getElementById('nc-tg-en').checked,token:document.getElementById('nc-tg-token').value,chat:document.getElementById('nc-tg-chat').value},
+    email:{enabled:document.getElementById('nc-email-en').checked,svc:document.getElementById('nc-email-svc').value,tpl:document.getElementById('nc-email-tpl').value,key:document.getElementById('nc-email-key').value,to:document.getElementById('nc-email-to').value},
+    webhook:{enabled:document.getElementById('nc-wh-en').checked,url:document.getElementById('nc-wh-url').value},
+    cond:{low:document.getElementById('nc-cond-low').checked,out:document.getElementById('nc-cond-out').checked,exp:document.getElementById('nc-cond-exp').checked,req:document.getElementById('nc-cond-req').checked}
+  };
+  localStorage.setItem(NOTIF_KEY,JSON.stringify(cfg));
+  ['line','tg','email','wh'].forEach(k=>{
+    const en=document.getElementById(`nc-${k}-en`).checked;
+    const nb=document.getElementById(`nb-${k}`);
+    if(nb)nb.style.display=en?'block':'none';
+  });
+}
+function loadNotifCfg(){
+  try{
+    const cfg=JSON.parse(localStorage.getItem(NOTIF_KEY)||'{}');
+    if(cfg.line){
+      document.getElementById('nc-line-en').checked=!!cfg.line.enabled;
+      document.getElementById('nc-line-token').value=cfg.line.token||'';
+      document.getElementById('nc-line-to').value=cfg.line.to||'';
+      document.getElementById('nc-line-proxy').value=cfg.line.proxy||'';
+    }
+    if(cfg.telegram){document.getElementById('nc-tg-en').checked=!!cfg.telegram.enabled;document.getElementById('nc-tg-token').value=cfg.telegram.token||'';document.getElementById('nc-tg-chat').value=cfg.telegram.chat||'';}
+    if(cfg.email){document.getElementById('nc-email-en').checked=!!cfg.email.enabled;document.getElementById('nc-email-svc').value=cfg.email.svc||'';document.getElementById('nc-email-tpl').value=cfg.email.tpl||'';document.getElementById('nc-email-key').value=cfg.email.key||'';document.getElementById('nc-email-to').value=cfg.email.to||'';}
+    if(cfg.webhook){document.getElementById('nc-wh-en').checked=!!cfg.webhook.enabled;document.getElementById('nc-wh-url').value=cfg.webhook.url||'';}
+    if(cfg.cond){document.getElementById('nc-cond-low').checked=!!cfg.cond.low;document.getElementById('nc-cond-out').checked=!!cfg.cond.out;document.getElementById('nc-cond-exp').checked=!!cfg.cond.exp;document.getElementById('nc-cond-req').checked=!!cfg.cond.req;}
+    ['line','tg','email','wh'].forEach(k=>{
+      const en=document.getElementById(`nc-${k}-en`).checked;
+      const nb=document.getElementById(`nb-${k}`);
+      if(nb)nb.style.display=en?'block':'none';
+    });
+  }catch{}
+}
+function getNotifCfg(){
+  try{return JSON.parse(localStorage.getItem(NOTIF_KEY)||'{}');}catch{return{};}
+}
+async function sendNotif(type,itemName,bottles,extraMsg=''){
+  const cfg=getNotifCfg();
+  const msg=`🔬 Lab Stock Alert
+${type==='low'?'⚠️ Stock ใกล้หมด':type==='out'?'🔴 Stock หมด':type==='exp'?'📅 ใกล้หมดอายุ':'📋 Request ใหม่'}
+รายการ: ${itemName}
+${bottles>=0?`เหลือ: ${bottles} ขวด
+`:''}${extraMsg}
+เวลา: ${new Date().toLocaleString('th-TH')}`;
+  const results=[];
+  // LINE Messaging API (push message)
+  if(cfg.line?.enabled&&cfg.line?.token&&cfg.line?.to){
+    try{
+      // ถ้ามี Proxy URL ให้ส่งผ่าน Proxy (แก้ปัญหา CORS)
+      const lineBody=JSON.stringify({to:cfg.line.to,messages:[{type:'text',text:msg}]});
+      let lineUrl,lineHeaders;
+      if(cfg.line.proxy&&cfg.line.proxy.trim()){
+        // ส่งผ่าน Cloudflare Worker / Make / n8n proxy
+        lineUrl=cfg.line.proxy.trim();
+        lineHeaders={'Content-Type':'application/json','X-Line-Token':cfg.line.token};
+      } else {
+        // ส่งตรงไป LINE API (อาจ CORS บน browser)
+        lineUrl='https://api.line.me/v2/bot/message/push';
+        lineHeaders={'Content-Type':'application/json','Authorization':'Bearer '+cfg.line.token};
+      }
+      const r=await fetch(lineUrl,{method:'POST',headers:lineHeaders,body:lineBody});
+      const rd=await r.text();
+      results.push(r.ok?'LINE ✅':'LINE ❌ ('+r.status+')');
+    }catch(e){results.push('LINE ❌ ('+e.message+')');}
+  }
+  // Telegram
+  if(cfg.telegram?.enabled&&cfg.telegram?.token&&cfg.telegram?.chat){
+    try{
+      const r=await fetch(`https://api.telegram.org/bot${cfg.telegram.token}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:cfg.telegram.chat,text:msg,parse_mode:'HTML'})});
+      const d=await r.json();results.push(d.ok?'Telegram ✅':'Telegram ❌ '+d.description);
+    }catch{results.push('Telegram ❌ (Network)');}
+  }
+  // Webhook
+  if(cfg.webhook?.enabled&&cfg.webhook?.url){
+    try{
+      const r=await fetch(cfg.webhook.url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type,item_name:itemName,bottles,message:msg,timestamp:new Date().toISOString()})});
+      results.push(r.ok?'Webhook ✅':'Webhook ❌');
+    }catch{results.push('Webhook ❌ (Network)');}
+  }
+  // Email via EmailJS
+  if(cfg.email?.enabled&&cfg.email?.svc&&cfg.email?.tpl&&cfg.email?.key){
+    try{
+      const r=await fetch('https://api.emailjs.com/api/v1.0/email/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({service_id:cfg.email.svc,template_id:cfg.email.tpl,user_id:cfg.email.key,template_params:{to_email:cfg.email.to,subject:`Lab Stock Alert: ${itemName}`,message:msg}})});
+      results.push(r.ok?'Email ✅':'Email ❌');
+    }catch{results.push('Email ❌ (Network)');}
+  }
+  return results;
+}
+async function testNotif(channel){
+  toast('⏳ กำลังส่งทดสอบ...','info');
+  const results=await sendNotif('test','ทดสอบการแจ้งเตือน',99,'🧪 นี่คือข้อความทดสอบจากระบบ Lab Stock');
+  if(results.length===0){toast('⚠️ ยังไม่ได้เปิดใช้งานช่องทางนี้','err');return;}
+  const r=results.find(x=>x.toLowerCase().includes(channel.split('-')[0]));
+  toast(r||results.join(' | '),(r||'').includes('✅')?'ok':'err');
+}
+async function sendManualNotif(){
+  toast('⏳ กำลังส่งรายงาน...','info');
+  const cfg=getNotifCfg();
+  const today=new Date(),soon=new Date();soon.setDate(soon.getDate()+60);
+  const out=S.items.filter(i=>(i.bottles||0)===0);
+  const low=S.items.filter(i=>(i.bottles||0)>0&&(i.bottles||0)<=(i.min_qty||5));
+  const exp=S.items.filter(i=>i.expiry_date&&new Date(i.expiry_date)<soon);
+  const pend=S.requests.filter(r=>r.status==='pending');
+  const lines=[
+    '📊 รายงานสรุป Lab Stock',
+    `วันที่: ${today.toLocaleDateString('th-TH')}`,
+    `รายการทั้งหมด: ${S.items.length}`,
+    out.length?`🔴 หมดสต็อก: ${out.length} รายการ → ${out.slice(0,3).map(i=>i.name).join(', ')}${out.length>3?'...':''}`:null,
+    low.length?`⚠️ ใกล้หมด: ${low.length} รายการ → ${low.slice(0,3).map(i=>i.name).join(', ')}${low.length>3?'...':''}`:null,
+    exp.length?`📅 ใกล้หมดอายุ: ${exp.length} รายการ`:null,
+    pend.length?`📋 Request รอ Approve: ${pend.length} รายการ`:null,
+  ].filter(Boolean).join('
+');
+  const results=await sendNotif('report','รายงานสรุป',-1,lines);
+  toast(results.length?results.join(' | '):'⚠️ ไม่มีช่องทางที่เปิดใช้',results.some(r=>r.includes('✅'))?'ok':'err');
+}
+// เรียกแจ้งเตือนอัตโนมัติหลัง loadItems
+async function checkAndNotify(){
+  const cfg=getNotifCfg();if(!cfg.cond)return;
+  const today=new Date(),soon=new Date();soon.setDate(soon.getDate()+60);
+  // ดึง last notified จาก localStorage เพื่อไม่ส่งซ้ำ
+  const lnKey='lab_last_notif';
+  const lastNotif=JSON.parse(localStorage.getItem(lnKey)||'{}');
+  const nowMin=Math.floor(Date.now()/60000);
+  for(const i of S.items){
+    const btl=i.bottles||0;
+    const key=`${i.id}`;
+    if(cfg.cond.out&&btl===0&&(nowMin-(lastNotif[key+'_out']||0))>120){
+      sendNotif('out',i.name,btl);lastNotif[key+'_out']=nowMin;
+    } else if(cfg.cond.low&&btl>0&&btl<=(i.min_qty||5)&&(nowMin-(lastNotif[key+'_low']||0))>120){
+      sendNotif('low',i.name,btl);lastNotif[key+'_low']=nowMin;
+    }
+    if(cfg.cond.exp&&i.expiry_date){
+      const expD=new Date(i.expiry_date);
+      if(expD<soon&&(nowMin-(lastNotif[key+'_exp']||0))>1440){
+        sendNotif('exp',i.name,btl,`หมดอายุ: ${expD.toLocaleDateString('th-TH')}`);lastNotif[key+'_exp']=nowMin;
+      }
+    }
+  }
+  localStorage.setItem(lnKey,JSON.stringify(lastNotif));
+}
+
+function toggleNotifCard(bodyId,headEl){
+  const nb=document.getElementById(bodyId);
+  if(!nb)return;
+  nb.style.display=nb.style.display==='none'?'block':'none';
+}
+
+function openLineProxyGuide(){
+  const html=`
+  <div style="font-size:13px;line-height:1.9;">
+    <b style="color:var(--red);">วิธีที่ 1: Cloudflare Worker (แนะนำ — ฟรีตลอดชีพ)</b><br><br>
+    1. สมัคร <a href="https://workers.cloudflare.com" target="_blank" style="color:var(--blu);">workers.cloudflare.com</a> (ฟรี)<br>
+    2. กด <b>Create Worker</b> → วางโค้ดนี้:<br>
+    <pre style="background:#1e1e2e;color:#cdd6f4;padding:12px;border-radius:8px;font-size:11px;overflow-x:auto;margin:8px 0;">export default {
+  async fetch(req) {
+    if(req.method==='OPTIONS') return new Response('',{headers:cors()});
+    const b = await req.json();
+    const r = await fetch('https://api.line.me/v2/bot/message/push',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':'Bearer '+req.headers.get('X-Line-Token')
+      },
+      body: JSON.stringify(b)
+    });
+    return new Response(await r.text(),{status:r.status,headers:cors()});
+  }
+}
+function cors(){return{'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'*','Content-Type':'application/json'};}
+</pre>
+    3. กด <b>Save and Deploy</b><br>
+    4. Copy URL ของ Worker (เช่น <code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;">https://lab-line.yourname.workers.dev</code>)<br>
+    5. วาง URL นั้นในช่อง <b>Proxy URL</b> ในระบบ<br><br>
+    <b style="color:var(--blu);">วิธีที่ 2: Make.com (No-code)</b><br><br>
+    1. สมัคร <a href="https://make.com" target="_blank" style="color:var(--blu);">make.com</a> → สร้าง Scenario ใหม่<br>
+    2. เพิ่ม Module <b>Webhooks → Custom Webhook</b> → Copy URL มาใส่ช่อง Proxy URL<br>
+    3. เพิ่ม Module <b>HTTP → Make a request</b> → ส่งต่อไป LINE API<br><br>
+    <b style="color:var(--pur);">วิธีที่ 3: n8n (Self-hosted)</b><br><br>
+    ใช้ Webhook node รับ → HTTP Request node ส่งต่อ LINE API<br>
+  </div>`;
+  document.getElementById('viewContent').innerHTML=html;
+  openM('mView');
+}
+
 init();
 </script>
 </body>
