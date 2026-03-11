@@ -338,7 +338,17 @@ input,select,textarea{font-family:var(--fn);}
           <button class="btn-p" id="btnAdd" onclick="openAdd()" style="display:none">＋ เพิ่ม</button>
         </div>
       </div>
-      <div class="tb"><input class="si2" id="srch" type="text" placeholder="🔍 ค้นหาชื่อ, บาร์โค้ด, Lot..." oninput="renderStock()"></div>
+      <div class="tb" style="display:flex;gap:8px;flex-wrap:wrap;">
+        <div style="position:relative;flex:1;min-width:180px;">
+          <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;">🔍</span>
+          <input class="si2" id="srch" type="text" style="padding-left:36px;" placeholder="ค้นหาชื่อ, Lot..." oninput="renderStock()">
+        </div>
+        <div style="position:relative;min-width:180px;flex:1;">
+          <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;">📷</span>
+          <input class="si2" id="bcScan" type="text" inputmode="none" style="padding-left:36px;border-color:rgba(192,0,26,.3);font-family:var(--mo);letter-spacing:2px;" placeholder="สแกนบาร์โค้ดที่นี่..." oninput="onInlineScan()" onfocus="this.value=\'\'" autocomplete="off">
+        </div>
+      </div>
+      <div id="inlineScanResult" style="display:none;margin-bottom:10px;"></div>
       <div class="chips" id="catChips"></div>
       <div class="tw">
         <table>
@@ -992,7 +1002,6 @@ async function saveAdj(){
   const type=document.getElementById('adj-type').value;
   const n=+document.getElementById('adj-q').value||0;
   const note=document.getElementById('adj-note').value;
-  const lot=document.getElementById('adj-lot').value;
   const cur=i.bottles||0;
   let newBt=cur,delta=0;
   if(type==='out'){delta=-n;newBt=Math.max(0,cur-n);}
@@ -1001,10 +1010,12 @@ async function saveAdj(){
   setBL('bSA',true);
   try{
     await db('items','PATCH',{bottles:newBt,qty:newBt,updated_at:new Date().toISOString()},`?id=eq.${id}`);
-    await db('stock_history','POST',{item_id:id,item_name:i.name,type,delta,qty_after:newBt,note:note||type,lot:lot||i.lot,by_name:S.user.name});
+    try{
+      await db('stock_history','POST',{item_id:id,item_name:i.name,type,delta,qty_after:newBt,note:note||type,by_name:S.user.name});
+    }catch{}// ถ้า history fail ก็ไม่เป็นไร ของ PATCH สำเร็จแล้ว
     toast(`✅ ${i.name} → เหลือ ${newBt} ขวด`,'ok');
     await loadItems();closeM('mAdj');renderStock();
-  }catch{toast('❌ บันทึกไม่ได้','err');}
+  }catch(e){toast('❌ บันทึกไม่ได้: '+e.message,'err');}
   setBL('bSA',false);
 }
 
@@ -1049,13 +1060,58 @@ async function scanOut(n){
   const newBt=Math.max(0,(i.bottles||0)-n);
   try{
     await db('items','PATCH',{bottles:newBt,qty:newBt,updated_at:new Date().toISOString()},`?id=eq.${i.id}`);
-    await db('stock_history','POST',{item_id:i.id,item_name:i.name,type:'out',delta:-n,qty_after:newBt,note:'สแกน',by_name:S.user.name});
+    try{await db('stock_history','POST',{item_id:i.id,item_name:i.name,type:'out',delta:-n,qty_after:newBt,note:'สแกน',by_name:S.user.name});}catch{}
     await loadItems();S.scanItem=S.items.find(x=>x.id===i.id);
     const bt=newBt,mn=i.min_qty||5;
     const qc=bt===0?'var(--red)':bt<=mn?'var(--amb)':'var(--grn)';
     document.getElementById('sfD').innerHTML=`🧪 คงเหลือ: <strong style="color:${qc}">${bt} ขวด</strong> | min: ${mn}<br>📅 หมดอายุ: ${i.expiry_date?fd(i.expiry_date):'—'} | Lot: ${i.lot||'—'}`;
     toast(`📤 หยิบ ${n} ขวด — ${i.name} เหลือ ${newBt}`,'ok');
-  }catch{toast('❌ บันทึกไม่ได้','err');}
+  }catch(e){toast('❌ บันทึกไม่ได้: '+e.message,'err');}
+}
+
+// ══ INLINE BARCODE SCAN in Stock page ══
+let bcTmr=null;
+function onInlineScan(){
+  const v=document.getElementById('bcScan').value.trim();
+  const res=document.getElementById('inlineScanResult');
+  if(bcTmr)clearTimeout(bcTmr);
+  if(!v){res.style.display='none';return;}
+  bcTmr=setTimeout(()=>{
+    const item=S.items.find(i=>(i.barcode||'').toLowerCase()===v.toLowerCase());
+    if(!item){res.innerHTML='<div style="background:#fff0f2;border:1.5px solid rgba(192,0,26,.25);border-radius:10px;padding:11px 14px;font-size:13px;color:var(--red);">❌ ไม่พบบาร์โค้ด <strong>'+v+'</strong> ในระบบ</div>';res.style.display='block';return;}
+    const bt=item.bottles||0,mn=item.min_qty||0;
+    const qc=bt===0?'var(--red)':bt<=mn?'var(--amb)':'var(--grn)';
+    const isSt=S.user&&S.user.role!=='viewer';
+    const canAdj=S.user&&(S.user.role==='admin'||!S.user.require_request);
+    res.innerHTML=`<div style="background:#fff0f2;border:1.5px solid rgba(192,0,26,.3);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <div style="flex:1;">
+        <div style="font-weight:700;font-size:14px;color:var(--red);margin-bottom:3px;">${item.name}</div>
+        <div style="font-size:12px;color:var(--t2);">🧪 คงเหลือ: <strong style="color:${qc}">${bt} ขวด</strong> | Lot: ${item.lot||'—'} | หมดอายุ: ${item.expiry_date?fd(item.expiry_date):'—'}</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        ${canAdj?`<button class="ab ab-r" onclick="inlinePick(${item.id})">📤 หยิบ 1 ขวด</button>`:''}
+        ${canAdj?`<button class="ab ab-b" onclick="openAdj(${item.id});clearInlineScan()">± ปรับ</button>`:''}
+        <button class="ab ab-gr" onclick="viewItem(${item.id});clearInlineScan()">👁 ดู</button>
+        <button class="ab ab-gr" onclick="clearInlineScan()">✕</button>
+      </div>
+    </div>`;
+    res.style.display='block';
+  },300);
+}
+function clearInlineScan(){
+  document.getElementById('bcScan').value='';
+  document.getElementById('inlineScanResult').style.display='none';
+}
+async function inlinePick(id){
+  const i=S.items.find(x=>x.id===id);if(!i)return;
+  const newBt=Math.max(0,(i.bottles||0)-1);
+  try{
+    await db('items','PATCH',{bottles:newBt,qty:newBt,updated_at:new Date().toISOString()},`?id=eq.${id}`);
+    try{await db('stock_history','POST',{item_id:id,item_name:i.name,type:'out',delta:-1,qty_after:newBt,note:'สแกน inline',by_name:S.user.name});}catch{}
+    await loadItems();
+    toast(`📤 หยิบ 1 ขวด — ${i.name} เหลือ ${newBt} ขวด`,'ok');
+    clearInlineScan();renderStock();
+  }catch(e){toast('❌ บันทึกไม่ได้','err');}
 }
 function openReqFromScan(id){openReqModal(id);}
 
