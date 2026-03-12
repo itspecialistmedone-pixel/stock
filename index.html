@@ -1166,7 +1166,7 @@ function renderStock(){
           <button class="ab ab-gr" onclick="viewItem(${i.id})">👁</button>
           ${isSt&&!needReq?`<button class="ab ab-r" onclick="openAdj(${i.id})">📤 หยิบ</button>`:''}
           ${isA?`<button class="ab ab-b" onclick="openEdit(${i.id})">✏️</button>`:''}
-          ${isA?`<button class="ab ab-gr" onclick="delItem(${i.id})">🗑</button>`:''}
+          ${isA?`<button class="ab ab-r" onclick="delItem(${i.id})" style="font-size:11px;">🗑 ลบ</button>`:''}
         </div>
       </td>
     </tr>`;
@@ -1239,9 +1239,13 @@ async function saveItem(){
 }
 async function delItem(id){
   const i=S.items.find(x=>x.id===id);
-  if(!confirm(`ลบ "${i?.name}" ?`))return;
-  try{await db('items','DELETE',null,`?id=eq.${id}`);toast('🗑️ ลบแล้ว','info');await loadItems();renderStock();}
-  catch{toast('❌ ลบไม่ได้','err');}
+  if(!i)return;
+  if(!confirm(`🗑 ลบ "${i.name}" ออกจากระบบ?\n\n⚠️ การลบจะลบรายการนี้ถาวร ไม่สามารถกู้คืนได้`))return;
+  try{
+    await db('items','DELETE',null,`?id=eq.${id}`);
+    toast('🗑️ ลบ "'+i.name+'" แล้ว','info');
+    await loadItems();renderStock();
+  }catch{toast('❌ ลบไม่ได้','err');}
 }
 async function viewItem(id){
   const i=S.items.find(x=>x.id===id);if(!i)return;
@@ -1269,7 +1273,12 @@ async function viewItem(id){
     <table style="width:100%;font-size:13px;border-collapse:collapse;">
       ${dr('📦 บาร์โค้ด',`<code style="font-family:var(--mo)">${i.barcode}</code>`)}
       ${dr('📅 หมดอายุ',expL)}
-      ${dr('🏷️ Lot',i.lot||'—')}
+      ${dr('🏷️ Lot', i.lot
+        ? `<div style="display:flex;align-items:center;gap:8px;">
+            <code style="font-family:var(--mo)">${i.lot}</code>
+            ${S.user.role==='admin'?`<button onclick="clearLot(${i.id})" style="background:var(--redl);border:1.5px solid var(--redb);color:var(--red);padding:2px 9px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;">🗑 ลบ Lot</button>`:''}
+           </div>`
+        : '—')}
       ${dr('📝 หมายเหตุ',i.note||'—')}
     </table>
     ${hist.length?`<div style="margin-top:13px;"><div style="font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;">ประวัติล่าสุด</div>
@@ -1496,10 +1505,13 @@ function renderReqs(){
       </div>
       ${r.note?`<div class="rcd">📝 ${r.note}</div>`:''}
       ${r.admin_note?`<div class="rcd" style="background:var(--grnb);">👑 Admin: ${r.admin_note}</div>`:''}
-      ${isA&&r.status==='pending'?`<div class="rca">
-        <button class="ab ab-g" onclick="approveReq(${r.id})">✅ อนุมัติ</button>
-        <button class="ab ab-r" onclick="rejectReq(${r.id})">❌ ปฏิเสธ</button>
-      </div>`:''}
+      <div class="rca">
+        ${isA&&r.status==='pending'?`
+          <button class="ab ab-g" onclick="approveReq(${r.id})">✅ อนุมัติ</button>
+          <button class="ab ab-r" onclick="rejectReq(${r.id})">❌ ปฏิเสธ</button>`:''}
+        ${isA||r.by_username===S.user.username?`
+          <button class="ab ab-gr" onclick="delReq(${r.id})" style="margin-left:auto;">🗑 ลบ</button>`:''}
+      </div>
     </div>`).join('');
 }
 async function approveReq(id){
@@ -1526,6 +1538,65 @@ async function rejectReq(id){
     toast('❌ ปฏิเสธแล้ว','info');
     await loadRequests();renderReqs();renderAdmin();updBadge();
   }catch{toast('❌ เกิดข้อผิดพลาด','err');}
+}
+
+async function delReq(id){
+  const r=S.requests.find(x=>x.id===id);
+  if(!r)return;
+  const isApproved=r.status==='approved';
+  let restoreBottles=false;
+
+  if(isApproved){
+    // Request อนุมัติแล้ว — ขวดถูกหักออกไปแล้ว ถามว่าจะคืนไหม
+    const choice=confirm(
+      `🗑 ลบ Request "${r.item_name}" (${r.qty} ขวด)\n\n`+
+      `⚠️ Request นี้ "อนุมัติแล้ว" ขวดถูกหักออกไปแล้ว ${r.qty} ขวด\n\n`+
+      `กด OK = ลบ Request และคืนขวด ${r.qty} ขวดกลับ Stock\n`+
+      `กด Cancel = ยกเลิก (ไม่ลบ)`
+    );
+    if(!choice)return;
+    restoreBottles=true;
+  } else {
+    // Request ที่ยังไม่อนุมัติหรือถูกปฏิเสธ — ลบได้เลย
+    if(!confirm(`🗑 ลบ Request "${r.item_name}" นี้?\n\n`+
+      `${r.status==='pending'?'⏳ Request ยังรอ Approve อยู่ — ลบแล้วจะหายไปเลย':'❌ Request ถูกปฏิเสธแล้ว'}\n`+
+      `จำนวนขวดใน Stock ไม่เปลี่ยนแปลง`))return;
+  }
+
+  try{
+    // คืนขวดถ้า approved
+    if(restoreBottles && r.item_id){
+      const item=S.items.find(x=>x.id===r.item_id);
+      if(item){
+        const newBt=(item.bottles||0)+r.qty;
+        await db('items','PATCH',{bottles:newBt,qty:newBt,updated_at:new Date().toISOString()},`?id=eq.${item.id}`);
+        try{
+          await db('stock_history','POST',{
+            item_id:item.id,item_name:item.name,
+            type:'in',delta:r.qty,qty_after:newBt,
+            note:`คืนจากลบ Request #${id}`,by_name:S.user.name
+          });
+        }catch{}
+        toast(`🗑️ ลบ Request แล้ว — คืน ${r.qty} ขวด → ${item.name} เหลือ ${newBt} ขวด`,'ok');
+      }
+    } else {
+      toast('🗑️ ลบ Request แล้ว','info');
+    }
+    await db('requests','DELETE',null,`?id=eq.${id}`);
+    await loadAll();renderReqs();renderAdmin();updBadge();
+  }catch{toast('❌ ลบไม่ได้','err');}
+}
+
+async function clearLot(itemId){
+  const i=S.items.find(x=>x.id===itemId);
+  if(!confirm(`ลบ Lot "${i?.lot}" จาก ${i?.name}?`))return;
+  try{
+    await db('items','PATCH',{lot:null},`?id=eq.${itemId}`);
+    toast('🗑️ ลบ Lot แล้ว','info');
+    await loadItems();
+    closeM('mView');
+    renderStock();
+  }catch{toast('❌ ลบไม่ได้','err');}
 }
 
 // ══ REPORT ══
