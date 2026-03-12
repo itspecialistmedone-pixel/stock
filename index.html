@@ -257,6 +257,15 @@ input,select,textarea{font-family:var(--fn);}
 .empty .ei{font-size:38px;display:block;margin-bottom:9px;}
 @media(max-width:640px){.hm{display:none!important;}.tw{overflow-x:auto;}}
 @media print{.topbar,.navtabs,.tb,.chips,.ab,.btn-p,.btn-gh{display:none!important;}.tw{box-shadow:none;}}
+@media(max-width:600px){
+  .tw table,.tw thead,.tw tbody,.tw th,.tw td,.tw tr{display:block;}
+  .tw thead{display:none;}
+  .tw tr{background:var(--w);border:1.5px solid var(--bdr);border-radius:var(--r);margin-bottom:10px;padding:10px 12px;box-shadow:var(--sh);}
+  .tw td{border:none;padding:3px 0;font-size:13px;display:flex;justify-content:space-between;align-items:center;}
+  .tw td::before{content:attr(data-label);font-size:11px;color:var(--t2);font-weight:600;text-transform:uppercase;letter-spacing:.4px;flex-shrink:0;margin-right:8px;}
+  .tw td:last-child{margin-top:8px;padding-top:8px;border-top:1px solid var(--bdr);justify-content:flex-end;}
+  .hm{display:block!important;}
+}
 .notif-card{background:var(--w);border:1.5px solid var(--bdr);border-radius:var(--r2);margin-bottom:10px;overflow:hidden;box-shadow:var(--sh);}
 .notif-head{display:flex;justify-content:space-between;align-items:center;padding:13px 16px;cursor:pointer;}
 .notif-body{padding:0 16px 14px;border-top:1px solid var(--bdr);}
@@ -309,10 +318,10 @@ input,select,textarea{font-family:var(--fn);}
     <button class="btn-out" onclick="doLogout()">ออก</button>
   </div>
   <div class="navtabs">
-    <button class="ntab act" onclick="nav('dash',this)">📊 Dashboard</button>
-    <button class="ntab" onclick="nav('stock',this)">🧪 Stock</button>
-    <button class="ntab" onclick="nav('req',this)">📋 Requests <span class="nbadge" id="rBadge" style="display:none"></span></button>
-    <button class="ntab" onclick="nav('report',this)">📈 รายงาน</button>
+    <button class="ntab act" id="tabDash" onclick="nav('dash',this)">📊 Dashboard</button>
+    <button class="ntab" id="tabStock" onclick="nav('stock',this)">🧪 Stock</button>
+    <button class="ntab" id="tabReq" onclick="nav('req',this)">📋 Requests <span class="nbadge" id="rBadge" style="display:none"></span></button>
+    <button class="ntab" id="tabReport" style="display:none" onclick="nav('report',this)">📈 รายงาน</button>
     <button class="ntab" id="adminTab" style="display:none" onclick="nav('admin',this)">⚙️ Admin</button>
   </div>
   <div class="main">
@@ -417,6 +426,15 @@ input,select,textarea{font-family:var(--fn);}
 
       <!-- USER MANAGEMENT -->
       <div class="sbox">
+        <div style="background:linear-gradient(135deg,#fff3cd,#fff9e6);border:1.5px solid #ffc107;border-radius:var(--r);padding:11px 13px;margin-bottom:12px;">
+          <div style="font-size:12px;font-weight:700;color:#856404;margin-bottom:5px;">🔐 ความปลอดภัย</div>
+          <div style="font-size:11px;color:#856404;line-height:1.8;">
+            Password เก็บแบบ SHA-256 แล้ว ✅<br>
+            ⚠️ ถ้า User เดิมยังใช้ Password แบบ plaintext → กดปุ่มด้านล่างเพื่อ migrate<br>
+            แนะนำเปิด <b>Row Level Security (RLS)</b> ใน Supabase ด้วย
+          </div>
+          <button onclick="migratePasswords()" class="ab ab-b" style="margin-top:7px;font-size:11px;">🔒 Migrate Passwords → SHA-256</button>
+        </div>
         <div class="sbox-title">👥 จัดการผู้ใช้ <button class="ab ab-b" onclick="openAddUser()" style="font-size:11px;">＋ เพิ่ม User</button></div>
         <div class="tw"><table>
           <thead><tr><th>ชื่อ</th><th>Username</th><th>Role</th><th>ต้อง Request</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
@@ -658,9 +676,13 @@ input,select,textarea{font-family:var(--fn);}
               <input type="checkbox" id="nc-cond-out" onchange="saveNotifCfg()" style="width:16px;height:16px;accent-color:var(--red);">
               <span>🔴 แจ้งเตือนเมื่อ Stock หมด (0 ขวด)</span>
             </label>
-            <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer;">
+            <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer;flex-wrap:wrap;">
               <input type="checkbox" id="nc-cond-exp" onchange="saveNotifCfg()" style="width:16px;height:16px;accent-color:var(--red);">
-              <span>📅 แจ้งเตือนเมื่อใกล้หมดอายุ (&lt; 60 วัน)</span>
+              <span>📅 แจ้งเตือนเมื่อใกล้หมดอายุภายใน</span>
+              <input type="number" id="nc-exp-days" value="60" min="1" max="365"
+                style="width:60px;padding:3px 7px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;text-align:center;"
+                onchange="saveNotifCfg()">
+              <span>วัน</span>
             </label>
             <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer;">
               <input type="checkbox" id="nc-cond-req" onchange="saveNotifCfg()" style="width:16px;height:16px;accent-color:var(--red);">
@@ -677,11 +699,15 @@ input,select,textarea{font-family:var(--fn);}
 
       <!-- EXPORT -->
       <div class="sbox">
-        <div class="sbox-title">📤 Export</div>
-        <div style="display:flex;gap:7px;flex-wrap:wrap;">
-          <button class="btn-gh" onclick="exportCSV()">📄 Export CSV</button>
-          <button class="btn-gh" onclick="exportJSON()">⬇️ Export JSON</button>
+        <div class="sbox-title">📤 Export & Backup</div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px;">
+          <button class="btn-gh" onclick="exportCSV()">📄 Stock CSV</button>
+          <button class="btn-gh" onclick="exportJSON()">⬇️ Stock JSON</button>
+          <button class="btn-p" onclick="exportFullExcel()" style="background:var(--grn);box-shadow:0 2px 8px rgba(0,145,58,.25);">
+            📊 Backup Excel ครบทุกตาราง
+          </button>
         </div>
+        <div style="font-size:11px;color:var(--t3);">Backup Excel รวม: Stock, Requests, ประวัติทั้งหมด, Users</div>
       </div>
     </div>
 
@@ -943,6 +969,7 @@ input,select,textarea{font-family:var(--fn);}
 <div id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 <script>
 // ══ SUPABASE ══
@@ -999,18 +1026,46 @@ async function init(){
     await db('items','GET',null,'?limit=1');
     setTimeout(()=>{document.getElementById('splash').style.display='none';document.getElementById('loginWrap').style.display='flex';},900);
     document.getElementById('sdot').classList.remove('off');
-    setInterval(async()=>{if(S.user){await loadAll();renderPage(S.curPage);}},15000);
+    // Supabase Realtime — รับ push แทน polling
+    try{
+      const _sb=supabase.createClient(SU,SK);
+      _sb.channel('lab-changes')
+        .on('postgres_changes',{event:'*',schema:'public',table:'items'},async()=>{
+          await loadItems();renderPage(S.curPage);updBadge();
+        })
+        .on('postgres_changes',{event:'*',schema:'public',table:'requests'},async()=>{
+          await loadRequests();renderPage(S.curPage);updBadge();
+        })
+        .subscribe();
+      console.log('🟢 Realtime connected');
+    }catch(e){
+      // fallback: polling ทุก 30 วิถ้า realtime ไม่ได้
+      console.warn('Realtime unavailable, using polling');
+      setInterval(async()=>{if(S.user){await loadAll();renderPage(S.curPage);}},30000);
+    }
   }catch{document.getElementById('spSub').textContent='❌ เชื่อมต่อไม่ได้';}
 }
 
 // ══ AUTH ══
+// ── SHA-256 password hashing ──
+async function sha256(str){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+// hash ถ้าไม่ใช่ hex 64 ตัวแล้ว (backward compat)
+async function hashPw(pw){
+  if(/^[0-9a-f]{64}$/.test(pw))return pw; // already hashed
+  return sha256(pw);
+}
+
 async function doLogin(){
   const u=document.getElementById('lu').value.trim();
   const p=document.getElementById('lp').value.trim();
   document.getElementById('lerr').textContent='';
   setBL('btnLogin',true);
   try{
-    const users=await db('users','GET',null,`?username=eq.${encodeURIComponent(u)}&password=eq.${encodeURIComponent(p)}&active=eq.true`);
+    const hpw=await sha256(p);
+    const users=await db('users','GET',null,`?username=eq.${encodeURIComponent(u)}&password=eq.${encodeURIComponent(hpw)}&active=eq.true`);
     if(!users||!users.length){document.getElementById('lerr').textContent='❌ Username หรือ Password ไม่ถูกต้อง';setBL('btnLogin',false);return;}
     const user=users[0];
     S.user=user;
@@ -1020,13 +1075,50 @@ async function doLogin(){
     const rp=document.getElementById('rPill');
     rp.textContent=user.role==='admin'?'👑 Admin':user.role==='staff'?'🧑‍🔬 Staff':'👁 Viewer';
     rp.className='rpill'+(user.role==='admin'?' admin':user.role==='viewer'?' viewer':'');
-    if(user.role==='admin'){document.getElementById('btnAdd').style.display='';document.getElementById('adminTab').style.display='';}
+    setupRoleUI(user.role);
+    resetIdle(); // เริ่ม idle timer
     await loadAll();
-    nav('dash',document.querySelector('.ntab'));
+    // staff/viewer เริ่มที่หน้า stock
+    const startTab = user.role==='staff' ? 'tabStock' : 'tabDash';
+    nav(user.role==='staff'?'stock':'dash', document.getElementById(startTab));
     setTimeout(loadNotifCfg,500);
   }catch(e){document.getElementById('lerr').textContent='❌ เกิดข้อผิดพลาด';}
   setBL('btnLogin',false);
 }
+function setupRoleUI(role){
+  const isAdmin = role==='admin';
+  const isStaff = role==='staff';
+  const isViewer = role==='viewer';
+
+  // tabs — staff เห็นแค่ stock + request
+  document.getElementById('tabDash').style.display   = isAdmin ? '' : 'none';
+  document.getElementById('tabStock').style.display  = '';          // ทุก role เห็น
+  document.getElementById('tabReq').style.display    = '';          // ทุก role เห็น
+  document.getElementById('tabReport').style.display = isAdmin ? '' : 'none';
+  document.getElementById('adminTab').style.display  = isAdmin ? '' : 'none';
+
+  // ปุ่ม + เพิ่ม reagent — admin เท่านั้น
+  const btnAdd = document.getElementById('btnAdd');
+  if(btnAdd) btnAdd.style.display = isAdmin ? '' : 'none';
+}
+
+// ── Auto Logout after 30 min idle ──
+let idleTimer=null;
+const IDLE_MS=30*60*1000;
+function resetIdle(){
+  if(!S.user)return;
+  if(idleTimer)clearTimeout(idleTimer);
+  idleTimer=setTimeout(()=>{
+    if(S.user){
+      toast('⏰ ออกจากระบบอัตโนมัติ (ไม่มีการใช้งาน 30 นาที)','info');
+      setTimeout(doLogout,2000);
+    }
+  },IDLE_MS);
+}
+['click','keydown','touchstart','mousemove'].forEach(ev=>
+  document.addEventListener(ev,resetIdle,{passive:true})
+);
+
 function doLogout(){
   S.user=null;
   document.getElementById('app').style.display='none';
@@ -1157,13 +1249,13 @@ function renderStock(){
         <div class="mp"><div class="mpf" style="width:${pct}%;background:${pc};"></div></div>
       </td>
       <td><span class="ctag" style="${catClass(i.category)}">${i.category||'—'}</span></td>
-      <td>
+      <td data-label="คงเหลือ">
         <span class="qty ${qCls}">${bt} ขวด</span>
         <div style="font-size:11px;color:var(--t3);">min: ${mn}</div>
       </td>
-      <td class="hm" style="font-size:11px;color:var(--t3);font-family:var(--mo);">${i.lot||'—'}</td>
-      <td class="hm"><span class="exp-tag ${expCls}">${i.expiry_date?fd(i.expiry_date):'—'}</span></td>
-      <td>
+      <td class="hm" data-label="Lot" style="font-size:11px;color:var(--t3);font-family:var(--mo);">${i.lot||'—'}</td>
+      <td class="hm" data-label="หมดอายุ"><span class="exp-tag ${expCls}">${i.expiry_date?fd(i.expiry_date):'—'}</span></td>
+      <td data-label="จัดการ">
         <div style="display:flex;gap:5px;flex-wrap:wrap;">
           <button class="ab ab-gr" onclick="viewItem(${i.id})">👁</button>
           ${isSt&&!needReq?`<button class="ab ab-r" onclick="openAdj(${i.id})">📤 หยิบ</button>`:''}
@@ -1260,7 +1352,7 @@ async function viewItem(id){
   const show=Math.min(bt,80);let dots='';
   for(let j=0;j<show;j++)dots+=`<div class="bd full" style="width:14px;height:14px;"></div>`;
   let hist=[];
-  try{hist=await db('stock_history','GET',null,`?item_id=eq.${id}&order=created_at.desc&limit=6`);}catch{}
+  try{hist=await db('stock_history','GET',null,`?item_id=eq.${id}&order=created_at.desc&limit=10`);}catch{}
   document.getElementById('viewContent').innerHTML=`
     <div style="background:var(--redl);border:1.5px solid var(--redb);border-radius:var(--r);padding:13px;margin-bottom:13px;">
       <div style="font-size:16px;font-weight:700;margin-bottom:5px;">${i.name}</div>
@@ -1283,13 +1375,39 @@ async function viewItem(id){
         : '—')}
       ${dr('📝 หมายเหตุ',i.note||'—')}
     </table>
-    ${hist.length?`<div style="margin-top:13px;"><div style="font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;">ประวัติล่าสุด</div>
-    ${hist.map(h=>`<div class="hrow">
-      <span style="color:var(--t2)">${h.type==='out'?'📤':h.type==='in'?'📥':'🔧'} ${h.note||h.type} <span style="color:var(--t3)">(${h.by_name})</span></span>
-      <span style="font-family:var(--mo);font-size:12px;color:${(h.delta||0)>=0?'var(--grn)':'var(--red)'}">${(h.delta||0)>=0?'+':''}${h.delta}</span>
-    </div>`).join('')}</div>`:''}`;
+    ${hist.length?`<div style="margin-top:13px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;">
+        <div style="font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;">ประวัติล่าสุด</div>
+        <button onclick="viewFullHistory(${id})" style="font-size:11px;color:var(--blu);background:none;border:none;cursor:pointer;text-decoration:underline;">ดูทั้งหมด →</button>
+      </div>
+      ${hist.map(h=>`<div class="hrow">
+        <div>
+          <span style="color:var(--t2)">${h.type==='out'||h.type==='auto_out'?'📤':h.type==='in'?'📥':'🔧'} ${h.note||h.type}</span>
+          <div style="font-size:11px;color:var(--t3);">${h.by_name} · ${fdt(h.created_at)}</div>
+        </div>
+        <span style="font-family:var(--mo);font-size:12px;color:${(h.delta||0)>=0?'var(--grn)':'var(--red)'};font-weight:600;">${(h.delta||0)>=0?'+':''}${h.delta}</span>
+      </div>`).join('')}
+    </div>`:''}`;
   openM('mView');
 }
+async function viewFullHistory(itemId){
+  const i=S.items.find(x=>x.id===itemId);
+  let hist=[];
+  try{hist=await db('stock_history','GET',null,`?item_id=eq.${itemId}&order=created_at.desc&limit=200`);}catch{}
+  const rows=hist.map(h=>`
+    <div class="hrow">
+      <div>
+        <span style="color:var(--t2)">${h.type==='out'||h.type==='auto_out'?'📤':h.type==='in'?'📥':'🔧'} ${h.note||h.type}</span>
+        <div style="font-size:11px;color:var(--t3);">${h.by_name} · ${fdt(h.created_at)}</div>
+      </div>
+      <span style="font-family:var(--mo);font-size:12px;color:${(h.delta||0)>=0?'var(--grn)':'var(--red)'};font-weight:600;">${(h.delta||0)>=0?'+':''}${h.delta} → ${h.qty_after} ขวด</span>
+    </div>`).join('');
+  document.getElementById('viewContent').innerHTML=`
+    <div style="font-size:14px;font-weight:700;color:var(--red);margin-bottom:12px;">📋 ประวัติทั้งหมด — ${i?.name||'—'}</div>
+    ${rows||'<div class="empty"><span class="ei">📭</span>ไม่มีประวัติ</div>'}`;
+  openM('mView');
+}
+
 function dr(k,v){return `<tr><td style="padding:7px 0;color:var(--t2);border-bottom:1px solid var(--bdr);width:38%">${k}</td><td style="padding:7px 0;border-bottom:1px solid var(--bdr);">${v}</td></tr>`;}
 
 // ══ ADJUST ══
@@ -1391,6 +1509,7 @@ function onScan(){
 async function scanOut(n){
   if(!S.scanItem)return;
   const i=S.scanItem;
+  if(!confirm(`📤 ยืนยันหยิบออก ${n} ขวด\n\nรายการ: ${i.name}\nคงเหลือปัจจุบัน: ${i.bottles||0} ขวด\nหลังหยิบ: ${Math.max(0,(i.bottles||0)-n)} ขวด`))return;
   const newBt=Math.max(0,(i.bottles||0)-n);
   try{
     await db('items','PATCH',{bottles:newBt,qty:newBt,updated_at:new Date().toISOString()},`?id=eq.${i.id}`);
@@ -1439,6 +1558,7 @@ function clearInlineScan(){
 }
 async function inlinePick(id){
   const i=S.items.find(x=>x.id===id);if(!i)return;
+  if(!confirm(`📤 ยืนยันหยิบออก 1 ขวด\n\nรายการ: ${i.name}\nคงเหลือปัจจุบัน: ${i.bottles||0} ขวด\nหลังหยิบ: ${Math.max(0,(i.bottles||0)-1)} ขวด`))return;
   const newBt=Math.max(0,(i.bottles||0)-1);
   try{
     await db('items','PATCH',{bottles:newBt,qty:newBt,updated_at:new Date().toISOString()},`?id=eq.${id}`);
@@ -1809,7 +1929,7 @@ async function saveUser(){
   if(!name||!uname){toast('กรุณากรอกชื่อและ Username','err');return;}
   const payload={name,username:uname,role,require_request:req,active:true};
   if(!S.editId&&!pwd){toast('กรุณากรอก Password','err');return;}
-  if(pwd)payload.password=pwd;
+  if(pwd){const ph=await sha256(pwd);payload.password=ph;}
   setBL('bSU',true);
   try{
     if(S.editId)await db('users','PATCH',payload,`?id=eq.${S.editId}`);
@@ -1831,14 +1951,31 @@ async function savePwd(){
   const cp=document.getElementById('pwd-con').value;
   if(!np){toast('กรุณากรอก Password ใหม่','err');return;}
   if(np!==cp){toast('Password ไม่ตรงกัน','err');return;}
+  const npHash=await sha256(np);
   setBL('bSP',true);
   try{
-    await db('users','PATCH',{password:np},`?id=eq.${id}`);
+    await db('users','PATCH',{password:npHash},`?id=eq.${id}`);
     toast('✅ เปลี่ยน Password แล้ว','ok');
     closeM('mPwd');
   }catch{toast('❌ เปลี่ยนไม่ได้','err');}
   setBL('bSP',false);
 }
+async function migratePasswords(){
+  if(!confirm('🔒 Migrate passwords ทุก User เป็น SHA-256?\n\nระบบจะ hash password ของทุกคนที่ยังไม่ได้ hash\n(password ที่ hash แล้วจะไม่เปลี่ยน)'))return;
+  let ok=0,skip=0;
+  const users=await db('users','GET',null,'?order=id.asc');
+  for(const u of users){
+    // ถ้า password ยังไม่ใช่ hex 64 ตัว = ยังไม่ได้ hash
+    if(!/^[0-9a-f]{64}$/.test(u.password||'')){
+      const hashed=await sha256(u.password||'');
+      await db('users','PATCH',{password:hashed},`?id=eq.${u.id}`);
+      ok++;
+    } else {skip++;}
+  }
+  toast(`✅ Migrate เสร็จ: ${ok} คน (ข้าม ${skip} คน ที่ hash แล้ว)`,'ok');
+  await loadUsers();renderAdmin();
+}
+
 async function toggleUser(id,active){
   try{
     await db('users','PATCH',{active},`?id=eq.${id}`);
@@ -1975,6 +2112,55 @@ function exportCSV(){
   dl('\uFEFF'+h+r,'text/csv',`stock_${td()}.csv`);toast('📄 Export CSV','ok');
 }
 function exportJSON(){dl(JSON.stringify({items:S.items,requests:S.requests},null,2),'application/json',`stock_${td()}.json`);toast('⬇️ Export JSON','ok');}
+
+async function exportFullExcel(){
+  toast('⏳ กำลังสร้างไฟล์ Backup...','info');
+  try{
+    // โหลด history ทั้งหมด
+    let history=[];
+    try{history=await db('stock_history','GET',null,'?order=created_at.desc&limit=5000');}catch{}
+    let users=[];
+    try{users=await db('users','GET',null,'?order=name.asc');}catch{}
+
+    const wb=XLSX.utils.book_new();
+    const today=new Date().toLocaleDateString('th-TH');
+
+    // Sheet 1: Stock
+    const stockData=S.items.map(i=>({
+      'บาร์โค้ด':i.barcode,'ชื่อ Reagent':i.name,'หมวดหมู่':i.category,
+      'คงเหลือ (ขวด)':i.bottles||0,'ขั้นต่ำ':i.min_qty||5,
+      'Lot':i.lot||'','หมดอายุ':i.expiry_date||'','Brand':i.brand||'','หมายเหตุ':i.note||''
+    }));
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(stockData),'📦 Stock');
+
+    // Sheet 2: Requests
+    const reqData=S.requests.map(r=>({
+      'ID':r.id,'วันที่':fdt(r.created_at),'รายการ':r.item_name,
+      'จำนวน':r.qty,'ประเภท':r.type,'สถานะ':r.status,
+      'ผู้ขอ':r.requester_name||r.by_name,'โรงพยาบาล':r.hospital||'',
+      'วิธีส่ง':r.delivery_method||'','Lot':r.lot||'','หมายเหตุ':r.note||'','Admin Note':r.admin_note||''
+    }));
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(reqData),'📋 Requests');
+
+    // Sheet 3: History
+    const histData=history.map(h=>({
+      'วันที่':fdt(h.created_at),'รายการ':h.item_name,
+      'ประเภท':h.type,'จำนวนเปลี่ยน':h.delta,'คงเหลือหลัง':h.qty_after,
+      'หมายเหตุ':h.note||'','โดย':h.by_name||''
+    }));
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(histData),'📜 ประวัติ');
+
+    // Sheet 4: Users (ไม่รวม password)
+    const userData=users.map(u=>({
+      'ชื่อ':u.name,'Username':u.username,'Role':u.role,
+      'ต้อง Request':u.require_request?'ใช่':'ไม่','สถานะ':u.active?'ใช้งาน':'ปิด'
+    }));
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(userData),'👥 Users');
+
+    XLSX.writeFile(wb,`LabStock_Backup_${td()}.xlsx`);
+    toast('✅ Backup Excel สำเร็จ — ครบทุกตาราง','ok');
+  }catch(e){toast('❌ Export ไม่ได้: '+e.message,'err');}
+}
 function dl(c,t,n){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([c],{type:t}));a.download=n;a.click();}
 function td(){return new Date().toISOString().slice(0,10);}
 let tTmr=null;
@@ -2002,13 +2188,15 @@ async function changeMyPw(){
   const newPw=document.getElementById('my-new-pw').value;
   const conPw=document.getElementById('my-con-pw').value;
   if(!oldPw||!newPw||!conPw){toast('กรุณากรอกข้อมูลให้ครบ','err');return;}
-  if(S.user.password!==oldPw){toast('❌ รหัสผ่านปัจจุบันไม่ถูกต้อง','err');return;}
+  const oldHash=await sha256(oldPw);
+  if(S.user.password!==oldHash){toast('❌ รหัสผ่านปัจจุบันไม่ถูกต้อง','err');return;}
   if(newPw.length<6){toast('❌ รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร','err');return;}
   if(newPw!==conPw){toast('❌ รหัสผ่านใหม่ไม่ตรงกัน','err');return;}
+  const newHash=await sha256(newPw);
   setBL('bMyPw',true);
   try{
-    await db('users','PATCH',{password:newPw},`?id=eq.${S.user.id}`);
-    S.user.password=newPw;
+    await db('users','PATCH',{password:newHash},`?id=eq.${S.user.id}`);
+    S.user.password=newHash;
     toast('✅ เปลี่ยนรหัสผ่านเรียบร้อยแล้ว','ok');
     closeM('mMyAcc');
   }catch(e){toast('❌ เปลี่ยนไม่ได้: '+e.message,'err');}
@@ -2048,7 +2236,8 @@ async function confirmUserImport(){
     if(!name||!username||!password){skip++;continue;}
     const role=['admin','staff','viewer'].includes(String(row.role||'staff').toLowerCase())?String(row.role).toLowerCase():'staff';
     const req=String(row.require_request||row.require||'true').toLowerCase()!=='false';
-    const payload={name,username,password,role,require_request:req,active:true};
+    const password_hash=await sha256(String(password));
+    const payload={name,username,password:password_hash,role,require_request:req,active:true};
     try{await db('users','POST',payload);ok++;}
     catch{
       // ลอง PATCH ถ้า username ซ้ำ
@@ -2093,7 +2282,7 @@ function saveNotifCfg(){
     telegram:{enabled:document.getElementById('nc-tg-en').checked,token:document.getElementById('nc-tg-token').value,chat:document.getElementById('nc-tg-chat').value},
     email:{enabled:document.getElementById('nc-email-en').checked,svc:document.getElementById('nc-email-svc').value,tpl:document.getElementById('nc-email-tpl').value,key:document.getElementById('nc-email-key').value,to:document.getElementById('nc-email-to').value},
     webhook:{enabled:document.getElementById('nc-wh-en').checked,url:document.getElementById('nc-wh-url').value},
-    cond:{low:document.getElementById('nc-cond-low').checked,out:document.getElementById('nc-cond-out').checked,exp:document.getElementById('nc-cond-exp').checked,req:document.getElementById('nc-cond-req').checked}
+    cond:{low:document.getElementById('nc-cond-low').checked,out:document.getElementById('nc-cond-out').checked,exp:document.getElementById('nc-cond-exp').checked,req:document.getElementById('nc-cond-req').checked,exp_days:+document.getElementById('nc-exp-days').value||60}
   };
   localStorage.setItem(NOTIF_KEY,JSON.stringify(cfg));
   ['line','tg','email','wh'].forEach(k=>{
@@ -2114,7 +2303,7 @@ function loadNotifCfg(){
     if(cfg.telegram){document.getElementById('nc-tg-en').checked=!!cfg.telegram.enabled;document.getElementById('nc-tg-token').value=cfg.telegram.token||'';document.getElementById('nc-tg-chat').value=cfg.telegram.chat||'';}
     if(cfg.email){document.getElementById('nc-email-en').checked=!!cfg.email.enabled;document.getElementById('nc-email-svc').value=cfg.email.svc||'';document.getElementById('nc-email-tpl').value=cfg.email.tpl||'';document.getElementById('nc-email-key').value=cfg.email.key||'';document.getElementById('nc-email-to').value=cfg.email.to||'';}
     if(cfg.webhook){document.getElementById('nc-wh-en').checked=!!cfg.webhook.enabled;document.getElementById('nc-wh-url').value=cfg.webhook.url||'';}
-    if(cfg.cond){document.getElementById('nc-cond-low').checked=!!cfg.cond.low;document.getElementById('nc-cond-out').checked=!!cfg.cond.out;document.getElementById('nc-cond-exp').checked=!!cfg.cond.exp;document.getElementById('nc-cond-req').checked=!!cfg.cond.req;}
+    if(cfg.cond){document.getElementById('nc-cond-low').checked=!!cfg.cond.low;document.getElementById('nc-cond-out').checked=!!cfg.cond.out;document.getElementById('nc-cond-exp').checked=!!cfg.cond.exp;document.getElementById('nc-cond-req').checked=!!cfg.cond.req;document.getElementById('nc-exp-days').value=cfg.cond.exp_days||60;}
     ['line','tg','email','wh'].forEach(k=>{
       const en=document.getElementById(`nc-${k}-en`).checked;
       const nb=document.getElementById(`nb-${k}`);
@@ -2207,7 +2396,9 @@ async function sendManualNotif(){
 // เรียกแจ้งเตือนอัตโนมัติหลัง loadItems
 async function checkAndNotify(){
   const cfg=getNotifCfg();if(!cfg.cond)return;
-  const today=new Date(),soon=new Date();soon.setDate(soon.getDate()+60);
+  const today=new Date(),soon=new Date();
+  const expDays=cfg.cond?.exp_days||60;
+  soon.setDate(soon.getDate()+expDays);
   // ดึง last notified จาก localStorage เพื่อไม่ส่งซ้ำ
   const lnKey='lab_last_notif';
   const lastNotif=JSON.parse(localStorage.getItem(lnKey)||'{}');
