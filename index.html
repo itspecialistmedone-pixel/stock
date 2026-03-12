@@ -187,6 +187,7 @@ input,select,textarea{font-family:var(--fn);}
 .sp-p{background:var(--ambb);color:var(--amb);}
 .sp-a{background:var(--grnb);color:var(--grn);}
 .sp-r{background:var(--redd);color:var(--red);}
+.sp-auto_out{background:#f0e6ff;color:#7c3aed;}
 .rcd{background:var(--s2);border-radius:7px;padding:9px 11px;font-size:12px;color:var(--t2);margin-bottom:9px;}
 .rca{display:flex;gap:7px;flex-wrap:wrap;}
 
@@ -376,6 +377,7 @@ input,select,textarea{font-family:var(--fn);}
         <button class="chip act" onclick="fReq('all',this)">ทั้งหมด</button>
         <button class="chip" onclick="fReq('pending',this)">⏳ รอ</button>
         <button class="chip" onclick="fReq('approved',this)">✅ อนุมัติ</button>
+        <button class="chip" onclick="fReq('auto_out',this)" style="color:#7c3aed;border-color:#c4b5fd;">📤 หยิบออก</button>
         <button class="chip" onclick="fReq('rejected',this)">❌ ไม่อนุมัติ</button>
       </div>
       <div id="reqList"><div class="empty"><span class="ei">⏳</span>กำลังโหลด...</div></div>
@@ -1307,6 +1309,27 @@ function openAdj(id){
   openM('mAdj');
 }
 function qStep(d){const inp=document.getElementById('adj-q');inp.value=Math.max(0,(+inp.value||0)+d);}
+// ── สร้าง request record อัตโนมัติเมื่อหยิบออก (เพื่อให้ยกเลิกคืนได้) ──
+async function createAutoReq(item, qty, note){
+  try{
+    await db('requests','POST',{
+      item_id:item.id,
+      item_name:item.name,
+      qty:qty,
+      type:'restock',
+      priority:'normal',
+      note:note||'หยิบออกจาก Stock',
+      hospital:'—',
+      delivery_method:'—',
+      requester_name:S.user.name,
+      by_username:S.user.username,
+      by_name:S.user.name,
+      status:'auto_out',
+      lot:item.lot||null
+    });
+  }catch{}// ถ้าบันทึก request ไม่ได้ก็ไม่ block การหยิบ
+}
+
 async function saveAdj(){
   const id=S.editId;
   const i=S.items.find(x=>x.id===id);if(!i)return;
@@ -1321,11 +1344,11 @@ async function saveAdj(){
   setBL('bSA',true);
   try{
     await db('items','PATCH',{bottles:newBt,qty:newBt,updated_at:new Date().toISOString()},`?id=eq.${id}`);
-    try{
-      await db('stock_history','POST',{item_id:id,item_name:i.name,type,delta,qty_after:newBt,note:note||type,by_name:S.user.name});
-    }catch{}// ถ้า history fail ก็ไม่เป็นไร ของ PATCH สำเร็จแล้ว
+    try{await db('stock_history','POST',{item_id:id,item_name:i.name,type,delta,qty_after:newBt,note:note||type,by_name:S.user.name});}catch{}
+    // บันทึก auto request เฉพาะตอนหยิบออก เพื่อให้ยกเลิกคืนได้
+    if(type==='out' && n>0) await createAutoReq(i, n, note||'หยิบออกจากหน้า Stock');
     toast(`✅ ${i.name} → เหลือ ${newBt} ขวด`,'ok');
-    await loadItems();closeM('mAdj');renderStock();
+    await loadItems();loadRequests();closeM('mAdj');renderStock();
   }catch(e){toast('❌ บันทึกไม่ได้: '+e.message,'err');}
   setBL('bSA',false);
 }
@@ -1372,7 +1395,8 @@ async function scanOut(n){
   try{
     await db('items','PATCH',{bottles:newBt,qty:newBt,updated_at:new Date().toISOString()},`?id=eq.${i.id}`);
     try{await db('stock_history','POST',{item_id:i.id,item_name:i.name,type:'out',delta:-n,qty_after:newBt,note:'สแกน',by_name:S.user.name});}catch{}
-    await loadItems();S.scanItem=S.items.find(x=>x.id===i.id);
+    await createAutoReq(i, n, 'หยิบออก (สแกน)');
+    await loadItems();loadRequests();S.scanItem=S.items.find(x=>x.id===i.id);
     const bt=newBt,mn=i.min_qty||5;
     const qc=bt===0?'var(--red)':bt<=mn?'var(--amb)':'var(--grn)';
     document.getElementById('sfD').innerHTML=`🧪 คงเหลือ: <strong style="color:${qc}">${bt} ขวด</strong> | min: ${mn}<br>📅 หมดอายุ: ${i.expiry_date?fd(i.expiry_date):'—'} | Lot: ${i.lot||'—'}`;
@@ -1419,7 +1443,8 @@ async function inlinePick(id){
   try{
     await db('items','PATCH',{bottles:newBt,qty:newBt,updated_at:new Date().toISOString()},`?id=eq.${id}`);
     try{await db('stock_history','POST',{item_id:id,item_name:i.name,type:'out',delta:-1,qty_after:newBt,note:'สแกน inline',by_name:S.user.name});}catch{}
-    await loadItems();
+    await createAutoReq(i, 1, 'หยิบออก (สแกนบาร์โค้ด)');
+    await loadItems();loadRequests();
     toast(`📤 หยิบ 1 ขวด — ${i.name} เหลือ ${newBt} ขวด`,'ok');
     clearInlineScan();renderStock();
   }catch(e){toast('❌ บันทึกไม่ได้','err');}
@@ -1501,7 +1526,11 @@ function renderReqs(){
             <span class="info-pill">${pmap[r.priority]||r.priority}</span>
           </div>
         </div>
-        <span class="sp sp-${r.status}">${r.status==='pending'?'⏳ รอ':r.status==='approved'?'✅ อนุมัติ':'❌ ไม่อนุมัติ'}</span>
+        <span class="sp sp-${r.status}">${
+          r.status==='pending'?'⏳ รอ Approve':
+          r.status==='approved'?'✅ อนุมัติ':
+          r.status==='auto_out'?'📤 หยิบออกแล้ว':
+          '❌ ไม่อนุมัติ'}</span>
       </div>
       ${r.note?`<div class="rcd">📝 ${r.note}</div>`:''}
       ${r.admin_note?`<div class="rcd" style="background:var(--grnb);">👑 Admin: ${r.admin_note}</div>`:''}
@@ -1509,6 +1538,8 @@ function renderReqs(){
         ${isA&&r.status==='pending'?`
           <button class="ab ab-g" onclick="approveReq(${r.id})">✅ อนุมัติ</button>
           <button class="ab ab-r" onclick="rejectReq(${r.id})">❌ ปฏิเสธ</button>`:''}
+        ${r.status==='auto_out'&&(isA||r.by_username===S.user.username)?`
+          <button class="ab ab-b" onclick="undoOut(${r.id})" style="background:#f0e6ff;border-color:#c4b5fd;color:#7c3aed;">↩️ ยกเลิก / คืนขวด</button>`:''}
         ${isA||r.by_username===S.user.username?`
           <button class="ab ab-gr" onclick="delReq(${r.id})" style="margin-left:auto;">🗑 ลบ</button>`:''}
       </div>
@@ -1537,6 +1568,32 @@ async function rejectReq(id){
     await db('requests','PATCH',{status:'rejected',admin_note:note},`?id=eq.${id}`);
     toast('❌ ปฏิเสธแล้ว','info');
     await loadRequests();renderReqs();renderAdmin();updBadge();
+  }catch{toast('❌ เกิดข้อผิดพลาด','err');}
+}
+
+async function undoOut(id){
+  const r=S.requests.find(x=>x.id===id);
+  if(!r)return;
+  const item=S.items.find(x=>x.id===r.item_id);
+  const itemName=item?item.name:r.item_name;
+  const curBt=item?item.bottles||0:0;
+  const newBt=curBt+r.qty;
+  if(!confirm(`↩️ ยกเลิกการหยิบออก?\n\nรายการ: ${itemName}\nคืนกลับ: ${r.qty} ขวด\nStock ใหม่: ${newBt} ขวด`))return;
+  try{
+    if(item){
+      await db('items','PATCH',{bottles:newBt,qty:newBt,updated_at:new Date().toISOString()},`?id=eq.${item.id}`);
+      try{
+        await db('stock_history','POST',{
+          item_id:item.id,item_name:item.name,
+          type:'in',delta:r.qty,qty_after:newBt,
+          note:`↩️ ยกเลิกการหยิบออก (Request #${id})`,
+          by_name:S.user.name
+        });
+      }catch{}
+    }
+    await db('requests','PATCH',{status:'rejected',admin_note:`ยกเลิกโดย ${S.user.name} — คืน ${r.qty} ขวดแล้ว`},`?id=eq.${id}`);
+    toast(`↩️ คืน ${r.qty} ขวด → ${itemName} เหลือ ${newBt} ขวด`,'ok');
+    await loadAll();renderReqs();renderAdmin();updBadge();
   }catch{toast('❌ เกิดข้อผิดพลาด','err');}
 }
 
