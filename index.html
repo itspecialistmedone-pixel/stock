@@ -1825,9 +1825,21 @@ function buildCatSel(selId,val=''){
 }
 function fd(d){if(!d)return'—';try{const[y,m,day]=d.slice(0,10).split('-');return`${day}/${m}/${+y+543}`;}catch{return d;}}
 function fdt(d){if(!d)return'—';try{const dt=new Date(d);return`${String(dt.getDate()).padStart(2,'0')}/${String(dt.getMonth()+1).padStart(2,'0')}/${dt.getFullYear()+543} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;}catch{return d;}}
-function openM(id){document.getElementById(id).classList.add('open');}
-function closeM(id){document.getElementById(id).classList.remove('open');}
-document.addEventListener('click',e=>{if(e.target.classList.contains('ov'))e.target.classList.remove('open');});
+function openM(id){
+  const el=document.getElementById(id);
+  if(el){el.classList.add('open');}
+}
+function closeM(id){
+  const el=document.getElementById(id);
+  if(el){el.classList.remove('open');}
+  // ปิดกล้องถ้าปิด mItem
+  if(id==='mItem'){
+    try{stopCamera();}catch{}
+    const w=document.getElementById('camScanWrap');if(w)w.style.display='none';
+    const b=document.getElementById('btnCam');if(b)b.textContent='📷 สแกน';
+  }
+}
+document.querySelectorAll('.ov').forEach(ov=>ov.addEventListener('mousedown',e=>{if(e.target===ov)ov.classList.remove('open');}));
 function setBL(id,on){const b=document.getElementById(id);if(b){b.disabled=on;b.style.opacity=on?.6:1;}}
 function exportCSV(){
   const h='ID,Barcode,Name,Category,Bottles,MinQty,Expiry,Lot,Brand,Note\n';
@@ -2237,12 +2249,7 @@ function stopCamera(){
   if(video){video.srcObject=null;}
 }
 
-// ปิดกล้องเมื่อปิด modal
-const _origCloseM=closeM;
-function closeM(id){
-  if(id==='mItem'){stopCamera();const w=document.getElementById('camScanWrap');if(w)w.style.display='none';const b=document.getElementById('btnCam');if(b)b.textContent='📷';}
-  _origCloseM(id);
-}
+// camera cleanup handled in closeM
 
 function startBcScan(){}
 function stopBcScan(){}
