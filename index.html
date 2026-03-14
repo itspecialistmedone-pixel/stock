@@ -1866,7 +1866,8 @@ async function undoOut(id){
   const itemName=item?item.name:r.item_name;
   const curBt=item?item.bottles||0:0;
   const newBt=curBt+r.qty;
-  if(!confirmawait dlg({icon:'↩️',title:'ยกเลิกการหยิบออก',msg:itemName+'\nคืนกลับ: '+r.qty+' ขวด  Stock ใหม่: '+newBt+' ขวด',okText:'ยืนยันคืน',cancelText:'ยกเลิก'}))return;
+  const _dlgR=await dlg({icon:'↩️',title:'ยกเลิกการหยิบออก',msg:itemName+'\nคืนกลับ: '+r.qty+' ขวด  Stock ใหม่: '+newBt+' ขวด',okText:'ยืนยันคืน',cancelText:'ยกเลิก'});
+  if(!_dlgR)return;
   try{
     if(item){
       await db('items','PATCH',{bottles:newBt,qty:newBt,updated_at:new Date().toISOString()},`?id=eq.${item.id}`);
