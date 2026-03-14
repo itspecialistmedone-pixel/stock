@@ -3,6 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#c0001a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lab Stock">
+<meta name="application-name" content="Lab Stock">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23c0001a'/><text y='.9em' font-size='75' x='12'>🧪</text></svg>">
+<link rel="manifest" id="pwaManifest">
 <title>Lab Stock System</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
@@ -205,6 +212,15 @@ input,select,textarea{font-family:var(--fn);}
 .ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:1000;align-items:center;justify-content:center;padding:14px;backdrop-filter:blur(3px);touch-action:none;}
 .ov.open{display:flex;}
 .modal{background:var(--w);border:1.5px solid var(--bdr);border-radius:var(--r3);width:100%;max-width:500px;max-height:92vh;overflow-y:auto;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.16);touch-action:auto;position:relative;z-index:1001;}
+.dlg-wrap{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);}
+.dlg-box{background:var(--w);border-radius:var(--r2);padding:24px;max-width:360px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.2);animation:dlgIn .15s ease;}
+@keyframes dlgIn{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
+.dlg-icon{font-size:32px;text-align:center;margin-bottom:10px;}
+.dlg-title{font-size:15px;font-weight:700;color:var(--t1);margin-bottom:6px;text-align:center;}
+.dlg-msg{font-size:13px;color:var(--t2);line-height:1.7;text-align:center;margin-bottom:16px;white-space:pre-line;}
+.dlg-inp{width:100%;border:1.5px solid var(--bdr);border-radius:var(--r);padding:9px 12px;font-size:14px;color:var(--t1);background:var(--s2);margin-bottom:14px;outline:none;}
+.dlg-inp:focus{border-color:var(--red);}
+.dlg-btns{display:flex;gap:8px;justify-content:center;}
 .modal h3{font-size:16px;font-weight:700;color:var(--red);margin-bottom:16px;display:flex;align-items:center;gap:7px;padding-bottom:13px;border-bottom:1.5px solid var(--bdr);}
 .r2{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
 .mb{display:flex;gap:7px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1.5px solid var(--bdr);position:relative;z-index:1002;}
@@ -336,7 +352,9 @@ input,select,textarea{font-family:var(--fn);}
       </div>
       <div class="cgrid">
         <div class="cbox"><h3>📊 ขวดตามหมวดหมู่</h3><div id="catChart"></div></div>
-        <div class="cbox"><h3>🚦 สถานะ</h3><div id="stChart"></div></div>
+        <div class="cbox"><h3>🚦 สถานะ Stock</h3><div id="stChart"></div></div>
+        <div class="cbox"><h3>🔥 Top 5 ใช้บ่อยสุด (30 วัน)</h3><div id="topChart"></div></div>
+        <div class="cbox"><h3>📅 การหยิบออกรายสัปดาห์</h3><div id="weekChart"></div></div>
       </div>
       <div class="sh"><h2>⚠️ รายการที่ต้องดูแล</h2></div>
       <div id="alertList"></div>
@@ -382,6 +400,15 @@ input,select,textarea{font-family:var(--fn);}
         <h2>📋 Request / เบิกของ</h2>
         <button class="btn-p" onclick="openReqModal()">＋ สร้าง Request</button>
       </div>
+      <div class="tb" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+        <div style="position:relative;flex:1;min-width:180px;">
+          <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;">🔍</span>
+          <input class="si2" id="reqSrch" type="text" style="padding-left:36px;" placeholder="ค้นหาชื่อ Reagent, ผู้ขอ, รพ..." oninput="renderReqs()">
+        </div>
+        <input class="si2" id="reqDateFrom" type="date" style="width:140px;" onchange="renderReqs()" title="จากวันที่">
+        <input class="si2" id="reqDateTo" type="date" style="width:140px;" onchange="renderReqs()" title="ถึงวันที่">
+        <button class="ab ab-gr" onclick="clearReqFilter()" title="ล้างตัวกรอง">✕ ล้าง</button>
+      </div>
       <div class="chips">
         <button class="chip act" onclick="fReq('all',this)">ทั้งหมด</button>
         <button class="chip" onclick="fReq('pending',this)">⏳ รอ</button>
@@ -389,6 +416,7 @@ input,select,textarea{font-family:var(--fn);}
         <button class="chip" onclick="fReq('auto_out',this)" style="color:#7c3aed;border-color:#c4b5fd;">📤 หยิบออก</button>
         <button class="chip" onclick="fReq('rejected',this)">❌ ไม่อนุมัติ</button>
       </div>
+      <div id="reqCount" style="font-size:11px;color:var(--t3);padding:4px 2px;"></div>
       <div id="reqList"><div class="empty"><span class="ei">⏳</span>กำลังโหลด...</div></div>
     </div>
 
@@ -695,6 +723,14 @@ input,select,textarea{font-family:var(--fn);}
           <button class="btn-p" onclick="sendManualNotif()">📤 ส่งรายงานสรุปตอนนี้</button>
           <button class="btn-gh" onclick="loadNotifCfg()">🔄 โหลดการตั้งค่า</button>
         </div>
+      </div>
+
+      <!-- AUDIT LOG -->
+      <div class="sbox">
+        <div class="sbox-title">🔍 Audit Log (การเข้าใช้งานล่าสุด)
+          <button class="ab ab-b" onclick="loadAuditLog()" style="font-size:11px;margin-left:8px;">🔄 โหลด</button>
+        </div>
+        <div id="auditList" style="font-size:12px;color:var(--t3);">กด "โหลด" เพื่อดูประวัติ</div>
       </div>
 
       <!-- EXPORT -->
@@ -1020,6 +1056,25 @@ function loadBrand(){
 }
 
 // ══ INIT ══
+// ══ PWA Manifest (inline) ══
+function setupPWA(){
+  const manifest={
+    name:'Lab Stock System',
+    short_name:'Lab Stock',
+    description:'ระบบจัดการ Reagent',
+    start_url:location.href,
+    display:'standalone',
+    background_color:'#ffffff',
+    theme_color:'#c0001a',
+    orientation:'portrait-primary',
+    icons:[{src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23c0001a'/><text y='.9em' font-size='75' x='12'>🧪</text></svg>",sizes:'192x192',type:'image/svg+xml'},{src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23c0001a'/><text y='.9em' font-size='75' x='12'>🧪</text></svg>",sizes:'512x512',type:'image/svg+xml'}]
+  };
+  const blob=new Blob([JSON.stringify(manifest)],{type:'application/manifest+json'});
+  const url=URL.createObjectURL(blob);
+  document.getElementById('pwaManifest').setAttribute('href',url);
+}
+setupPWA();
+
 async function init(){
   loadBrand();
   try{
@@ -1076,7 +1131,9 @@ async function doLogin(){
     rp.textContent=user.role==='admin'?'👑 Admin':user.role==='staff'?'🧑‍🔬 Staff':'👁 Viewer';
     rp.className='rpill'+(user.role==='admin'?' admin':user.role==='viewer'?' viewer':'');
     setupRoleUI(user.role);
-    resetIdle(); // เริ่ม idle timer
+    resetIdle();
+    // บันทึก audit log
+    try{await db('stock_history','POST',{item_id:null,item_name:'[LOGIN]',type:'login',delta:0,qty_after:0,note:'Login',by_name:user.name});}catch{}
     await loadAll();
     // staff/viewer เริ่มที่หน้า stock
     const startTab = user.role==='staff' ? 'tabStock' : 'tabDash';
@@ -1198,12 +1255,48 @@ function renderDash(){
     else if(exp&&exp<soon)alerts.push({t:'exp',name:i.name,info:`ใกล้หมดอายุ: ${fd(i.expiry_date)}`,id:i.id});
   });
   const al=document.getElementById('alertList');
-  if(!alerts.length){al.innerHTML='<div class="empty"><span class="ei">✅</span>ทุกรายการปกติ</div>';return;}
-  al.innerHTML='<div class="alist">'+alerts.slice(0,12).map(a=>`
+  if(!alerts.length){al.innerHTML='<div class="empty"><span class="ei">✅</span>ทุกรายการปกติ</div>';}
+  else al.innerHTML='<div class="alist">'+alerts.slice(0,12).map(a=>`
     <div class="aitem ${a.t}">
       <div class="an">${a.name}</div><div class="ai">${a.info}</div>
       <button class="ab ab-r" onclick="viewItem(${a.id})">ดู</button>
     </div>`).join('')+'</div>';
+
+  // Top 5 ใช้บ่อย (จาก requests 30 วัน)
+  const d30=new Date();d30.setDate(d30.getDate()-30);
+  const recentReqs=S.requests.filter(r=>r.created_at&&new Date(r.created_at)>d30&&(r.status==='approved'||r.status==='auto_out'));
+  const usageMap={};
+  recentReqs.forEach(r=>{usageMap[r.item_name]=(usageMap[r.item_name]||0)+(r.qty||1);});
+  const top5=Object.entries(usageMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const maxTop=top5[0]?top5[0][1]:1;
+  const COLS2=['#c0001a','#1d6fb8','#7c3aed','#d97706','#00913a'];
+  document.getElementById('topChart').innerHTML=top5.length
+    ? top5.map(([name,qty],i)=>`
+      <div class="br">
+        <div class="bl" title="${name}" style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</div>
+        <div class="bt"><div class="bf" style="width:${qty/maxTop*100}%;background:${COLS2[i]};"></div></div>
+        <div class="bv">${qty} ขวด</div>
+      </div>`).join('')
+    : '<div style="color:var(--t3);font-size:13px;padding:10px 0;">ยังไม่มีข้อมูล 30 วันที่ผ่านมา</div>';
+
+  // กราฟรายสัปดาห์ (7 วันย้อนหลัง)
+  const weekDays=[];
+  for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);weekDays.push(d);}
+  const weekData=weekDays.map(d=>{
+    const ds=d.toISOString().slice(0,10);
+    const total=S.requests.filter(r=>r.created_at&&r.created_at.slice(0,10)===ds&&(r.status==='approved'||r.status==='auto_out')).reduce((s,r)=>s+(r.qty||1),0);
+    return{label:d.toLocaleDateString('th-TH',{weekday:'short',day:'numeric'}),value:total};
+  });
+  const maxW=Math.max(...weekData.map(d=>d.value),1);
+  document.getElementById('weekChart').innerHTML=`
+    <div style="display:flex;align-items:flex-end;gap:6px;height:80px;padding-bottom:4px;">
+      ${weekData.map(d=>`
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+          <div style="font-size:10px;color:var(--t2);font-weight:600;">${d.value||''}</div>
+          <div style="width:100%;background:${d.value>0?'var(--red)':'var(--s2)'};border-radius:4px 4px 0 0;height:${d.value/maxW*60+4}px;min-height:4px;transition:height .3s;"></div>
+          <div style="font-size:9px;color:var(--t3);text-align:center;white-space:nowrap;">${d.label}</div>
+        </div>`).join('')}
+    </div>`;
 }
 
 // ══ STOCK ══
@@ -1334,7 +1427,8 @@ async function saveItem(){
 async function delItem(id){
   const i=S.items.find(x=>x.id===id);
   if(!i)return;
-  if(!confirm(`🗑 ลบ "${i.name}" ออกจากระบบ?\n\n⚠️ การลบจะลบรายการนี้ถาวร ไม่สามารถกู้คืนได้`))return;
+  const _c1=await dlg({icon:'🗑️',title:'ลบรายการ',msg:'ลบ '+i.name+' ออกจากระบบ?\n⚠️ ไม่สามารถกู้คืนได้',okText:'ลบ',danger:true});
+  if(!_c1)return;
   try{
     await db('items','DELETE',null,`?id=eq.${id}`);
     toast('🗑️ ลบ "'+i.name+'" แล้ว','info');
@@ -1378,7 +1472,10 @@ async function viewItem(id){
     ${hist.length?`<div style="margin-top:13px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;">
         <div style="font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;">ประวัติล่าสุด</div>
-        <button onclick="viewFullHistory(${id})" style="font-size:11px;color:var(--blu);background:none;border:none;cursor:pointer;text-decoration:underline;">ดูทั้งหมด →</button>
+        <div style="display:flex;gap:8px;">
+          <button onclick="viewItemStats(${id})" style="font-size:11px;color:var(--pur);background:none;border:none;cursor:pointer;text-decoration:underline;">📊 สถิติ</button>
+          <button onclick="viewFullHistory(${id})" style="font-size:11px;color:var(--blu);background:none;border:none;cursor:pointer;text-decoration:underline;">ดูทั้งหมด →</button>
+        </div>
       </div>
       ${hist.map(h=>`<div class="hrow">
         <div>
@@ -1390,6 +1487,53 @@ async function viewItem(id){
     </div>`:''}`;
   openM('mView');
 }
+async function viewItemStats(itemId){
+  const i=S.items.find(x=>x.id===itemId);
+  let hist=[];
+  try{hist=await db('stock_history','GET',null,`?item_id=eq.${itemId}&order=created_at.desc&limit=500`);}catch{}
+  const outHist=hist.filter(h=>h.type==='out'||h.type==='auto_out');
+  const inHist=hist.filter(h=>h.type==='in');
+  const totalOut=outHist.reduce((s,h)=>s+Math.abs(h.delta||0),0);
+  const totalIn=inHist.reduce((s,h)=>s+Math.abs(h.delta||0),0);
+  // สถิติรายเดือน 3 เดือนล่าสุด
+  const months=[];
+  for(let m=2;m>=0;m--){
+    const d=new Date();d.setMonth(d.getMonth()-m);
+    const ym=d.toISOString().slice(0,7);
+    const label=d.toLocaleDateString('th-TH',{month:'short',year:'2-digit'});
+    const used=outHist.filter(h=>h.created_at&&h.created_at.slice(0,7)===ym).reduce((s,h)=>s+Math.abs(h.delta||0),0);
+    months.push({label,used});
+  }
+  const maxM=Math.max(...months.map(m=>m.used),1);
+  // ผู้หยิบบ่อยสุด
+  const userMap={};
+  outHist.forEach(h=>{userMap[h.by_name]=(userMap[h.by_name]||0)+Math.abs(h.delta||0);});
+  const topUsers=Object.entries(userMap).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  document.getElementById('viewContent').innerHTML=`
+    <div style="font-size:14px;font-weight:700;color:var(--red);margin-bottom:14px;">📊 สถิติการใช้งาน — ${i?.name||'—'}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+      <div style="background:var(--redd);border-radius:var(--r);padding:12px;text-align:center;">
+        <div style="font-size:22px;font-weight:700;color:var(--red);">${totalOut}</div>
+        <div style="font-size:11px;color:var(--t2);">ขวดที่หยิบออกทั้งหมด</div>
+      </div>
+      <div style="background:var(--grnb);border-radius:var(--r);padding:12px;text-align:center;">
+        <div style="font-size:22px;font-weight:700;color:var(--grn);">${totalIn}</div>
+        <div style="font-size:11px;color:var(--t2);">ขวดที่รับเข้าทั้งหมด</div>
+      </div>
+    </div>
+    <div style="font-size:11px;font-weight:700;color:var(--t2);margin-bottom:8px;text-transform:uppercase;">📅 การใช้ 3 เดือนล่าสุด</div>
+    ${months.map(m=>`<div class="br">
+      <div class="bl">${m.label}</div>
+      <div class="bt"><div class="bf" style="width:${m.used/maxM*100}%;background:var(--red);"></div></div>
+      <div class="bv">${m.used} ขวด</div></div>`).join('')}
+    ${topUsers.length?`<div style="font-size:11px;font-weight:700;color:var(--t2);margin:12px 0 8px;text-transform:uppercase;">👤 หยิบบ่อยสุด</div>
+    ${topUsers.map(([name,qty],i)=>`<div class="br">
+      <div class="bl">${name}</div>
+      <div class="bt"><div class="bf" style="width:${qty/topUsers[0][1]*100}%;background:var(--blu);"></div></div>
+      <div class="bv">${qty} ขวด</div></div>`).join('')}`:''}`;
+  openM('mView');
+}
+
 async function viewFullHistory(itemId){
   const i=S.items.find(x=>x.id===itemId);
   let hist=[];
@@ -1509,7 +1653,8 @@ function onScan(){
 async function scanOut(n){
   if(!S.scanItem)return;
   const i=S.scanItem;
-  if(!confirm(`📤 ยืนยันหยิบออก ${n} ขวด\n\nรายการ: ${i.name}\nคงเหลือปัจจุบัน: ${i.bottles||0} ขวด\nหลังหยิบ: ${Math.max(0,(i.bottles||0)-n)} ขวด`))return;
+  const _c2=await dlg({icon:'📤',title:'ยืนยันหยิบออก',msg:i.name+'\nจำนวน: '+n+' ขวด  คงเหลือหลังหยิบ: '+Math.max(0,(i.bottles||0)-n)+' ขวด',okText:'หยิบออก',danger:true});
+  if(!_c2)return;
   const newBt=Math.max(0,(i.bottles||0)-n);
   try{
     await db('items','PATCH',{bottles:newBt,qty:newBt,updated_at:new Date().toISOString()},`?id=eq.${i.id}`);
@@ -1558,7 +1703,8 @@ function clearInlineScan(){
 }
 async function inlinePick(id){
   const i=S.items.find(x=>x.id===id);if(!i)return;
-  if(!confirm(`📤 ยืนยันหยิบออก 1 ขวด\n\nรายการ: ${i.name}\nคงเหลือปัจจุบัน: ${i.bottles||0} ขวด\nหลังหยิบ: ${Math.max(0,(i.bottles||0)-1)} ขวด`))return;
+  const _c3=await dlg({icon:'📤',title:'ยืนยันหยิบออก',msg:i.name+'\nจำนวน: 1 ขวด  คงเหลือหลังหยิบ: '+Math.max(0,(i.bottles||0)-1)+' ขวด',okText:'หยิบออก',danger:true});
+  if(!_c3)return;
   const newBt=Math.max(0,(i.bottles||0)-1);
   try{
     await db('items','PATCH',{bottles:newBt,qty:newBt,updated_at:new Date().toISOString()},`?id=eq.${id}`);
@@ -1617,6 +1763,12 @@ async function submitReq(){
   }catch{toast('❌ ส่งไม่ได้','err');}
   setBL('bSR',false);
 }
+function clearReqFilter(){
+  const s=document.getElementById('reqSrch');if(s)s.value='';
+  const df=document.getElementById('reqDateFrom');if(df)df.value='';
+  const dt=document.getElementById('reqDateTo');if(dt)dt.value='';
+  renderReqs();
+}
 function fReq(f,btn){
   S.reqF=f;
   document.querySelectorAll('#pg-req .chip').forEach(b=>b.classList.remove('act'));
@@ -1627,6 +1779,18 @@ function renderReqs(){
   let reqs=[...S.requests];
   if(!isA)reqs=reqs.filter(r=>r.by_username===S.user.username);
   if(S.reqF!=='all')reqs=reqs.filter(r=>r.status===S.reqF);
+  // search
+  const srch=(document.getElementById('reqSrch')||{value:''}).value.toLowerCase().trim();
+  if(srch)reqs=reqs.filter(r=>(r.item_name||'').toLowerCase().includes(srch)||(r.requester_name||r.by_name||'').toLowerCase().includes(srch)||(r.hospital||'').toLowerCase().includes(srch)||(r.lot||'').toLowerCase().includes(srch));
+  // date filter
+  const df=(document.getElementById('reqDateFrom')||{value:''}).value;
+  const dt=(document.getElementById('reqDateTo')||{value:''}).value;
+  if(df)reqs=reqs.filter(r=>r.created_at&&r.created_at.slice(0,10)>=df);
+  if(dt)reqs=reqs.filter(r=>r.created_at&&r.created_at.slice(0,10)<=dt);
+  // sort newest first
+  reqs.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+  const countEl=document.getElementById('reqCount');
+  if(countEl)countEl.textContent=reqs.length?`แสดง ${reqs.length} รายการ`:'';
   const pmap={normal:'🟢 ปกติ',high:'🟡 เร่งด่วน',urgent:'🔴 ด่วนมาก'};
   const tmap={restock:'📦 เติม Stock',borrow:'🔄 ยืม',return:'↩️ คืน',other:'💬 อื่นๆ'};
   const el=document.getElementById('reqList');
@@ -1667,7 +1831,9 @@ function renderReqs(){
 }
 async function approveReq(id){
   const r=S.requests.find(x=>x.id===id);if(!r)return;
-  const note=prompt('หมายเหตุ:','')||'อนุมัติแล้ว';
+  const _ap=await dlg({icon:'✅',title:'อนุมัติ Request',msg:r.item_name+' — '+r.qty+' ขวด',input:true,inputPlaceholder:'หมายเหตุ (ถ้ามี)',okText:'อนุมัติ',cancelText:'ยกเลิก'});
+  if(_ap===null)return;
+  const note=_ap||'อนุมัติแล้ว';
   try{
     await db('requests','PATCH',{status:'approved',admin_note:note},`?id=eq.${id}`);
     if(r.type==='restock'){
@@ -1683,7 +1849,9 @@ async function approveReq(id){
   }catch{toast('❌ เกิดข้อผิดพลาด','err');}
 }
 async function rejectReq(id){
-  const note=prompt('เหตุผล:','')||'ไม่อนุมัติ';
+  const _rp=await dlg({icon:'❌',title:'ปฏิเสธ Request',msg:r.item_name+' — '+r.qty+' ขวด',input:true,inputPlaceholder:'เหตุผล',okText:'ปฏิเสธ',cancelText:'ยกเลิก',danger:true});
+  if(_rp===null)return;
+  const note=_rp||'ไม่อนุมัติ';
   try{
     await db('requests','PATCH',{status:'rejected',admin_note:note},`?id=eq.${id}`);
     toast('❌ ปฏิเสธแล้ว','info');
@@ -1698,7 +1866,7 @@ async function undoOut(id){
   const itemName=item?item.name:r.item_name;
   const curBt=item?item.bottles||0:0;
   const newBt=curBt+r.qty;
-  if(!confirm(`↩️ ยกเลิกการหยิบออก?\n\nรายการ: ${itemName}\nคืนกลับ: ${r.qty} ขวด\nStock ใหม่: ${newBt} ขวด`))return;
+  if(!confirmawait dlg({icon:'↩️',title:'ยกเลิกการหยิบออก',msg:itemName+'\nคืนกลับ: '+r.qty+' ขวด  Stock ใหม่: '+newBt+' ขวด',okText:'ยืนยันคืน',cancelText:'ยกเลิก'}))return;
   try{
     if(item){
       await db('items','PATCH',{bottles:newBt,qty:newBt,updated_at:new Date().toISOString()},`?id=eq.${item.id}`);
@@ -1725,19 +1893,13 @@ async function delReq(id){
 
   if(isApproved){
     // Request อนุมัติแล้ว — ขวดถูกหักออกไปแล้ว ถามว่าจะคืนไหม
-    const choice=confirm(
-      `🗑 ลบ Request "${r.item_name}" (${r.qty} ขวด)\n\n`+
-      `⚠️ Request นี้ "อนุมัติแล้ว" ขวดถูกหักออกไปแล้ว ${r.qty} ขวด\n\n`+
-      `กด OK = ลบ Request และคืนขวด ${r.qty} ขวดกลับ Stock\n`+
-      `กด Cancel = ยกเลิก (ไม่ลบ)`
-    );
+    const choice=await dlg({icon:'🗑️',title:'ลบ Request (อนุมัติแล้ว)',msg:r.item_name+' — '+r.qty+' ขวด\n⚠️ ขวดถูกหักไปแล้ว  กด "ลบ+คืนขวด" เพื่อคืน '+r.qty+' ขวดกลับ Stock',okText:'ลบ + คืนขวด',cancelText:'ยกเลิก',danger:true});
     if(!choice)return;
     restoreBottles=true;
   } else {
     // Request ที่ยังไม่อนุมัติหรือถูกปฏิเสธ — ลบได้เลย
-    if(!confirm(`🗑 ลบ Request "${r.item_name}" นี้?\n\n`+
-      `${r.status==='pending'?'⏳ Request ยังรอ Approve อยู่ — ลบแล้วจะหายไปเลย':'❌ Request ถูกปฏิเสธแล้ว'}\n`+
-      `จำนวนขวดใน Stock ไม่เปลี่ยนแปลง`))return;
+    const _cd=await dlg({icon:'🗑️',title:'ลบ Request',msg:r.item_name+'\n'+(r.status==='pending'?'⏳ ยังรออยู่ — ลบแล้วหายเลย':'❌ ถูกปฏิเสธแล้ว')+'\nStock ไม่เปลี่ยน',okText:'ลบ',danger:true});
+    if(!_cd)return;
   }
 
   try{
@@ -1766,7 +1928,8 @@ async function delReq(id){
 
 async function clearLot(itemId){
   const i=S.items.find(x=>x.id===itemId);
-  if(!confirm(`ลบ Lot "${i?.lot}" จาก ${i?.name}?`))return;
+  const _c5=await dlg({icon:'🏷️',title:'ลบ Lot',msg:'ลบ Lot '+i?.lot+'\nจาก '+i?.name+'?',okText:'ลบ',danger:true});
+  if(!_c5)return;
   try{
     await db('items','PATCH',{lot:null},`?id=eq.${itemId}`);
     toast('🗑️ ลบ Lot แล้ว','info');
@@ -1961,7 +2124,8 @@ async function savePwd(){
   setBL('bSP',false);
 }
 async function migratePasswords(){
-  if(!confirm('🔒 Migrate passwords ทุก User เป็น SHA-256?\n\nระบบจะ hash password ของทุกคนที่ยังไม่ได้ hash\n(password ที่ hash แล้วจะไม่เปลี่ยน)'))return;
+  const _c6=await dlg({icon:'🔒',title:'Migrate Passwords',msg:'Hash password ทุก User เป็น SHA-256\nPassword ที่ hash แล้วจะไม่เปลี่ยน',okText:'Migrate',cancelText:'ยกเลิก'});
+  if(!_c6)return;
   let ok=0,skip=0;
   const users=await db('users','GET',null,'?order=id.asc');
   for(const u of users){
@@ -2001,7 +2165,8 @@ async function saveMeta(){
   setBL('bSMeta',false);
 }
 async function delMeta(table,id){
-  if(!confirm('ลบรายการนี้?'))return;
+  const _cg=await dlg({icon:'🗑️',title:'ลบรายการ',msg:'ยืนยันการลบ?',okText:'ลบ',danger:true});
+  if(!_cg)return;
   try{
     await db(table,'DELETE',null,`?id=eq.${id}`);
     toast('🗑️ ลบแล้ว','info');
@@ -2106,6 +2271,25 @@ function closeM(id){
 }
 document.querySelectorAll('.ov').forEach(ov=>ov.addEventListener('mousedown',e=>{if(e.target===ov)ov.classList.remove('open');}));
 function setBL(id,on){const b=document.getElementById(id);if(b){b.disabled=on;b.style.opacity=on?.6:1;}}
+async function loadAuditLog(){
+  const el=document.getElementById('auditList');
+  el.textContent='⏳ กำลังโหลด...';
+  try{
+    const logs=await db('stock_history','GET',null,'?type=eq.login&order=created_at.desc&limit=20');
+    if(!logs||!logs.length){el.textContent='ไม่มีประวัติ';return;}
+    el.innerHTML=`<table style="width:100%;border-collapse:collapse;font-size:12px;">
+      <thead><tr style="background:var(--s2);">
+        <th style="padding:6px 8px;text-align:left;color:var(--t2);">ผู้ใช้</th>
+        <th style="padding:6px 8px;text-align:left;color:var(--t2);">เวลา</th>
+      </tr></thead>
+      <tbody>${logs.map(l=>`<tr style="border-bottom:1px solid var(--bdr);">
+        <td style="padding:6px 8px;">👤 ${l.by_name}</td>
+        <td style="padding:6px 8px;color:var(--t3);font-size:11px;">${fdt(l.created_at)}</td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  }catch{el.textContent='❌ โหลดไม่ได้';}
+}
+
 function exportCSV(){
   const h='ID,Barcode,Name,Category,Bottles,MinQty,Expiry,Lot,Brand,Note\n';
   const r=S.items.map(i=>[i.id,i.barcode,`"${i.name}"`,`"${i.category}"`,i.bottles||0,i.min_qty||5,i.expiry_date||'',i.lot||'',i.brand||'',`"${i.note||''}"`].join(',')).join('\n');
@@ -2649,7 +2833,52 @@ function cors(){return{
   </div>`;
   openM('mView');
 }
+// ══ CUSTOM DIALOG (แทน confirm/prompt) ══
+let _dlgResolve=null;
+function dlg({icon='',title='',msg='',okText='ตกลง',cancelText='ยกเลิก',showCancel=true,input=false,inputPlaceholder='',inputDefault='',danger=false}){
+  return new Promise(resolve=>{
+    _dlgResolve=resolve;
+    document.getElementById('dlgIcon').textContent=icon;
+    document.getElementById('dlgTitle').textContent=title;
+    document.getElementById('dlgMsg').textContent=msg;
+    const inp=document.getElementById('dlgInp');
+    if(input){inp.style.display='';inp.placeholder=inputPlaceholder;inp.value=inputDefault;setTimeout(()=>inp.focus(),100);}
+    else inp.style.display='none';
+    const btns=document.getElementById('dlgBtns');
+    btns.innerHTML=`
+      ${showCancel?`<button class="btn-cn" style="min-width:80px;" onclick="dlgCancel()">${cancelText}</button>`:''}
+      <button class="${danger?'btn-p':'btn-sv'}" style="min-width:80px;" onclick="dlgOk()">${okText}</button>`;
+    document.getElementById('dlgWrap').style.display='flex';
+  });
+}
+function dlgOk(){
+  const inp=document.getElementById('dlgInp');
+  const val=inp.style.display!=='none'?inp.value:true;
+  document.getElementById('dlgWrap').style.display='none';
+  if(_dlgResolve){_dlgResolve(val);_dlgResolve=null;}
+}
+function dlgCancel(){
+  document.getElementById('dlgWrap').style.display='none';
+  if(_dlgResolve){_dlgResolve(null);_dlgResolve=null;}
+}
+document.addEventListener('keydown',e=>{
+  if(document.getElementById('dlgWrap').style.display!=='none'){
+    if(e.key==='Enter')dlgOk();
+    if(e.key==='Escape')dlgCancel();
+  }
+});
+
 init();
 </script>
+<!-- CUSTOM DIALOG -->
+<div id="dlgWrap" class="dlg-wrap" style="display:none;" onclick="if(event.target===this)dlgCancel()">
+  <div class="dlg-box">
+    <div class="dlg-icon" id="dlgIcon"></div>
+    <div class="dlg-title" id="dlgTitle"></div>
+    <div class="dlg-msg" id="dlgMsg"></div>
+    <input class="dlg-inp" id="dlgInp" type="text" style="display:none;" placeholder="">
+    <div class="dlg-btns" id="dlgBtns"></div>
+  </div>
+</div>
 </body>
 </html>
