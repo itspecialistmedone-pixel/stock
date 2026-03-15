@@ -293,6 +293,21 @@ input,select,textarea{font-family:var(--fn);}
 .sw-sl:before{content:'';position:absolute;width:18px;height:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.25s;}
 .sw input:checked+.sw-sl{background:var(--grn);}
 .sw input:checked+.sw-sl:before{transform:translateX(18px);}
+
+[data-theme="dark"]{
+  --w:#1e1e2e;--s2:#2a2a3e;--bdr:#3f3f5f;
+  --t1:#cdd6f4;--t2:#a6adc8;--t3:#6c7086;
+  --sh:0 1px 3px rgba(0,0,0,.4);--sh2:0 8px 32px rgba(0,0,0,.5);
+  --redl:rgba(192,0,26,.15);--redb:rgba(192,0,26,.3);--redd:rgba(192,0,26,.1);
+  --grnb:rgba(0,145,58,.15);--ambb:rgba(217,119,6,.15);--blub:rgba(29,111,184,.15);
+}
+[data-theme="dark"] .topbar,[data-theme="dark"] .navtabs{background:var(--w);}
+[data-theme="dark"] .modal,[data-theme="dark"] .dlg-box{background:#1e1e2e;}
+[data-theme="dark"] input,[data-theme="dark"] select,[data-theme="dark"] textarea{background:var(--s2);color:var(--t1);border-color:var(--bdr);}
+[data-theme="dark"] .tw tr:hover td{background:rgba(192,0,26,.08);}
+[data-theme="dark"] #loginWrap{background:linear-gradient(135deg,#1a0a10,#1e1e2e,#0a1020);}
+[data-theme="dark"] .lbox{background:#1e1e2e;}
+
 </style>
 </head>
 <body>
@@ -333,6 +348,8 @@ input,select,textarea{font-family:var(--fn);}
     <div class="sdot" id="sdot"></div>
     <span class="rpill" id="rPill">Staff</span>
     <button class="btn-out" onclick="openMyAccount()" style="margin-right:2px;">👤 บัญชีฉัน</button>
+    <button class="btn-out" onclick="toggleDark()" id="btnDark" title="เปลี่ยนธีม">🌙</button>
+    <button class="btn-out" onclick="toggleLang()" id="btnLang" title="เปลี่ยนภาษา">EN</button>
     <button class="btn-out" onclick="doLogout()">ออก</button>
   </div>
   <div class="navtabs">
@@ -397,11 +414,25 @@ input,select,textarea{font-family:var(--fn);}
       </div>
       <div id="inlineScanResult" style="display:none;margin-bottom:10px;"></div>
       <div class="chips" id="catChips"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <div id="stockCount" style="font-size:11px;color:var(--t3);padding:4px 2px;"></div>
+        <div id="bulkBar" style="display:none;gap:7px;align-items:center;">
+          <span id="bulkCount" style="font-size:12px;font-weight:600;color:var(--red);"></span>
+          <button class="ab ab-b" onclick="bulkExport()" style="font-size:11px;">📄 Export</button>
+          <button class="ab ab-r" onclick="bulkDelete()" style="font-size:11px;">🗑 ลบที่เลือก</button>
+          <button class="ab ab-gr" onclick="clearSelection()" style="font-size:11px;">✕ ยกเลิก</button>
+        </div>
+      </div>
       <div class="tw">
         <table>
           <thead><tr>
-            <th>ชื่อ Reagent</th><th>หมวดหมู่</th><th>ขวดคงเหลือ</th>
-            <th class="hm">Lot</th><th class="hm">หมดอายุ</th><th>จัดการ</th>
+            <th style="width:36px;"><input type="checkbox" id="chkAll" onclick="toggleSelectAll(this)" style="cursor:pointer;width:15px;height:15px;"></th>
+            <th onclick="setSort('name')" style="cursor:pointer;user-select:none;" title="เรียงตามชื่อ">ชื่อ Reagent <span id="sort-name">↕</span></th>
+            <th>หมวดหมู่</th>
+            <th onclick="setSort('bottles')" style="cursor:pointer;user-select:none;" title="เรียงตามจำนวน">ขวดคงเหลือ <span id="sort-bottles">↕</span></th>
+            <th class="hm">Lot</th>
+            <th class="hm" onclick="setSort('expiry_date')" style="cursor:pointer;user-select:none;" title="เรียงตามวันหมดอายุ">หมดอายุ <span id="sort-expiry_date">↕</span></th>
+            <th>จัดการ</th>
           </tr></thead>
           <tbody id="stockTbody"><tr><td colspan="6" style="text-align:center;padding:28px;color:var(--t3);">⏳ กำลังโหลด...</td></tr></tbody>
         </table>
@@ -1069,7 +1100,7 @@ async function db(t,m='GET',b=null,q=''){
 
 // ══ STATE ══
 let S={user:null,items:[],requests:[],cats:[],hosps:[],dels:[],users:[],
-       catF:'all',reqF:'all',editId:null,scanItem:null,curPage:'dash',
+       catF:'all',reqF:'all',editId:null,scanItem:null,curPage:'dash',sortBy:'name',sortDir:'asc',
        metaType:null,importRows:[]};
 
 // ══ LOGO ══
@@ -1120,6 +1151,82 @@ function setupPWA(){
   document.getElementById('pwaManifest').setAttribute('href',url);
 }
 setupPWA();
+
+// ── Dark Mode ──
+function toggleDark(){
+  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+  const newTheme=isDark?'light':'dark';
+  document.documentElement.setAttribute('data-theme',newTheme);
+  document.getElementById('btnDark').textContent=newTheme==='dark'?'☀️':'🌙';
+  localStorage.setItem('lab_theme',newTheme);
+}
+function initTheme(){
+  const saved=localStorage.getItem('lab_theme');
+  const prefersDark=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches;
+  const theme=saved||(prefersDark?'dark':'light');
+  if(theme==='dark'){
+    document.documentElement.setAttribute('data-theme','dark');
+    const btn=document.getElementById('btnDark');
+    if(btn)btn.textContent='☀️';
+  }
+}
+initTheme();
+
+// ── i18n ──
+const LANG={
+  th:{
+    'stock':'🧪 รายการ Reagent','requests':'📋 Request / เบิกของ','dashboard':'📊 Dashboard',
+    'report':'📈 รายงานสรุป','admin':'⚙️ Admin',
+    'tab_dash':'📊 Dashboard','tab_stock':'🧪 Stock','tab_req':'📋 Requests','tab_report':'📈 รายงาน','tab_admin':'⚙️ Admin',
+    'add_item':'＋ เพิ่ม','new_req':'＋ สร้าง Request','scan':'📷 สแกน','import':'📊 Import Excel',
+    'search_placeholder':'ค้นหาชื่อ, Lot...','scan_placeholder':'สแกนบาร์โค้ดที่นี่...',
+    'th_name':'ชื่อ Reagent','th_cat':'หมวดหมู่','th_qty':'ขวดคงเหลือ','th_lot':'Lot','th_exp':'หมดอายุ','th_action':'จัดการ',
+    'total':'รายการทั้งหมด','low':'ใกล้หมด','out':'หมดสต็อก','pending':'รอ Approve',
+  },
+  en:{
+    'stock':'🧪 Reagent List','requests':'📋 Requests','dashboard':'📊 Dashboard',
+    'report':'📈 Summary Report','admin':'⚙️ Admin',
+    'tab_dash':'📊 Dashboard','tab_stock':'🧪 Stock','tab_req':'📋 Requests','tab_report':'📈 Report','tab_admin':'⚙️ Admin',
+    'add_item':'＋ Add','new_req':'＋ New Request','scan':'📷 Scan','import':'📊 Import Excel',
+    'search_placeholder':'Search name, Lot...','scan_placeholder':'Scan barcode here...',
+    'th_name':'Reagent Name','th_cat':'Category','th_qty':'Bottles','th_lot':'Lot','th_exp':'Expiry','th_action':'Action',
+    'total':'Total Items','low':'Low Stock','out':'Out of Stock','pending':'Pending',
+  }
+};
+let _lang='th';
+function toggleLang(){
+  _lang=_lang==='th'?'en':'th';
+  localStorage.setItem('lab_lang',_lang);
+  document.getElementById('btnLang').textContent=_lang==='th'?'EN':'ไทย';
+  applyLang();
+}
+function applyLang(){
+  const L=LANG[_lang];
+  // tabs
+  const tabMap={tabDash:'tab_dash',tabStock:'tab_stock',tabReq:'tab_req',tabReport:'tab_report',adminTab:'tab_admin'};
+  Object.entries(tabMap).forEach(([id,key])=>{
+    const el=document.getElementById(id);
+    if(el){const badge=el.querySelector('.nbadge');const txt=L[key];el.childNodes[0].textContent=txt+' ';if(badge)el.appendChild(badge);}
+  });
+  // search placeholders
+  const srch=document.getElementById('srch');if(srch)srch.placeholder=L['search_placeholder'];
+  const bc=document.getElementById('bcScan');if(bc)bc.placeholder=L['scan_placeholder'];
+  // buttons
+  const btnAdd=document.getElementById('btnAdd');if(btnAdd)btnAdd.textContent=L['add_item'];
+  const btnReq=document.getElementById('btnNewReq');if(btnReq)btnReq.textContent=L['new_req'];
+  // stat cards
+  ['d-total','d-low','d-out','d-pend'].forEach((id,i)=>{
+    const el=document.getElementById(id);
+    if(el&&el.previousElementSibling){el.previousElementSibling.textContent=['total','low','out','pending'][i]?L[['total','low','out','pending'][i]]:'';}
+  });
+}
+function initLang(){
+  _lang=localStorage.getItem('lab_lang')||'th';
+  const btn=document.getElementById('btnLang');
+  if(btn)btn.textContent=_lang==='th'?'EN':'ไทย';
+  if(_lang!=='th')applyLang();
+}
+initLang();
 
 async function init(){
   loadBrand();
@@ -1411,6 +1518,53 @@ function setCat(c,btn){
   document.querySelectorAll('#catChips .chip').forEach(b=>b.classList.remove('act'));
   btn.classList.add('act');renderStock();
 }
+// ── Bulk Select ──
+function toggleSelectAll(cb){
+  document.querySelectorAll('.itemChk').forEach(c=>c.checked=cb.checked);
+  onItemCheck();
+}
+function onItemCheck(){
+  const checked=document.querySelectorAll('.itemChk:checked');
+  const bar=document.getElementById('bulkBar');
+  const cnt=document.getElementById('bulkCount');
+  if(checked.length>0){bar.style.display='flex';cnt.textContent=checked.length+' รายการที่เลือก';}
+  else{bar.style.display='none';}
+}
+function clearSelection(){
+  document.querySelectorAll('.itemChk').forEach(c=>c.checked=false);
+  const cb=document.getElementById('chkAll');if(cb)cb.checked=false;
+  onItemCheck();
+}
+function getSelectedIds(){return[...document.querySelectorAll('.itemChk:checked')].map(c=>+c.dataset.id);}
+async function bulkDelete(){
+  const ids=getSelectedIds();if(!ids.length)return;
+  const names=ids.map(id=>S.items.find(x=>x.id===id)?.name||id).slice(0,3).join(', ');
+  const more=ids.length>3?' ...และอีก '+(ids.length-3)+' รายการ':'';
+  const ok=await dlg({icon:'\u{1F5D1}\uFE0F',title:'ลบหลายรายการ',msg:'ลบ '+ids.length+' รายการ?\n'+names+more+'\n\n\u26A0\uFE0F ไม่สามารถกู้คืนได้',okText:'ลบทั้งหมด',danger:true});
+  if(!ok)return;
+  let done=0;
+  for(const id of ids){try{await db('items','DELETE',null,'?id=eq.'+id);done++;}catch{}}
+  toast('\u{1F5D1}\uFE0F ลบแล้ว '+done+'/'+ids.length+' รายการ','ok');
+  clearSelection();await loadItems();renderStock();
+}
+function bulkExport(){
+  const ids=getSelectedIds();if(!ids.length)return;
+  const selected=S.items.filter(i=>ids.includes(i.id));
+  const rows=selected.map(i=>[i.barcode,i.name,i.category,i.bottles||0,i.min_qty||5,i.lot||'',i.expiry_date||'',i.brand||'']);
+  const csv='barcode,name,category,bottles,min_qty,lot,expiry_date,brand\n'+rows.map(r=>r.map(v=>'"'+v+'"').join(',')).join('\n');
+  dl(csv,'text/csv','stock_selected_'+td()+'.csv');
+  toast('\u{1F4C4} Export '+selected.length+' รายการ','ok');
+}
+// ── Sort ──
+function setSort(col){
+  if(S.sortBy===col)S.sortDir=S.sortDir==='asc'?'desc':'asc';
+  else{S.sortBy=col;S.sortDir='asc';}
+  ['name','bottles','expiry_date'].forEach(c=>{
+    const el=document.getElementById('sort-'+c);
+    if(el)el.textContent=S.sortBy===c?(S.sortDir==='asc'?'\u2191':'\u2193'):'\u2195';
+  });
+  renderStock();
+}
 function renderStock(){
   renderCatChips();
   const srch=(document.getElementById('srch')||{value:''}).value.toLowerCase();
@@ -1429,6 +1583,7 @@ function renderStock(){
     const pct=mn>0?Math.min(bt/mn*100,100):100;
     const pc=bt===0?'#c0001a':bt<=mn?'#d97706':'#00913a';
     return `<tr>
+      <td style="width:36px;"><input type="checkbox" class="itemChk" data-id="${i.id}" onclick="onItemCheck()" style="cursor:pointer;width:15px;height:15px;"></td>
       <td>
         <div style="font-weight:600;font-size:13px;">${i.name}</div>
         <div style="font-size:11px;color:var(--t3);font-family:var(--mo);">${i.barcode}${i.brand?` · ${i.brand}`:''}</div>
@@ -1594,35 +1749,38 @@ async function viewItem(id){
 function printLabel(itemId){
   const i=S.items.find(x=>x.id===itemId);
   if(!i)return;
-  // สร้าง barcode SVG แบบ Code128 ง่ายๆ ด้วย div
-  const w=window.open('','_blank','width=400,height=300');
-  w.document.write(`<!DOCTYPE html><html><head>
-    <title>Label: ${i.name}</title>
-    <style>
-      body{font-family:Arial,sans-serif;margin:0;padding:0;}
-      .label{width:9cm;min-height:4cm;border:1px solid #ccc;padding:8px;box-sizing:border-box;page-break-after:always;}
-      .name{font-size:14px;font-weight:bold;margin-bottom:4px;line-height:1.3;}
-      .sub{font-size:11px;color:#555;margin-bottom:3px;}
-      .bc{font-family:monospace;font-size:13px;font-weight:bold;letter-spacing:2px;margin:6px 0;padding:4px;background:#f5f5f5;border-radius:3px;text-align:center;}
-      .row{display:flex;justify-content:space-between;font-size:10px;color:#777;}
-      @media print{body{margin:0;}@page{margin:5mm;size:9cm 4cm;}}
-    </style>
-  </head><body>
-    <div class="label">
-      <div class="name">${i.name}</div>
-      <div class="sub">📦 ${i.category}${i.brand?' | 🏭 '+i.brand:''}</div>
-      <div class="bc">|||  ${i.barcode}  |||</div>
-      <div class="row">
-        <span>${i.lot?'Lot: '+i.lot:''}</span>
-        <span>${i.expiry_date?'EXP: '+i.expiry_date:''}</span>
-      </div>
-      <div class="row" style="margin-top:3px;">
-        <span>คงเหลือ: ${i.bottles||0} ขวด</span>
-        <span style="font-size:9px;color:#aaa;">${new Date().toLocaleDateString('th-TH')}</span>
-      </div>
-    </div>
-    <script>window.onload=function(){window.print();setTimeout(window.close,1000);}<\/script>
-  </body></html>`);
+  const qrData=encodeURIComponent(i.barcode+'|'+i.name);
+  const qrUrl='https://api.qrserver.com/v1/create-qr-code/?size=100x100&data='+qrData;
+  const w=window.open('','_blank','width=420,height=320');
+  w.document.write('<!DOCTYPE html><html><head>'
+    +'<title>Label: '+i.name+'<\/title>'
+    +'<style>'
+    +'body{font-family:Arial,sans-serif;margin:0;padding:8px;}'
+    +'.label{width:9cm;min-height:4.5cm;border:1.5px solid #ccc;border-radius:6px;padding:10px;box-sizing:border-box;display:flex;gap:10px;align-items:flex-start;}'
+    +'.info{flex:1;}'
+    +'.name{font-size:13px;font-weight:bold;margin-bottom:3px;line-height:1.3;color:#c0001a;}'
+    +'.sub{font-size:10px;color:#555;margin-bottom:2px;}'
+    +'.bc{font-family:monospace;font-size:12px;font-weight:bold;letter-spacing:2px;margin:5px 0;padding:3px 6px;background:#f5f5f5;border-radius:3px;display:inline-block;}'
+    +'.row{display:flex;justify-content:space-between;font-size:10px;color:#666;margin-top:3px;}'
+    +'.qr{flex-shrink:0;}'
+    +'@media print{body{margin:0;padding:5px;}@page{margin:3mm;size:9cm 4.5cm;}}'
+    +'<\/style>'
+    +'<\/head><body>'
+    +'<div class="label">'
+    +'<div class="info">'
+    +'<div class="name">'+i.name+'<\/div>'
+    +'<div class="sub">'+i.category+(i.brand?' | '+i.brand:'')+'<\/div>'
+    +'<div class="bc">'+i.barcode+'<\/div>'
+    +'<div class="row">'
+    +'<span>'+(i.lot?'Lot: '+i.lot:'')+'<\/span>'
+    +'<span>'+(i.expiry_date?'EXP: '+i.expiry_date:'')+'<\/span>'
+    +'<\/div>'
+    +'<div class="row"><span>คงเหลือ: '+(i.bottles||0)+' ขวด<\/span><span style="font-size:9px;color:#aaa;">'+new Date().toLocaleDateString('th-TH')+'<\/span><\/div>'
+    +'<\/div>'
+    +'<div class="qr"><img src="'+qrUrl+'" width="90" height="90" alt="QR"><\/div>'
+    +'<\/div>'
+    +'<script>window.onload=function(){window.print();setTimeout(window.close,1500);}<\/script>'
+    +'<\/body><\/html>');
   w.document.close();
 }
 
@@ -1954,6 +2112,32 @@ async function sendReqNotif(payload){
   if(results.length)toast('🔔 แจ้งเตือน: '+results.join(' | '),results.some(r=>r.includes('✅'))?'ok':'err');
 }
 
+async function sendApproveNotif(r,status,note){
+  const cfg=getNotifCfg();
+  if(!cfg.cond?.req)return;
+  const nl='\n';
+  const icon=status==='approved'?'✅':'❌';
+  const msg=icon+' Request '+(status==='approved'?'อนุมัติแล้ว':'ถูกปฏิเสธ')+nl
+    +'รายการ: '+r.item_name+nl
+    +'จำนวน: '+r.qty+' ขวด'+nl
+    +'ผู้ขอ: '+(r.requester_name||r.by_name)+nl
+    +(note&&note!=='อนุมัติแล้ว'&&note!=='ไม่อนุมัติ'?'หมายเหตุ: '+note+nl:'')
+    +'เวลา: '+new Date().toLocaleString('th-TH');
+  if(cfg.cond.req_line&&cfg.line?.enabled&&cfg.line?.token&&cfg.line?.to){
+    try{
+      const lineBody=JSON.stringify({to:cfg.line.to,messages:[{type:'text',text:msg}]});
+      const lineUrl=cfg.line.proxy?.trim()||'https://api.line.me/v2/bot/message/push';
+      const lineHeaders=cfg.line.proxy?.trim()?{'Content-Type':'application/json','X-Line-Token':cfg.line.token}:{'Content-Type':'application/json','Authorization':'Bearer '+cfg.line.token};
+      await fetch(lineUrl,{method:'POST',headers:lineHeaders,body:lineBody});
+    }catch{}
+  }
+  if(cfg.cond.req_tg&&cfg.telegram?.enabled&&cfg.telegram?.token&&cfg.telegram?.chat){
+    try{
+      await fetch('https://api.telegram.org/bot'+cfg.telegram.token+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:cfg.telegram.chat,text:msg})});
+    }catch{}
+  }
+}
+
 function clearReqFilter(){
   const s=document.getElementById('reqSrch');if(s)s.value='';
   const df=document.getElementById('reqDateFrom');if(df)df.value='';
@@ -2036,6 +2220,8 @@ async function approveReq(id){
       }
     }
     toast('✅ อนุมัติแล้ว Stock อัปเดต','ok');
+    // แจ้งผู้ขอ
+    sendApproveNotif(r,'approved','อนุมัติแล้ว');
     await loadAll();renderReqs();renderAdmin();updBadge();
   }catch{toast('❌ เกิดข้อผิดพลาด','err');}
 }
@@ -2046,6 +2232,7 @@ async function rejectReq(id){
   try{
     await db('requests','PATCH',{status:'rejected',admin_note:note},`?id=eq.${id}`);
     toast('❌ ปฏิเสธแล้ว','info');
+    sendApproveNotif(r,'rejected',note);
     await loadRequests();renderReqs();renderAdmin();updBadge();
   }catch{toast('❌ เกิดข้อผิดพลาด','err');}
 }
