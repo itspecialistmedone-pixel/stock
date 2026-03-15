@@ -280,6 +280,9 @@ input,select,textarea{font-family:var(--fn);}
 @media(max-width:640px){.hm{display:none!important;}.tw{overflow-x:auto;}}
 @media print{.topbar,.navtabs,.tb,.chips,.ab,.btn-p,.btn-gh{display:none!important;}.tw{box-shadow:none;}}
 @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+#offlineBanner{display:none;position:fixed;top:0;left:0;right:0;z-index:99998;background:#c0001a;color:#fff;text-align:center;padding:8px 16px;font-size:13px;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.3);}
+#offlineBanner.show{display:block;animation:slideDown .3s ease;}
+@keyframes slideDown{from{transform:translateY(-100%)}to{transform:translateY(0)}}
 @media(max-width:600px){
   .tw table,.tw thead,.tw tbody,.tw th,.tw td,.tw tr{display:block;}
   .tw thead{display:none;}
@@ -327,6 +330,7 @@ input,select,textarea{font-family:var(--fn);}
 </head>
 <body>
 
+<div id="offlineBanner">📡 ไม่มีการเชื่อมต่ออินเทอร์เน็ต — ข้อมูลอาจไม่ได้รับการบันทึก</div>
 <div id="splash">
   <div class="sp-ring"><div class="sp-inner" id="spIcon">🧪</div></div>
   <div class="sp-title">Lab Stock System</div>
@@ -1336,6 +1340,25 @@ function initLang(){
 }
 initLang();
 
+// ══ Offline Detection ══
+function updateOnlineStatus(){
+  const banner=document.getElementById('offlineBanner');
+  if(!banner)return;
+  if(!navigator.onLine){
+    banner.classList.add('show');
+    toast('📡 ไม่มีอินเทอร์เน็ต — กรุณาตรวจสอบการเชื่อมต่อ','err');
+  } else {
+    if(banner.classList.contains('show')){
+      banner.classList.remove('show');
+      toast('✅ เชื่อมต่ออินเทอร์เน็ตแล้ว','ok');
+      // โหลดข้อมูลใหม่เมื่อกลับมา online
+      if(S.user)loadAll().then(()=>renderPage(S.curPage));
+    }
+  }
+}
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+
 async function init(){
   loadBrand();
   try{
@@ -1362,6 +1385,23 @@ async function init(){
 }
 
 // ══ AUTH ══
+// ── Input Sanitization (XSS prevention) ──
+function esc(str){
+  if(str==null)return str;
+  return String(str).replace(/[&<>"]/g,function(c){
+    return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];
+  });
+}
+// sanitize object values (ใช้กับ payload ก่อนส่งออก)
+function sanitizePayload(obj){
+  const out={};
+  for(const[k,v]of Object.entries(obj)){
+    if(typeof v==='string') out[k]=v.trim();
+    else out[k]=v;
+  }
+  return out;
+}
+
 // ── SHA-256 password hashing ──
 async function sha256(str){
   const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));
@@ -1579,7 +1619,7 @@ function renderDash(){
   if(!alerts.length){al.innerHTML='<div class="empty"><span class="ei">✅</span>ทุกรายการปกติ</div>';}
   else al.innerHTML='<div class="alist">'+alerts.slice(0,12).map(a=>`
     <div class="aitem ${a.t}">
-      <div class="an">${a.name}</div><div class="ai">${a.info}</div>
+      <div class="an">${esc(a.name)}</div><div class="ai">${esc(a.info)}</div>
       <button class="ab ab-r" onclick="viewItem(${a.id})">ดู</button>
     </div>`).join('')+'</div>';
 
@@ -1729,8 +1769,8 @@ function renderStock(){
     return `<tr>
       <td style="width:36px;"><input type="checkbox" class="itemChk" data-id="${i.id}" onclick="onItemCheck()" style="cursor:pointer;width:15px;height:15px;"></td>
       <td>
-        <div style="font-weight:600;font-size:13px;">${i.name}</div>
-        <div style="font-size:11px;color:var(--t3);font-family:var(--mo);">${i.barcode}${i.brand?` · ${i.brand}`:''}</div>
+        <div style="font-weight:600;font-size:13px;">${esc(i.name)}</div>
+        <div style="font-size:11px;color:var(--t3);font-family:var(--mo);">${esc(i.barcode)}${i.brand?` · ${esc(i.brand)}`:''}</div>
         <div class="mp"><div class="mpf" style="width:${pct}%;background:${pc};"></div></div>
       </td>
       <td><span class="ctag" style="${catClass(i.category)}">${i.category||'—'}</span></td>
@@ -1805,7 +1845,7 @@ async function saveItem(){
     const go=await dlg({icon:'⚠️',title:'บาร์โค้ดซ้ำ',msg:'บาร์โค้ด '+bc+' มีอยู่แล้ว\nรายการ: '+dupCheck.name+'\n\nต้องการบันทึกทับหรือไม่?',okText:'บันทึกทับ',cancelText:'ยกเลิก',danger:true});
     if(!go)return;
   }
-  const payload={barcode:bc,name,category:document.getElementById('fi-cat').value,
+  const payload=sanitizePayload({barcode:bc,name,category:document.getElementById('fi-cat').value,
     bottles:+document.getElementById('fi-bt').value||0,
     qty:+document.getElementById('fi-bt').value||0,
     min_qty:+document.getElementById('fi-min').value||5,
@@ -1813,7 +1853,7 @@ async function saveItem(){
     lot:document.getElementById('fi-lot').value||null,
     brand:document.getElementById('fi-brand').value||null,
     note:document.getElementById('fi-note').value||null,
-    updated_at:new Date().toISOString()};
+    updated_at:new Date().toISOString()});
   setBL('bSI',true);
   try{
     if(S.editId)await db('items','PATCH',payload,`?id=eq.${S.editId}`);
@@ -2349,10 +2389,10 @@ function renderReqs(){
     <div class="rc">
       <div class="rch">
         <div>
-          <div class="rct">${r.item_name} <span style="font-size:12px;color:var(--t2);font-weight:400">${tmap[r.type]||r.type}</span></div>
+          <div class="rct">${esc(r.item_name)} <span style="font-size:12px;color:var(--t2);font-weight:400">${tmap[r.type]||r.type}</span></div>
           <div class="rcs">${fdt(r.created_at)}</div>
           <div style="margin-top:5px;display:flex;flex-wrap:wrap;gap:2px;">
-            <span class="info-pill">👤 ${r.requester_name||r.by_name}</span>
+            <span class="info-pill">👤 ${esc(r.requester_name||r.by_name)}</span>
             <span class="info-pill">🧪 ${r.qty} ขวด</span>
             ${r.lot?`<span class="info-pill" style="background:var(--ambb);color:var(--amb);font-weight:700;">🏷️ Lot: ${r.lot}</span>`:''}
             <span class="info-pill">🏥 ${r.hospital||'—'}</span>
@@ -2366,8 +2406,8 @@ function renderReqs(){
           r.status==='auto_out'?'📤 หยิบออกแล้ว':
           '❌ ไม่อนุมัติ'}</span>
       </div>
-      ${r.note?`<div class="rcd">📝 ${r.note}</div>`:''}
-      ${r.admin_note?`<div class="rcd" style="background:var(--grnb);">👑 Admin: ${r.admin_note}</div>`:''}
+      ${r.note?`<div class="rcd">📝 ${esc(r.note)}</div>`:''}
+      ${r.admin_note?`<div class="rcd" style="background:var(--grnb);">👑 Admin: ${esc(r.admin_note)}</div>`:''}
       <div class="rca">
         ${isA&&r.status==='pending'?`
           <button class="ab ab-g" onclick="approveReq(${r.id})">✅ อนุมัติ</button>
@@ -2558,7 +2598,7 @@ function renderAdmin(){
             <div class="rct">${r.item_name}</div>
             <div class="rcs">${fdt(r.created_at)}</div>
             <div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:2px;">
-              <span class="info-pill">👤 ${r.requester_name||r.by_name}</span>
+              <span class="info-pill">👤 ${esc(r.requester_name||r.by_name)}</span>
               <span class="info-pill">🧪 ${r.qty} ขวด</span>
               ${r.lot?`<span class="info-pill" style="background:var(--ambb);color:var(--amb);font-weight:700;">🏷️ Lot: ${r.lot}</span>`:''}
               <span class="info-pill">🏥 ${r.hospital||'—'}</span>
