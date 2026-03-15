@@ -398,7 +398,7 @@ input,select,textarea{font-family:var(--fn);}
     <div class="page" id="pg-req">
       <div class="sh">
         <h2>📋 Request / เบิกของ</h2>
-        <button class="btn-p" onclick="openReqModal()">＋ สร้าง Request</button>
+        <button class="btn-p" id="btnNewReq" onclick="openReqModal()">＋ สร้าง Request</button>
       </div>
       <div class="tb" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
         <div style="position:relative;flex:1;min-width:180px;">
@@ -422,7 +422,7 @@ input,select,textarea{font-family:var(--fn);}
 
     <!-- REPORT -->
     <div class="page" id="pg-report">
-      <div class="sh"><h2>📈 รายงานสรุป</h2><button class="btn-gh" onclick="window.print()">🖨️ พิมพ์</button></div>
+      <div class="sh"><h2>📈 รายงานสรุป</h2><div style="display:flex;gap:7px;"><button class="btn-gh" onclick="exportReportPDF()">📄 Export PDF</button><button class="btn-gh" onclick="window.print()">🖨️ พิมพ์</button></div></div>
       <div id="reportContent"></div>
     </div>
 
@@ -707,15 +707,40 @@ input,select,textarea{font-family:var(--fn);}
             <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer;flex-wrap:wrap;">
               <input type="checkbox" id="nc-cond-exp" onchange="saveNotifCfg()" style="width:16px;height:16px;accent-color:var(--red);">
               <span>📅 แจ้งเตือนเมื่อใกล้หมดอายุภายใน</span>
-              <input type="number" id="nc-exp-days" value="60" min="1" max="365"
-                style="width:60px;padding:3px 7px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;text-align:center;"
-                onchange="saveNotifCfg()">
-              <span>วัน</span>
+              <select id="nc-exp-days" onchange="saveNotifCfg()"
+                style="padding:3px 7px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;">
+                <option value="7">7 วัน</option>
+                <option value="30">30 วัน</option>
+                <option value="60" selected>60 วัน</option>
+                <option value="90">90 วัน</option>
+                <option value="180">180 วัน</option>
+              </select>
+              <span>ล่วงหน้า</span>
+              <label style="display:flex;align-items:center;gap:5px;font-size:12px;margin-left:4px;cursor:pointer;">
+                <input type="checkbox" id="nc-exp-multi" onchange="saveNotifCfg()" style="accent-color:var(--red);">
+                <span>แจ้งหลายระดับ (90/30/7 วัน)</span>
+              </label>
             </label>
-            <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer;">
-              <input type="checkbox" id="nc-cond-req" onchange="saveNotifCfg()" style="width:16px;height:16px;accent-color:var(--red);">
-              <span>📋 แจ้งเตือนเมื่อมี Request ใหม่</span>
-            </label>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer;">
+                <input type="checkbox" id="nc-cond-req" onchange="saveNotifCfg()" style="width:16px;height:16px;accent-color:var(--red);">
+                <span>📋 แจ้งเตือนเมื่อมี Request ใหม่ ส่งผ่าน:</span>
+              </label>
+              <div id="nc-req-ch" style="display:flex;gap:12px;padding-left:26px;flex-wrap:wrap;">
+                <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;">
+                  <input type="checkbox" id="nc-req-line" onchange="saveNotifCfg()" style="accent-color:#00b900;">
+                  <span>💬 LINE</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;">
+                  <input type="checkbox" id="nc-req-tg" onchange="saveNotifCfg()" style="accent-color:#229ed9;">
+                  <span>✈️ Telegram</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;">
+                  <input type="checkbox" id="nc-req-both" onchange="onReqBothChange()" style="accent-color:var(--red);">
+                  <span>📣 ทั้งคู่</span>
+                </label>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1132,8 +1157,12 @@ async function doLogin(){
     rp.className='rpill'+(user.role==='admin'?' admin':user.role==='viewer'?' viewer':'');
     setupRoleUI(user.role);
     resetIdle();
-    // บันทึก audit log
-    try{await db('stock_history','POST',{item_id:null,item_name:'[LOGIN]',type:'login',delta:0,qty_after:0,note:'Login',by_name:user.name});}catch{}
+    // บันทึก audit log ใน localStorage
+    try{
+      const _logs=JSON.parse(localStorage.getItem('lab_audit')||'[]');
+      _logs.unshift({user:user.name,username:user.username,role:user.role,time:new Date().toISOString(),action:'login'});
+      localStorage.setItem('lab_audit',JSON.stringify(_logs.slice(0,100)));
+    }catch{}
     await loadAll();
     // staff/viewer เริ่มที่หน้า stock
     const startTab = user.role==='staff' ? 'tabStock' : 'tabDash';
@@ -1147,16 +1176,20 @@ function setupRoleUI(role){
   const isStaff = role==='staff';
   const isViewer = role==='viewer';
 
-  // tabs — staff เห็นแค่ stock + request
+  // tabs
   document.getElementById('tabDash').style.display   = isAdmin ? '' : 'none';
-  document.getElementById('tabStock').style.display  = '';          // ทุก role เห็น
-  document.getElementById('tabReq').style.display    = '';          // ทุก role เห็น
+  document.getElementById('tabStock').style.display  = '';
+  document.getElementById('tabReq').style.display    = '';
   document.getElementById('tabReport').style.display = isAdmin ? '' : 'none';
   document.getElementById('adminTab').style.display  = isAdmin ? '' : 'none';
 
   // ปุ่ม + เพิ่ม reagent — admin เท่านั้น
   const btnAdd = document.getElementById('btnAdd');
   if(btnAdd) btnAdd.style.display = isAdmin ? '' : 'none';
+
+  // ปุ่มสร้าง Request — viewer ดูได้อย่างเดียว
+  const btnReq = document.getElementById('btnNewReq');
+  if(btnReq) btnReq.style.display = isViewer ? 'none' : '';
 }
 
 // ── Auto Logout after 30 min idle ──
@@ -1406,6 +1439,12 @@ async function saveItem(){
   const bc=document.getElementById('fi-bc').value.trim();
   const name=document.getElementById('fi-name').value.trim();
   if(!bc||!name){toast('กรุณากรอกบาร์โค้ดและชื่อ','err');return;}
+  // ตรวจบาร์โค้ดซ้ำ (เฉพาะตอนเพิ่มใหม่ หรือแก้ไขแล้วเปลี่ยน barcode)
+  const dupCheck=S.items.find(x=>x.barcode.toLowerCase()===bc.toLowerCase()&&x.id!==S.editId);
+  if(dupCheck){
+    const go=await dlg({icon:'⚠️',title:'บาร์โค้ดซ้ำ',msg:'บาร์โค้ด '+bc+' มีอยู่แล้ว\nรายการ: '+dupCheck.name+'\n\nต้องการบันทึกทับหรือไม่?',okText:'บันทึกทับ',cancelText:'ยกเลิก',danger:true});
+    if(!go)return;
+  }
   const payload={barcode:bc,name,category:document.getElementById('fi-cat').value,
     bottles:+document.getElementById('fi-bt').value||0,
     qty:+document.getElementById('fi-bt').value||0,
@@ -1421,7 +1460,7 @@ async function saveItem(){
     else await db('items','POST',payload);
     toast(S.editId?'✅ อัปเดตแล้ว':'✅ เพิ่มแล้ว','ok');
     await loadItems();closeM('mItem');renderStock();
-  }catch(e){toast('❌ บันทึกไม่ได้','err');}
+  }catch(e){toast('❌ บันทึกไม่ได้: '+e.message,'err');}
   setBL('bSI',false);
 }
 async function delItem(id){
@@ -1452,6 +1491,10 @@ async function viewItem(id){
       <div style="font-size:16px;font-weight:700;margin-bottom:5px;">${i.name}</div>
       <span class="ctag" style="${catClass(i.category)}">${i.category}</span>
       ${i.brand?`<span style="font-size:12px;color:var(--t2);margin-left:8px;">🏭 ${i.brand}</span>`:''}
+      <div style="margin-top:10px;display:flex;gap:7px;flex-wrap:wrap;">
+        <button onclick="printLabel(${i.id})" style="background:var(--w);border:1.5px solid var(--bdr);border-radius:var(--r);padding:5px 12px;font-size:12px;cursor:pointer;">🖨️ พิมพ์ Label</button>
+        <button onclick="viewItemStats(${i.id})" style="background:var(--w);border:1.5px solid var(--bdr);border-radius:var(--r);padding:5px 12px;font-size:12px;cursor:pointer;">📊 สถิติ</button>
+      </div>
     </div>
     <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:13px;">
       <span class="ctag" style="background:var(--grnb);color:var(--grn);font-size:14px;padding:6px 12px;">🧪 <strong style="color:${qc}">${bt}</strong> ขวด</span>
@@ -1487,6 +1530,41 @@ async function viewItem(id){
     </div>`:''}`;
   openM('mView');
 }
+function printLabel(itemId){
+  const i=S.items.find(x=>x.id===itemId);
+  if(!i)return;
+  // สร้าง barcode SVG แบบ Code128 ง่ายๆ ด้วย div
+  const w=window.open('','_blank','width=400,height=300');
+  w.document.write(`<!DOCTYPE html><html><head>
+    <title>Label: ${i.name}</title>
+    <style>
+      body{font-family:Arial,sans-serif;margin:0;padding:0;}
+      .label{width:9cm;min-height:4cm;border:1px solid #ccc;padding:8px;box-sizing:border-box;page-break-after:always;}
+      .name{font-size:14px;font-weight:bold;margin-bottom:4px;line-height:1.3;}
+      .sub{font-size:11px;color:#555;margin-bottom:3px;}
+      .bc{font-family:monospace;font-size:13px;font-weight:bold;letter-spacing:2px;margin:6px 0;padding:4px;background:#f5f5f5;border-radius:3px;text-align:center;}
+      .row{display:flex;justify-content:space-between;font-size:10px;color:#777;}
+      @media print{body{margin:0;}@page{margin:5mm;size:9cm 4cm;}}
+    </style>
+  </head><body>
+    <div class="label">
+      <div class="name">${i.name}</div>
+      <div class="sub">📦 ${i.category}${i.brand?' | 🏭 '+i.brand:''}</div>
+      <div class="bc">|||  ${i.barcode}  |||</div>
+      <div class="row">
+        <span>${i.lot?'Lot: '+i.lot:''}</span>
+        <span>${i.expiry_date?'EXP: '+i.expiry_date:''}</span>
+      </div>
+      <div class="row" style="margin-top:3px;">
+        <span>คงเหลือ: ${i.bottles||0} ขวด</span>
+        <span style="font-size:9px;color:#aaa;">${new Date().toLocaleDateString('th-TH')}</span>
+      </div>
+    </div>
+    <script>window.onload=function(){window.print();setTimeout(window.close,1000);}<\/script>
+  </body></html>`);
+  w.document.close();
+}
+
 async function viewItemStats(itemId){
   const i=S.items.find(x=>x.id===itemId);
   let hist=[];
@@ -1760,9 +1838,61 @@ async function submitReq(){
     await db('requests','POST',payload);
     toast('📤 ส่ง Request เรียบร้อย','ok');
     await loadRequests();closeM('mReq');renderReqs();updBadge();
+    sendReqNotif(payload); // แจ้งเตือนทันที (ไม่ต้อง await เพื่อไม่ให้ block UI)
   }catch{toast('❌ ส่งไม่ได้','err');}
   setBL('bSR',false);
 }
+// ── แจ้งเตือน Request ใหม่แบบ Real-time ──
+function onReqBothChange(){
+  const both=document.getElementById('nc-req-both').checked;
+  document.getElementById('nc-req-line').checked=both;
+  document.getElementById('nc-req-tg').checked=both;
+  saveNotifCfg();
+}
+
+async function sendReqNotif(payload){
+  const cfg=getNotifCfg();
+  if(!cfg.cond?.req)return; // ไม่ได้เปิดแจ้งเตือน request
+  const item=S.items.find(x=>x.id===payload.item_id);
+  const nl='\n';
+  const msg='📋 Request ใหม่!'+nl
+    +'รายการ: '+payload.item_name+nl
+    +'จำนวน: '+payload.qty+' ขวด'+nl
+    +(item?'คงเหลือ: '+(item.bottles||0)+' ขวด'+nl:'')
+    +'ผู้ขอ: '+payload.requester_name+nl
+    +'โรงพยาบาล: '+(payload.hospital||'—')+nl
+    +'วิธีส่ง: '+(payload.delivery_method||'—')+nl
+    +(payload.note?'หมายเหตุ: '+payload.note+nl:'')
+    +'เวลา: '+new Date().toLocaleString('th-TH');
+  const results=[];
+  // LINE
+  const sendLine=cfg.cond.req_line||(!cfg.cond.req_line&&!cfg.cond.req_tg); // default LINE ถ้าไม่ได้เลือก
+  if(sendLine&&cfg.line?.enabled&&cfg.line?.token&&cfg.line?.to){
+    try{
+      const lineBody=JSON.stringify({to:cfg.line.to,messages:[{type:'text',text:msg}]});
+      let lineUrl,lineHeaders;
+      if(cfg.line.proxy&&cfg.line.proxy.trim()){
+        lineUrl=cfg.line.proxy.trim();
+        lineHeaders={'Content-Type':'application/json','X-Line-Token':cfg.line.token};
+      } else {
+        lineUrl='https://api.line.me/v2/bot/message/push';
+        lineHeaders={'Content-Type':'application/json','Authorization':'Bearer '+cfg.line.token};
+      }
+      const r=await fetch(lineUrl,{method:'POST',headers:lineHeaders,body:lineBody});
+      results.push(r.ok?'LINE ✅':'LINE ❌ ('+r.status+')');
+    }catch(e){results.push('LINE ❌');}
+  }
+  // Telegram
+  if(cfg.cond.req_tg&&cfg.telegram?.enabled&&cfg.telegram?.token&&cfg.telegram?.chat){
+    try{
+      const r=await fetch('https://api.telegram.org/bot'+cfg.telegram.token+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:cfg.telegram.chat,text:msg})});
+      const d=await r.json();
+      results.push(d.ok?'Telegram ✅':'Telegram ❌');
+    }catch{results.push('Telegram ❌');}
+  }
+  if(results.length)toast('🔔 แจ้งเตือน: '+results.join(' | '),results.some(r=>r.includes('✅'))?'ok':'err');
+}
+
 function clearReqFilter(){
   const s=document.getElementById('reqSrch');if(s)s.value='';
   const df=document.getElementById('reqDateFrom');if(df)df.value='';
@@ -2272,23 +2402,90 @@ function closeM(id){
 }
 document.querySelectorAll('.ov').forEach(ov=>ov.addEventListener('mousedown',e=>{if(e.target===ov)ov.classList.remove('open');}));
 function setBL(id,on){const b=document.getElementById(id);if(b){b.disabled=on;b.style.opacity=on?.6:1;}}
-async function loadAuditLog(){
+function loadAuditLog(){
   const el=document.getElementById('auditList');
-  el.textContent='⏳ กำลังโหลด...';
   try{
-    const logs=await db('stock_history','GET',null,'?type=eq.login&order=created_at.desc&limit=20');
-    if(!logs||!logs.length){el.textContent='ไม่มีประวัติ';return;}
-    el.innerHTML=`<table style="width:100%;border-collapse:collapse;font-size:12px;">
-      <thead><tr style="background:var(--s2);">
-        <th style="padding:6px 8px;text-align:left;color:var(--t2);">ผู้ใช้</th>
-        <th style="padding:6px 8px;text-align:left;color:var(--t2);">เวลา</th>
-      </tr></thead>
-      <tbody>${logs.map(l=>`<tr style="border-bottom:1px solid var(--bdr);">
-        <td style="padding:6px 8px;">👤 ${l.by_name}</td>
-        <td style="padding:6px 8px;color:var(--t3);font-size:11px;">${fdt(l.created_at)}</td>
-      </tr>`).join('')}</tbody>
-    </table>`;
-  }catch{el.textContent='❌ โหลดไม่ได้';}
+    const logs=JSON.parse(localStorage.getItem('lab_audit')||'[]');
+    if(!logs.length){el.innerHTML='<div style="color:var(--t3);font-size:12px;padding:8px 0;">ยังไม่มีประวัติในอุปกรณ์นี้</div>';return;}
+    const roleIcon={admin:'👑',staff:'🧑‍🔬',viewer:'👁'};
+    el.innerHTML='<table style="width:100%;border-collapse:collapse;font-size:12px;">'
+      +'<thead><tr style="background:var(--s2);">'
+      +'<th style="padding:6px 8px;text-align:left;color:var(--t2);">ผู้ใช้</th>'
+      +'<th style="padding:6px 8px;text-align:left;color:var(--t2);">Role</th>'
+      +'<th style="padding:6px 8px;text-align:left;color:var(--t2);">เวลา</th>'
+      +'</tr></thead><tbody>'
+      +logs.slice(0,30).map(l=>'<tr style="border-bottom:1px solid var(--bdr);">'
+        +'<td style="padding:6px 8px;">'+( roleIcon[l.role]||'👤')+' '+l.user+'</td>'
+        +'<td style="padding:6px 8px;font-size:11px;color:var(--t2);">'+l.role+'</td>'
+        +'<td style="padding:6px 8px;color:var(--t3);font-size:11px;">'+fdt(l.time)+'</td>'
+        +'</tr>').join('')
+      +'</tbody></table>'
+      +'<div style="font-size:10px;color:var(--t3);margin-top:6px;">* บันทึกเฉพาะอุปกรณ์นี้ 100 รายการล่าสุด</div>';
+  }catch{el.innerHTML='<div style="color:var(--red);font-size:12px;">❌ โหลดไม่ได้</div>';}
+}
+
+function exportReportPDF(){
+  const today=new Date();
+  const items=S.items;
+  const reqs=S.requests;
+  const out=items.filter(i=>!i.bottles||i.bottles===0);
+  const low=items.filter(i=>(i.bottles||0)>0&&(i.bottles||0)<=(i.min_qty||5));
+  const expSoon=items.filter(i=>{
+    if(!i.expiry_date)return false;
+    const d=new Date(i.expiry_date),now=new Date(),s=new Date();s.setDate(s.getDate()+60);
+    return d<s;
+  });
+  const pend=reqs.filter(r=>r.status==='pending');
+  const thisMonth=today.toISOString().slice(0,7);
+  const monthReqs=reqs.filter(r=>r.created_at&&r.created_at.slice(0,7)===thisMonth&&(r.status==='approved'||r.status==='auto_out'));
+  const totalUsed=monthReqs.reduce((s,r)=>s+(r.qty||0),0);
+
+  const w=window.open('','_blank','width=800,height=600');
+  w.document.write(`<!DOCTYPE html><html><head>
+    <title>รายงานสรุป Lab Stock</title>
+    <style>
+      body{font-family:'Sarabun',Arial,sans-serif;margin:20px;color:#333;font-size:13px;}
+      h1{color:#c0001a;font-size:18px;border-bottom:2px solid #c0001a;padding-bottom:8px;}
+      h2{font-size:14px;color:#444;margin:16px 0 8px;border-left:3px solid #c0001a;padding-left:8px;}
+      table{width:100%;border-collapse:collapse;margin-bottom:16px;}
+      th{background:#c0001a;color:#fff;padding:7px 10px;text-align:left;font-size:12px;}
+      td{padding:6px 10px;border-bottom:1px solid #eee;font-size:12px;}
+      tr:nth-child(even) td{background:#fafafa;}
+      .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+      .stat{background:#fff5f6;border:1px solid #ffcdd2;border-radius:6px;padding:10px;text-align:center;}
+      .stat-n{font-size:22px;font-weight:bold;color:#c0001a;}
+      .stat-l{font-size:11px;color:#777;}
+      .tag-red{color:#c0001a;font-weight:bold;}
+      .tag-amb{color:#d97706;font-weight:bold;}
+      @media print{body{margin:10px;}@page{margin:15mm;}}
+    </style>
+  </head><body>
+    <h1>🔬 รายงานสรุป Lab Stock System</h1>
+    <div style="font-size:12px;color:#777;margin-bottom:16px;">วันที่: ${today.toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'})} | สร้างโดย: ${S.user?.name||'—'}</div>
+    <div class="stat-grid">
+      <div class="stat"><div class="stat-n">${items.length}</div><div class="stat-l">รายการทั้งหมด</div></div>
+      <div class="stat"><div class="stat-n" style="color:#d97706">${low.length}</div><div class="stat-l">ใกล้หมด</div></div>
+      <div class="stat"><div class="stat-n">${out.length}</div><div class="stat-l">หมดสต็อก</div></div>
+      <div class="stat"><div class="stat-n" style="color:#1d6fb8">${totalUsed}</div><div class="stat-l">ขวดที่ใช้เดือนนี้</div></div>
+    </div>
+    ${out.length?`<h2>🔴 รายการหมดสต็อก (${out.length} รายการ)</h2>
+    <table><thead><tr><th>ชื่อ Reagent</th><th>หมวดหมู่</th><th>Lot</th><th>หมดอายุ</th></tr></thead>
+    <tbody>${out.map(i=>'<tr><td class="tag-red">'+i.name+'</td><td>'+i.category+'</td><td>'+(i.lot||'—')+'</td><td>'+(i.expiry_date||'—')+'</td></tr>').join('')}</tbody></table>`:''}
+    ${low.length?`<h2>⚠️ ใกล้หมด (${low.length} รายการ)</h2>
+    <table><thead><tr><th>ชื่อ Reagent</th><th>คงเหลือ</th><th>ขั้นต่ำ</th><th>Lot</th></tr></thead>
+    <tbody>${low.map(i=>'<tr><td class="tag-amb">'+i.name+'</td><td>'+i.bottles+'</td><td>'+(i.min_qty||5)+'</td><td>'+(i.lot||'—')+'</td></tr>').join('')}</tbody></table>`:''}
+    ${expSoon.length?`<h2>📅 ใกล้หมดอายุ (${expSoon.length} รายการ)</h2>
+    <table><thead><tr><th>ชื่อ Reagent</th><th>หมดอายุ</th><th>Lot</th><th>คงเหลือ</th></tr></thead>
+    <tbody>${expSoon.map(i=>'<tr><td>'+i.name+'</td><td class="tag-red">'+i.expiry_date+'</td><td>'+(i.lot||'—')+'</td><td>'+(i.bottles||0)+' ขวด</td></tr>').join('')}</tbody></table>`:''}
+    ${pend.length?`<h2>📋 Request รอ Approve (${pend.length} รายการ)</h2>
+    <table><thead><tr><th>รายการ</th><th>จำนวน</th><th>ผู้ขอ</th><th>โรงพยาบาล</th><th>วันที่</th></tr></thead>
+    <tbody>${pend.map(r=>'<tr><td>'+r.item_name+'</td><td>'+r.qty+' ขวด</td><td>'+(r.requester_name||r.by_name)+'</td><td>'+(r.hospital||'—')+'</td><td>'+fdt(r.created_at)+'</td></tr>').join('')}</tbody></table>`:''}
+    <div style="margin-top:20px;font-size:10px;color:#aaa;border-top:1px solid #eee;padding-top:8px;">
+      Lab Stock System — พิมพ์เมื่อ ${today.toLocaleString('th-TH')}
+    </div>
+    <script>window.onload=function(){window.print();}<\/script>
+  </body></html>`);
+  w.document.close();
 }
 
 function exportCSV(){
@@ -2467,7 +2664,7 @@ function saveNotifCfg(){
     telegram:{enabled:document.getElementById('nc-tg-en').checked,token:document.getElementById('nc-tg-token').value,chat:document.getElementById('nc-tg-chat').value},
     email:{enabled:document.getElementById('nc-email-en').checked,svc:document.getElementById('nc-email-svc').value,tpl:document.getElementById('nc-email-tpl').value,key:document.getElementById('nc-email-key').value,to:document.getElementById('nc-email-to').value},
     webhook:{enabled:document.getElementById('nc-wh-en').checked,url:document.getElementById('nc-wh-url').value},
-    cond:{low:document.getElementById('nc-cond-low').checked,out:document.getElementById('nc-cond-out').checked,exp:document.getElementById('nc-cond-exp').checked,req:document.getElementById('nc-cond-req').checked,exp_days:+document.getElementById('nc-exp-days').value||60}
+    cond:{low:document.getElementById('nc-cond-low').checked,out:document.getElementById('nc-cond-out').checked,exp:document.getElementById('nc-cond-exp').checked,req:document.getElementById('nc-cond-req').checked,exp_days:+document.getElementById('nc-exp-days').value||60,exp_multi:document.getElementById('nc-exp-multi').checked,req_line:document.getElementById('nc-req-line').checked,req_tg:document.getElementById('nc-req-tg').checked}
   };
   localStorage.setItem(NOTIF_KEY,JSON.stringify(cfg));
   ['line','tg','email','wh'].forEach(k=>{
@@ -2488,7 +2685,7 @@ function loadNotifCfg(){
     if(cfg.telegram){document.getElementById('nc-tg-en').checked=!!cfg.telegram.enabled;document.getElementById('nc-tg-token').value=cfg.telegram.token||'';document.getElementById('nc-tg-chat').value=cfg.telegram.chat||'';}
     if(cfg.email){document.getElementById('nc-email-en').checked=!!cfg.email.enabled;document.getElementById('nc-email-svc').value=cfg.email.svc||'';document.getElementById('nc-email-tpl').value=cfg.email.tpl||'';document.getElementById('nc-email-key').value=cfg.email.key||'';document.getElementById('nc-email-to').value=cfg.email.to||'';}
     if(cfg.webhook){document.getElementById('nc-wh-en').checked=!!cfg.webhook.enabled;document.getElementById('nc-wh-url').value=cfg.webhook.url||'';}
-    if(cfg.cond){document.getElementById('nc-cond-low').checked=!!cfg.cond.low;document.getElementById('nc-cond-out').checked=!!cfg.cond.out;document.getElementById('nc-cond-exp').checked=!!cfg.cond.exp;document.getElementById('nc-cond-req').checked=!!cfg.cond.req;document.getElementById('nc-exp-days').value=cfg.cond.exp_days||60;}
+    if(cfg.cond){document.getElementById('nc-cond-low').checked=!!cfg.cond.low;document.getElementById('nc-cond-out').checked=!!cfg.cond.out;document.getElementById('nc-cond-exp').checked=!!cfg.cond.exp;document.getElementById('nc-cond-req').checked=!!cfg.cond.req;document.getElementById('nc-exp-days').value=cfg.cond.exp_days||60;document.getElementById('nc-req-line').checked=!!cfg.cond.req_line;document.getElementById('nc-req-tg').checked=!!cfg.cond.req_tg;if(cfg.cond.req_line&&cfg.cond.req_tg)document.getElementById('nc-req-both').checked=true;document.getElementById('nc-exp-multi').checked=!!cfg.cond.exp_multi;}
     ['line','tg','email','wh'].forEach(k=>{
       const en=document.getElementById(`nc-${k}-en`).checked;
       const nb=document.getElementById(`nb-${k}`);
@@ -2598,8 +2795,24 @@ async function checkAndNotify(){
     }
     if(cfg.cond.exp&&i.expiry_date){
       const expD=new Date(i.expiry_date);
-      if(expD<soon&&(nowMin-(lastNotif[key+'_exp']||0))>1440){
-        sendNotif('exp',i.name,btl,`หมดอายุ: ${expD.toLocaleDateString('th-TH')}`);lastNotif[key+'_exp']=nowMin;
+      const daysLeft=Math.ceil((expD-today)/(1000*60*60*24));
+      if(cfg.cond.exp_multi){
+        // แจ้งหลายระดับ 90/30/7 วัน
+        for(const lvl of [90,30,7]){
+          if(daysLeft<=lvl&&daysLeft>0&&(nowMin-(lastNotif[key+'_exp'+lvl]||0))>1440){
+            sendNotif('exp',i.name,btl,'⏳ เหลือ '+daysLeft+' วัน (หมด '+expD.toLocaleDateString('th-TH')+')');
+            lastNotif[key+'_exp'+lvl]=nowMin;break;
+          }
+        }
+        if(daysLeft<=0&&(nowMin-(lastNotif[key+'_exp0']||0))>1440){
+          sendNotif('exp',i.name,btl,'🔴 หมดอายุแล้ว! ('+expD.toLocaleDateString('th-TH')+')');
+          lastNotif[key+'_exp0']=nowMin;
+        }
+      } else {
+        if(expD<soon&&(nowMin-(lastNotif[key+'_exp']||0))>1440){
+          sendNotif('exp',i.name,btl,'⏳ เหลือ '+Math.max(0,daysLeft)+' วัน (หมด '+expD.toLocaleDateString('th-TH')+')');
+          lastNotif[key+'_exp']=nowMin;
+        }
       }
     }
   }
