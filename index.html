@@ -3012,9 +3012,9 @@ async function confirmUserImport(){
   setBL('bUI',true);
   let ok=0,skip=0,fail=0;
   for(const row of userImportRows){
-    const name=String(row.name||row.เธเธทเนเธญ||row.Name||'').trim();
+    const name=String(row.name||row['เธเธทเนเธญ']||row.Name||'').trim();
     const username=String(row.username||row.Username||row.user||'').trim().toLowerCase();
-    const password=String(row.password||row.Password||row.เธฃเธซเธฑเธชเธเนเธฒเธ||'').trim();
+    const password=String(row.password||row.Password||row['เธฃเธซเธฑเธชเธเนเธฒเธ']||'').trim();
     if(!name||!username||!password){skip++;continue;}
     const role=['admin','staff','viewer'].includes(String(row.role||'staff').toLowerCase())?String(row.role).toLowerCase():'staff';
     const req=String(row.require_request||row.require||'true').toLowerCase()!=='false';
