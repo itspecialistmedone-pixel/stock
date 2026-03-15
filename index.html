@@ -101,7 +101,9 @@ input,select,textarea{font-family:var(--fn);}
 /* CARDS */
 .sg{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:18px;}
 @media(min-width:640px){.sg{grid-template-columns:repeat(4,1fr);}}
-.sc{background:var(--w);border:1.5px solid var(--bdr);border-radius:var(--r2);padding:16px 14px;position:relative;overflow:hidden;box-shadow:var(--sh);}
+.sc{background:var(--w);border:1.5px solid var(--bdr);border-radius:var(--r2);padding:16px 14px;position:relative;overflow:hidden;box-shadow:var(--sh);cursor:pointer;transition:transform .15s,box-shadow .15s;user-select:none;}
+.sc:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.10);}
+.sc:active{transform:translateY(0);}
 .sc::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--ca,#eee);}
 .sc.ct{--ca:var(--blu);}
 .sc.cw{--ca:var(--amb);}
@@ -345,10 +347,22 @@ input,select,textarea{font-family:var(--fn);}
     <!-- DASHBOARD -->
     <div class="page act" id="pg-dash">
       <div class="sg">
-        <div class="sc ct"><span class="si">🧪</span><div class="sl">รายการทั้งหมด</div><div class="sn" id="d-total">—</div></div>
-        <div class="sc cw"><span class="si">⚠️</span><div class="sl">ใกล้หมด</div><div class="sn" id="d-low">—</div></div>
-        <div class="sc co"><span class="si">🔴</span><div class="sl">หมดสต็อก</div><div class="sn" id="d-out">—</div></div>
-        <div class="sc cr"><span class="si">📋</span><div class="sl">รอ Approve</div><div class="sn" id="d-pend">—</div></div>
+        <div class="sc ct" onclick="nav('stock',document.getElementById('tabStock'))" title="ดูรายการ Stock ทั้งหมด">
+          <span class="si">🧪</span><div class="sl">รายการทั้งหมด</div><div class="sn" id="d-total">—</div>
+          <div style="font-size:10px;color:var(--blu);margin-top:4px;font-weight:600;">ดู Stock →</div>
+        </div>
+        <div class="sc cw" onclick="navToLowStock()" title="ดูรายการที่ใกล้หมด">
+          <span class="si">⚠️</span><div class="sl">ใกล้หมด</div><div class="sn" id="d-low">—</div>
+          <div style="font-size:10px;color:var(--amb);margin-top:4px;font-weight:600;">ดูรายการ →</div>
+        </div>
+        <div class="sc co" onclick="navToOutStock()" title="ดูรายการที่หมดสต็อก">
+          <span class="si">🔴</span><div class="sl">หมดสต็อก</div><div class="sn" id="d-out">—</div>
+          <div style="font-size:10px;color:var(--red);margin-top:4px;font-weight:600;">ดูรายการ →</div>
+        </div>
+        <div class="sc cr" onclick="navToPendingReq()" title="ดู Request รอ Approve">
+          <span class="si">📋</span><div class="sl">รอ Approve</div><div class="sn" id="d-pend">—</div>
+          <div style="font-size:10px;color:var(--grn);margin-top:4px;font-weight:600;">ดู Request →</div>
+        </div>
       </div>
       <div class="cgrid">
         <div class="cbox"><h3>📊 ขวดตามหมวดหมู่</h3><div id="catChart"></div></div>
@@ -1267,6 +1281,38 @@ function updBadge(){
 }
 
 // ══ DASHBOARD ══
+// ── Dashboard card navigation ──
+function navToLowStock(){
+  nav('stock', document.getElementById('tabStock'));
+  // filter ใกล้หมด — หน่วงรอ render แล้วค่อย filter
+  setTimeout(()=>{
+    const srch = document.getElementById('srch');
+    if(srch){ srch.value=''; }
+    // set filter เป็น warning (ใกล้หมด) โดยตรง
+    S._dashFilter='low';
+    renderStock();
+    S._dashFilter=null;
+  }, 100);
+}
+function navToOutStock(){
+  nav('stock', document.getElementById('tabStock'));
+  setTimeout(()=>{
+    S._dashFilter='out';
+    renderStock();
+    S._dashFilter=null;
+  }, 100);
+}
+function navToPendingReq(){
+  nav('req', document.getElementById('tabReq'));
+  setTimeout(()=>{
+    S.reqF='pending';
+    document.querySelectorAll('#pg-req .chip').forEach(b=>b.classList.remove('act'));
+    const pendChip=document.querySelector('#pg-req .chip:nth-child(2)');
+    if(pendChip)pendChip.classList.add('act');
+    renderReqs();
+  }, 100);
+}
+
 function renderDash(){
   const items=S.items;
   document.getElementById('d-total').textContent=items.length;
