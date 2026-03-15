@@ -673,25 +673,36 @@ input,select,textarea{font-family:var(--fn);}
             <label class="sw"><input type="checkbox" id="nc-tg-en" onchange="saveNotifCfg()"><span class="sw-sl"></span></label>
           </div>
           <div class="notif-body" id="nb-tg" style="display:none;">
-            <div class="fg" style="margin-bottom:8px;"><label>Bot Token</label>
+            <div class="fg" style="margin-bottom:12px;">
+              <label>Bot Token (ใช้ร่วมกันทุก Chat)</label>
               <input type="text" id="nc-tg-token" placeholder="123456:ABC-xxx" style="font-family:var(--mo);font-size:12px;" onchange="saveNotifCfg()">
+              <div style="font-size:10px;color:var(--t3);margin-top:3px;">สร้าง Bot → @BotFather | หา Chat ID → เพิ่ม @userinfobot เข้ากลุ่ม</div>
             </div>
-            <div class="r2">
-              <div class="fg" style="margin-bottom:8px;">
-                <label>Chat ID (Admin — Stock/หมดอายุ)</label>
-                <input type="text" id="nc-tg-chat" placeholder="-100xxxxxxxxxx" style="font-family:var(--mo);font-size:12px;" onchange="saveNotifCfg()">
-                <div style="font-size:10px;color:var(--t3);margin-top:3px;">แจ้งเตือน Stock ใกล้หมด, หมดอายุ, รายงาน</div>
-              </div>
-              <div class="fg" style="margin-bottom:8px;">
-                <label>Chat ID (Request — Approve/Reject)</label>
-                <input type="text" id="nc-tg-chat-req" placeholder="-100xxxxxxxxxx" style="font-family:var(--mo);font-size:12px;" onchange="saveNotifCfg()">
-                <div style="font-size:10px;color:var(--t3);margin-top:3px;">แจ้งเตือน Request ใหม่, อนุมัติ, ปฏิเสธ</div>
+
+            <div style="background:var(--s2);border-radius:var(--r);padding:11px;margin-bottom:8px;">
+              <div style="font-size:11px;font-weight:700;color:var(--t2);margin-bottom:7px;">📊 Chat 1 — Admin (Stock/หมดอายุ/รายงาน)</div>
+              <div style="display:flex;gap:7px;align-items:center;">
+                <input type="text" id="nc-tg-chat" placeholder="-100xxxxxxxxxx (Admin Group)" style="flex:1;font-family:var(--mo);font-size:12px;" onchange="saveNotifCfg()">
+                <button class="ab ab-b" onclick="testTgChat('nc-tg-chat')" style="font-size:11px;white-space:nowrap;">ทดสอบ</button>
               </div>
             </div>
-            <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;">
-              <button class="ab ab-b" onclick="testNotif('telegram')">ทดสอบ (Admin Chat)</button>
-              <button class="ab ab-b" onclick="testNotifReqChat()">ทดสอบ (Request Chat)</button>
-              <span style="font-size:11px;color:var(--t3);">@BotFather สร้าง Bot | @userinfobot หา Chat ID</span>
+
+            <div style="background:var(--s2);border-radius:var(--r);padding:11px;margin-bottom:8px;">
+              <div style="font-size:11px;font-weight:700;color:var(--t2);margin-bottom:7px;">📋 Chat 2 — Request ใหม่ (แจ้ง Admin)</div>
+              <div style="display:flex;gap:7px;align-items:center;">
+                <input type="text" id="nc-tg-chat-req" placeholder="-100xxxxxxxxxx (Request Group)" style="flex:1;font-family:var(--mo);font-size:12px;" onchange="saveNotifCfg()">
+                <button class="ab ab-b" onclick="testTgChat('nc-tg-chat-req')" style="font-size:11px;white-space:nowrap;">ทดสอบ</button>
+              </div>
+              <div style="font-size:10px;color:var(--t3);margin-top:4px;">ถ้าไม่ใส่ จะใช้ Chat 1 แทน</div>
+            </div>
+
+            <div style="background:var(--s2);border-radius:var(--r);padding:11px;margin-bottom:8px;">
+              <div style="font-size:11px;font-weight:700;color:var(--t2);margin-bottom:7px;">✅❌ Chat 3 — Approve/Reject (แจ้งผู้ขอ)</div>
+              <div style="display:flex;gap:7px;align-items:center;">
+                <input type="text" id="nc-tg-chat-res" placeholder="-100xxxxxxxxxx (ผู้ขอ/User Group)" style="flex:1;font-family:var(--mo);font-size:12px;" onchange="saveNotifCfg()">
+                <button class="ab ab-b" onclick="testTgChat('nc-tg-chat-res')" style="font-size:11px;white-space:nowrap;">ทดสอบ</button>
+              </div>
+              <div style="font-size:10px;color:var(--t3);margin-top:4px;">ถ้าไม่ใส่ จะใช้ Chat 2 → Chat 1 แทน</div>
             </div>
           </div>
         </div>
@@ -2158,7 +2169,7 @@ async function sendReqNotif(payload){
     }catch(e){results.push('LINE ❌');}
   }
   // Telegram
-  const _tgReqChat=cfg.telegram?.chat_req||cfg.telegram?.chat;
+  const _tgReqChat=cfg.telegram?.chat_req||cfg.telegram?.chat; // Chat 2 สำหรับ Request ใหม่
   if(cfg.cond.req_tg&&cfg.telegram?.enabled&&cfg.telegram?.token&&_tgReqChat){
     try{
       const r=await fetch('https://api.telegram.org/bot'+cfg.telegram.token+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:_tgReqChat,text:msg})});
@@ -2196,7 +2207,8 @@ async function sendApproveNotif(r,status,note){
 
   // Telegram — ส่งผ่าน Request Chat ID (ผู้ขอ)
   const sendTg=cfg.cond[condKey+'_tg'];
-  const tgReqChat=cfg.telegram?.chat_req||cfg.telegram?.chat;
+  // Chat 3 สำหรับ Approve/Reject → ผู้ขอ, fallback Chat 2 → Chat 1
+  const tgReqChat=cfg.telegram?.chat_res||cfg.telegram?.chat_req||cfg.telegram?.chat;
   if(sendTg&&cfg.telegram?.enabled&&cfg.telegram?.token&&tgReqChat){
     try{
       await fetch('https://api.telegram.org/bot'+cfg.telegram.token+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:tgReqChat,text:msg})});
@@ -2205,6 +2217,7 @@ async function sendApproveNotif(r,status,note){
 
   // Admin ด้วย — ส่งไป Admin Chat ID
   const sendAdmin=cfg.cond[condKey+'_admin'];
+  // ส่งสำเนาให้ Admin ผ่าน Chat 1 (ถ้า Chat 1 ต่างจาก Chat 3)
   if(sendAdmin&&cfg.telegram?.enabled&&cfg.telegram?.token&&cfg.telegram?.chat&&cfg.telegram?.chat!==tgReqChat){
     try{
       await fetch('https://api.telegram.org/bot'+cfg.telegram.token+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:cfg.telegram.chat,text:'[Admin] '+msg})});
@@ -2983,7 +2996,7 @@ function saveNotifCfg(){
       to:document.getElementById('nc-line-to').value,
       proxy:document.getElementById('nc-line-proxy').value
     },
-    telegram:{enabled:document.getElementById('nc-tg-en').checked,token:document.getElementById('nc-tg-token').value,chat:document.getElementById('nc-tg-chat').value,chat_req:document.getElementById('nc-tg-chat-req').value},
+    telegram:{enabled:document.getElementById('nc-tg-en').checked,token:document.getElementById('nc-tg-token').value,chat:document.getElementById('nc-tg-chat').value,chat_req:document.getElementById('nc-tg-chat-req').value,chat_res:document.getElementById('nc-tg-chat-res').value},
     email:{enabled:document.getElementById('nc-email-en').checked,svc:document.getElementById('nc-email-svc').value,tpl:document.getElementById('nc-email-tpl').value,key:document.getElementById('nc-email-key').value,to:document.getElementById('nc-email-to').value},
     webhook:{enabled:document.getElementById('nc-wh-en').checked,url:document.getElementById('nc-wh-url').value},
     cond:{
@@ -3021,7 +3034,7 @@ function loadNotifCfg(){
       document.getElementById('nc-line-to').value=cfg.line.to||'';
       document.getElementById('nc-line-proxy').value=cfg.line.proxy||'';
     }
-    if(cfg.telegram){document.getElementById('nc-tg-en').checked=!!cfg.telegram.enabled;document.getElementById('nc-tg-token').value=cfg.telegram.token||'';document.getElementById('nc-tg-chat').value=cfg.telegram.chat||'';document.getElementById('nc-tg-chat-req').value=cfg.telegram.chat_req||'';}
+    if(cfg.telegram){document.getElementById('nc-tg-en').checked=!!cfg.telegram.enabled;document.getElementById('nc-tg-token').value=cfg.telegram.token||'';document.getElementById('nc-tg-chat').value=cfg.telegram.chat||'';document.getElementById('nc-tg-chat-req').value=cfg.telegram.chat_req||'';document.getElementById('nc-tg-chat-res').value=cfg.telegram.chat_res||'';}
     if(cfg.email){document.getElementById('nc-email-en').checked=!!cfg.email.enabled;document.getElementById('nc-email-svc').value=cfg.email.svc||'';document.getElementById('nc-email-tpl').value=cfg.email.tpl||'';document.getElementById('nc-email-key').value=cfg.email.key||'';document.getElementById('nc-email-to').value=cfg.email.to||'';}
     if(cfg.webhook){document.getElementById('nc-wh-en').checked=!!cfg.webhook.enabled;document.getElementById('nc-wh-url').value=cfg.webhook.url||'';}
     if(cfg.cond){
@@ -3105,22 +3118,25 @@ ${bottles>=0?`เหลือ: ${bottles} ขวด
   }
   return results;
 }
-async function testNotifReqChat(){
-  toast('⏳ กำลังส่งทดสอบ (Request Chat)...','info');
+async function testTgChat(inputId){
   const cfg=getNotifCfg();
-  const tgReqChat=cfg.telegram?.chat_req||cfg.telegram?.chat;
-  if(!cfg.telegram?.enabled||!cfg.telegram?.token||!tgReqChat){
-    toast('⚠️ กรุณาตั้งค่า Telegram และ Chat ID (Request) ก่อน','err');return;
+  const chatId=document.getElementById(inputId)?.value||cfg.telegram?.chat;
+  if(!cfg.telegram?.token||!chatId){
+    toast('⚠️ กรุณากรอก Bot Token และ Chat ID ก่อน','err');return;
   }
+  toast('⏳ กำลังส่งทดสอบ...','info');
+  const labelMap={'nc-tg-chat':'Admin Chat','nc-tg-chat-req':'Request Chat','nc-tg-chat-res':'Approve/Reject Chat'};
+  const label=labelMap[inputId]||'Chat';
   try{
     const r=await fetch('https://api.telegram.org/bot'+cfg.telegram.token+'/sendMessage',{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({chat_id:tgReqChat,text:'🧪 ทดสอบ Request Chat\nระบบ Lab Stock — '+new Date().toLocaleString('th-TH')})
+      body:JSON.stringify({chat_id:chatId,text:'🧪 ทดสอบ '+label+'\nระบบ Lab Stock — '+new Date().toLocaleString('th-TH')})
     });
     const d=await r.json();
-    toast(d.ok?'Telegram Request Chat ✅':'Telegram ❌ '+d.description,d.ok?'ok':'err');
+    toast(d.ok?'Telegram '+label+' ✅':'Telegram ❌ '+d.description,d.ok?'ok':'err');
   }catch(e){toast('Telegram ❌ '+e.message,'err');}
 }
+async function testNotifReqChat(){testTgChat('nc-tg-chat-req');}
 
 async function testNotif(channel){
   toast('⏳ กำลังส่งทดสอบ...','info');
