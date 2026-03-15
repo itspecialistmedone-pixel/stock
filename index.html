@@ -279,6 +279,7 @@ input,select,textarea{font-family:var(--fn);}
 .empty .ei{font-size:38px;display:block;margin-bottom:9px;}
 @media(max-width:640px){.hm{display:none!important;}.tw{overflow-x:auto;}}
 @media print{.topbar,.navtabs,.tb,.chips,.ab,.btn-p,.btn-gh{display:none!important;}.tw{box-shadow:none;}}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 @media(max-width:600px){
   .tw table,.tw thead,.tw tbody,.tw th,.tw td,.tw tr{display:block;}
   .tw thead{display:none;}
@@ -349,7 +350,7 @@ input,select,textarea{font-family:var(--fn);}
     </div>
     <div class="fg"><label>Username</label><input type="text" id="lu" placeholder="ชื่อผู้ใช้" onkeydown="if(event.key==='Enter')doLogin()"></div>
     <div class="fg"><label>Password</label><input type="password" id="lp" placeholder="รหัสผ่าน" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <button class="btn-login" onclick="doLogin()" id="btnLogin">🔑 เข้าสู่ระบบ</button>
+    <button class="btn-login" onclick="doLogin()" id="btnLogin"><span id="loginBtnTxt">🔑 เข้าสู่ระบบ</span></button>
     <div class="err" id="lerr"></div>
 
   </div>
@@ -419,7 +420,7 @@ input,select,textarea{font-family:var(--fn);}
       <div class="tb" style="display:flex;gap:8px;flex-wrap:wrap;">
         <div style="position:relative;flex:1;min-width:180px;">
           <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;">🔍</span>
-          <input class="si2" id="srch" type="text" style="padding-left:36px;" placeholder="ค้นหาชื่อ, Lot..." oninput="renderStock()">
+          <input class="si2" id="srch" type="text" style="padding-left:36px;" placeholder="ค้นหาชื่อ, Lot..." oninput="onStockSearch()">
         </div>
         <div style="position:relative;min-width:180px;flex:1;">
           <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;">📷</span>
@@ -1352,7 +1353,6 @@ async function init(){
           await loadRequests();renderPage(S.curPage);updBadge();
         })
         .subscribe();
-      console.log('🟢 Realtime connected');
     }catch(e){
       // fallback: polling ทุก 30 วิถ้า realtime ไม่ได้
       console.warn('Realtime unavailable, using polling');
@@ -1378,6 +1378,7 @@ async function doLogin(){
   const p=document.getElementById('lp').value.trim();
   document.getElementById('lerr').textContent='';
   setBL('btnLogin',true);
+  document.getElementById('loginBtnTxt').innerHTML='<span style="display:inline-block;animation:spin .7s linear infinite;">⏳</span> กำลังตรวจสอบ...';
   try{
     const hpw=await sha256(p);
     const users=await db('users','GET',null,`?username=eq.${encodeURIComponent(u)}&password=eq.${encodeURIComponent(hpw)}&active=eq.true`);
@@ -1405,6 +1406,7 @@ async function doLogin(){
     setTimeout(loadNotifCfg,500);
   }catch(e){document.getElementById('lerr').textContent='❌ เกิดข้อผิดพลาด';}
   setBL('btnLogin',false);
+  document.getElementById('loginBtnTxt').innerHTML='🔑 เข้าสู่ระบบ';
 }
 function setupRoleUI(role){
   const isAdmin = role==='admin';
@@ -1452,15 +1454,27 @@ function resetIdle(){
 );
 
 function doLogout(){
-  S.user=null;
+  // ล้าง state ทั้งหมด
+  S.user=null;S.items=[];S.requests=[];S.cats=[];S.hosps=[];S.dels=[];S.users=[];
+  S.catF='all';S.reqF='all';S.statusF='all';S.editId=null;S.scanItem=null;
+  S.curPage='dash';S.sortBy='name';S.sortDir='asc';
+  // หยุด idle timer
+  if(idleTimer){clearTimeout(idleTimer);idleTimer=null;}
+  // reset UI
   document.getElementById('app').style.display='none';
   document.getElementById('loginWrap').style.display='flex';
-  document.getElementById('lu').value='';document.getElementById('lp').value='';
+  document.getElementById('lu').value='';
+  document.getElementById('lp').value='';
+  document.getElementById('lerr').textContent='';
 }
 
 // ══ LOAD ══
 async function loadAll(){
-  await Promise.all([loadItems(),loadRequests(),loadCats(),loadHosps(),loadDels(),loadUsers()]);
+  try{
+    await Promise.all([loadItems(),loadRequests(),loadCats(),loadHosps(),loadDels(),loadUsers()]);
+  }catch(e){
+    toast('⚠️ โหลดข้อมูลไม่ครบ — ตรวจสอบการเชื่อมต่อ','err');
+  }
 }
 async function loadItems(){try{S.items=await db('items','GET',null,'?order=name.asc');}catch{}}
 async function loadRequests(){try{S.requests=await db('requests','GET',null,'?order=created_at.desc');}catch{}}
@@ -1619,6 +1633,16 @@ function renderCatChips(){
   document.getElementById('catChips').innerHTML=
     ['all',...S.cats.map(c=>c.name)].map(c=>`
       <button class="chip${S.catF===c?' act':''}" onclick="setCat('${c.replace(/'/g,"\\'")}',this)">${c==='all'?'ทั้งหมด':c}</button>`).join('');
+}
+function onStockSearch(){
+  // reset status filter เป็น all เมื่อพิมพ์ค้นหา
+  if(S.statusF!=='all'){
+    S.statusF='all';
+    document.querySelectorAll('#statusChips .chip').forEach(b=>b.classList.remove('act'));
+    const allChip=document.querySelector('#statusChips .chip');
+    if(allChip)allChip.classList.add('act');
+  }
+  renderStock();
 }
 function setStatusFilter(f,btn){
   S.statusF=f;
@@ -1796,7 +1820,7 @@ async function saveItem(){
     else await db('items','POST',payload);
     toast(S.editId?'✅ อัปเดตแล้ว':'✅ เพิ่มแล้ว','ok');
     await loadItems();closeM('mItem');renderStock();
-  }catch(e){toast('❌ บันทึกไม่ได้: '+e.message,'err');}
+  }catch(e){toast('❌ บันทึกไม่ได้: '+(e.message||e),'err');}
   setBL('bSI',false);
 }
 async function delItem(id){
@@ -2028,7 +2052,7 @@ async function saveAdj(){
     if(type==='out' && n>0) await createAutoReq(i, n, note||'หยิบออกจากหน้า Stock');
     toast(`✅ ${i.name} → เหลือ ${newBt} ขวด`,'ok');
     await loadItems();loadRequests();closeM('mAdj');renderStock();
-  }catch(e){toast('❌ บันทึกไม่ได้: '+e.message,'err');}
+  }catch(e){toast('❌ บันทึกไม่ได้: '+(e.message||e),'err');}
   setBL('bSA',false);
 }
 
@@ -2082,7 +2106,7 @@ async function scanOut(n){
     const qc=bt===0?'var(--red)':bt<=mn?'var(--amb)':'var(--grn)';
     document.getElementById('sfD').innerHTML=`🧪 คงเหลือ: <strong style="color:${qc}">${bt} ขวด</strong> | min: ${mn}<br>📅 หมดอายุ: ${i.expiry_date?fd(i.expiry_date):'—'} | Lot: ${i.lot||'—'}`;
     toast(`📤 หยิบ ${n} ขวด — ${i.name} เหลือ ${newBt}`,'ok');
-  }catch(e){toast('❌ บันทึกไม่ได้: '+e.message,'err');}
+  }catch(e){toast('❌ บันทึกไม่ได้: '+(e.message||e),'err');}
 }
 
 // ══ INLINE BARCODE SCAN in Stock page ══
@@ -2374,7 +2398,7 @@ async function approveReq(id){
     // แจ้งผู้ขอ
     sendApproveNotif(r,'approved',note);
     await loadAll();renderReqs();renderAdmin();updBadge();
-  }catch{toast('❌ เกิดข้อผิดพลาด','err');}
+  }catch(e){toast('❌ เกิดข้อผิดพลาด: '+(e?.message||'ลองใหม่อีกครั้ง'),'err');}
 }
 async function rejectReq(id){
   const _rp=await dlg({icon:'❌',title:'ปฏิเสธ Request',msg:r.item_name+' — '+r.qty+' ขวด',input:true,inputPlaceholder:'เหตุผล',okText:'ปฏิเสธ',cancelText:'ยกเลิก',danger:true});
@@ -2385,7 +2409,7 @@ async function rejectReq(id){
     toast('❌ ปฏิเสธแล้ว','info');
     sendApproveNotif(r,'rejected',note);
     await loadRequests();renderReqs();renderAdmin();updBadge();
-  }catch{toast('❌ เกิดข้อผิดพลาด','err');}
+  }catch(e){toast('❌ เกิดข้อผิดพลาด: '+(e?.message||'ลองใหม่อีกครั้ง'),'err');}
 }
 
 async function undoOut(id){
@@ -2412,7 +2436,7 @@ async function undoOut(id){
     await db('requests','PATCH',{status:'rejected',admin_note:`ยกเลิกโดย ${S.user.name} — คืน ${r.qty} ขวดแล้ว`},`?id=eq.${id}`);
     toast(`↩️ คืน ${r.qty} ขวด → ${itemName} เหลือ ${newBt} ขวด`,'ok');
     await loadAll();renderReqs();renderAdmin();updBadge();
-  }catch{toast('❌ เกิดข้อผิดพลาด','err');}
+  }catch(e){toast('❌ เกิดข้อผิดพลาด: '+(e?.message||'ลองใหม่อีกครั้ง'),'err');}
 }
 
 async function delReq(id){
@@ -2675,7 +2699,7 @@ async function toggleUser(id,active){
     await db('users','PATCH',{active},`?id=eq.${id}`);
     toast(active?'✅ เปิดใช้งาน User':'🚫 ปิดใช้งาน User','info');
     await loadUsers();renderAdmin();
-  }catch{toast('❌ เกิดข้อผิดพลาด','err');}
+  }catch(e){toast('❌ เกิดข้อผิดพลาด: '+(e?.message||'ลองใหม่อีกครั้ง'),'err');}
 }
 
 // ══ META (CAT/HOSP/DEL) ══
