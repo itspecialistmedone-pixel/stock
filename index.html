@@ -673,17 +673,25 @@ input,select,textarea{font-family:var(--fn);}
             <label class="sw"><input type="checkbox" id="nc-tg-en" onchange="saveNotifCfg()"><span class="sw-sl"></span></label>
           </div>
           <div class="notif-body" id="nb-tg" style="display:none;">
+            <div class="fg" style="margin-bottom:8px;"><label>Bot Token</label>
+              <input type="text" id="nc-tg-token" placeholder="123456:ABC-xxx" style="font-family:var(--mo);font-size:12px;" onchange="saveNotifCfg()">
+            </div>
             <div class="r2">
-              <div class="fg" style="margin-bottom:8px;"><label>Bot Token</label>
-                <input type="text" id="nc-tg-token" placeholder="123456:ABC-xxx" style="font-family:var(--mo);font-size:12px;" onchange="saveNotifCfg()">
-              </div>
-              <div class="fg" style="margin-bottom:8px;"><label>Chat ID</label>
+              <div class="fg" style="margin-bottom:8px;">
+                <label>Chat ID (Admin — Stock/หมดอายุ)</label>
                 <input type="text" id="nc-tg-chat" placeholder="-100xxxxxxxxxx" style="font-family:var(--mo);font-size:12px;" onchange="saveNotifCfg()">
+                <div style="font-size:10px;color:var(--t3);margin-top:3px;">แจ้งเตือน Stock ใกล้หมด, หมดอายุ, รายงาน</div>
+              </div>
+              <div class="fg" style="margin-bottom:8px;">
+                <label>Chat ID (Request — Approve/Reject)</label>
+                <input type="text" id="nc-tg-chat-req" placeholder="-100xxxxxxxxxx" style="font-family:var(--mo);font-size:12px;" onchange="saveNotifCfg()">
+                <div style="font-size:10px;color:var(--t3);margin-top:3px;">แจ้งเตือน Request ใหม่, อนุมัติ, ปฏิเสธ</div>
               </div>
             </div>
-            <div style="display:flex;gap:7px;align-items:center;">
-              <button class="ab ab-b" onclick="testNotif('telegram')">ทดสอบ</button>
-              <span style="font-size:11px;color:var(--t3);">สร้าง Bot → @BotFather | Chat ID → เพิ่ม @userinfobot เข้ากลุ่ม</span>
+            <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;">
+              <button class="ab ab-b" onclick="testNotif('telegram')">ทดสอบ (Admin Chat)</button>
+              <button class="ab ab-b" onclick="testNotifReqChat()">ทดสอบ (Request Chat)</button>
+              <span style="font-size:11px;color:var(--t3);">@BotFather สร้าง Bot | @userinfobot หา Chat ID</span>
             </div>
           </div>
         </div>
@@ -770,23 +778,71 @@ input,select,textarea{font-family:var(--fn);}
                 </label>
               </div>
             </div>
-            <div style="display:flex;flex-direction:column;gap:6px;">
-              <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer;">
-                <input type="checkbox" id="nc-cond-req" onchange="saveNotifCfg()" style="width:16px;height:16px;accent-color:var(--red);">
-                <span>📋 แจ้งเตือนเมื่อมี Request ใหม่ ส่งผ่าน:</span>
+            <!-- Request ใหม่ -->
+            <div style="background:var(--w);border:1.5px solid var(--bdr);border-radius:var(--r);padding:10px 12px;">
+              <div style="font-size:12px;font-weight:700;color:var(--t1);margin-bottom:8px;">📋 Request ใหม่ → แจ้ง Admin</div>
+              <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-bottom:6px;">
+                <input type="checkbox" id="nc-cond-req" onchange="saveNotifCfg()" style="width:15px;height:15px;accent-color:var(--red);">
+                <span>เปิดแจ้งเตือนเมื่อมี Request ใหม่</span>
               </label>
-              <div id="nc-req-ch" style="display:flex;gap:12px;padding-left:26px;flex-wrap:wrap;">
+              <div style="display:flex;gap:10px;padding-left:23px;flex-wrap:wrap;">
                 <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;">
                   <input type="checkbox" id="nc-req-line" onchange="saveNotifCfg()" style="accent-color:#00b900;">
-                  <span>💬 LINE</span>
+                  <span>💬 LINE (Admin)</span>
                 </label>
                 <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;">
                   <input type="checkbox" id="nc-req-tg" onchange="saveNotifCfg()" style="accent-color:#229ed9;">
-                  <span>✈️ Telegram</span>
+                  <span>✈️ Telegram (Admin Chat ID)</span>
                 </label>
                 <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;">
                   <input type="checkbox" id="nc-req-both" onchange="onReqBothChange()" style="accent-color:var(--red);">
                   <span>📣 ทั้งคู่</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Approve -->
+            <div style="background:var(--w);border:1.5px solid var(--bdr);border-radius:var(--r);padding:10px 12px;">
+              <div style="font-size:12px;font-weight:700;color:var(--grn);margin-bottom:8px;">✅ อนุมัติ Request → แจ้งผู้ขอ</div>
+              <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-bottom:6px;">
+                <input type="checkbox" id="nc-cond-approve" onchange="saveNotifCfg()" style="width:15px;height:15px;accent-color:var(--grn);">
+                <span>เปิดแจ้งเตือนเมื่ออนุมัติ</span>
+              </label>
+              <div style="display:flex;gap:10px;padding-left:23px;flex-wrap:wrap;">
+                <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;">
+                  <input type="checkbox" id="nc-approve-line" onchange="saveNotifCfg()" style="accent-color:#00b900;">
+                  <span>💬 LINE</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;">
+                  <input type="checkbox" id="nc-approve-tg" onchange="saveNotifCfg()" style="accent-color:#229ed9;">
+                  <span>✈️ Telegram (Request Chat ID)</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;">
+                  <input type="checkbox" id="nc-approve-admin" onchange="saveNotifCfg()" style="accent-color:var(--blu);">
+                  <span>📣 Admin ด้วย</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Reject -->
+            <div style="background:var(--w);border:1.5px solid var(--bdr);border-radius:var(--r);padding:10px 12px;">
+              <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:8px;">❌ ปฏิเสธ Request → แจ้งผู้ขอ</div>
+              <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-bottom:6px;">
+                <input type="checkbox" id="nc-cond-reject" onchange="saveNotifCfg()" style="width:15px;height:15px;accent-color:var(--red);">
+                <span>เปิดแจ้งเตือนเมื่อปฏิเสธ</span>
+              </label>
+              <div style="display:flex;gap:10px;padding-left:23px;flex-wrap:wrap;">
+                <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;">
+                  <input type="checkbox" id="nc-reject-line" onchange="saveNotifCfg()" style="accent-color:#00b900;">
+                  <span>💬 LINE</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;">
+                  <input type="checkbox" id="nc-reject-tg" onchange="saveNotifCfg()" style="accent-color:#229ed9;">
+                  <span>✈️ Telegram (Request Chat ID)</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;">
+                  <input type="checkbox" id="nc-reject-admin" onchange="saveNotifCfg()" style="accent-color:var(--blu);">
+                  <span>📣 Admin ด้วย</span>
                 </label>
               </div>
             </div>
@@ -1372,7 +1428,7 @@ function nav(pg,btn){
 }
 function renderPage(pg){
   if(pg==='dash')renderDash();
-  if(pg==='stock')renderStock();
+  if(pg==='stock'){renderStock();setTimeout(()=>{const s=document.getElementById('srch');if(s&&document.activeElement!==s)s.focus();},300);}
   if(pg==='req')renderReqs();
   if(pg==='report')renderReport();
   if(pg==='admin')renderAdmin();
@@ -2102,9 +2158,10 @@ async function sendReqNotif(payload){
     }catch(e){results.push('LINE ❌');}
   }
   // Telegram
-  if(cfg.cond.req_tg&&cfg.telegram?.enabled&&cfg.telegram?.token&&cfg.telegram?.chat){
+  const _tgReqChat=cfg.telegram?.chat_req||cfg.telegram?.chat;
+  if(cfg.cond.req_tg&&cfg.telegram?.enabled&&cfg.telegram?.token&&_tgReqChat){
     try{
-      const r=await fetch('https://api.telegram.org/bot'+cfg.telegram.token+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:cfg.telegram.chat,text:msg})});
+      const r=await fetch('https://api.telegram.org/bot'+cfg.telegram.token+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:_tgReqChat,text:msg})});
       const d=await r.json();
       results.push(d.ok?'Telegram ✅':'Telegram ❌');
     }catch{results.push('Telegram ❌');}
@@ -2114,16 +2171,21 @@ async function sendReqNotif(payload){
 
 async function sendApproveNotif(r,status,note){
   const cfg=getNotifCfg();
-  if(!cfg.cond?.req)return;
+  const isApprove=status==='approved';
+  const condKey=isApprove?'approve':'reject';
+  if(!cfg.cond?.[condKey])return; // ไม่ได้เปิดแจ้งเตือน event นี้
   const nl='\n';
-  const icon=status==='approved'?'✅':'❌';
-  const msg=icon+' Request '+(status==='approved'?'อนุมัติแล้ว':'ถูกปฏิเสธ')+nl
+  const icon=isApprove?'✅':'❌';
+  const msg=icon+' Request '+(isApprove?'อนุมัติแล้ว':'ถูกปฏิเสธ')+nl
     +'รายการ: '+r.item_name+nl
     +'จำนวน: '+r.qty+' ขวด'+nl
     +'ผู้ขอ: '+(r.requester_name||r.by_name)+nl
     +(note&&note!=='อนุมัติแล้ว'&&note!=='ไม่อนุมัติ'?'หมายเหตุ: '+note+nl:'')
     +'เวลา: '+new Date().toLocaleString('th-TH');
-  if(cfg.cond.req_line&&cfg.line?.enabled&&cfg.line?.token&&cfg.line?.to){
+
+  // LINE — ส่งให้ผู้ขอ
+  const sendLine=cfg.cond[condKey+'_line'];
+  if(sendLine&&cfg.line?.enabled&&cfg.line?.token&&cfg.line?.to){
     try{
       const lineBody=JSON.stringify({to:cfg.line.to,messages:[{type:'text',text:msg}]});
       const lineUrl=cfg.line.proxy?.trim()||'https://api.line.me/v2/bot/message/push';
@@ -2131,9 +2193,21 @@ async function sendApproveNotif(r,status,note){
       await fetch(lineUrl,{method:'POST',headers:lineHeaders,body:lineBody});
     }catch{}
   }
-  if(cfg.cond.req_tg&&cfg.telegram?.enabled&&cfg.telegram?.token&&cfg.telegram?.chat){
+
+  // Telegram — ส่งผ่าน Request Chat ID (ผู้ขอ)
+  const sendTg=cfg.cond[condKey+'_tg'];
+  const tgReqChat=cfg.telegram?.chat_req||cfg.telegram?.chat;
+  if(sendTg&&cfg.telegram?.enabled&&cfg.telegram?.token&&tgReqChat){
     try{
-      await fetch('https://api.telegram.org/bot'+cfg.telegram.token+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:cfg.telegram.chat,text:msg})});
+      await fetch('https://api.telegram.org/bot'+cfg.telegram.token+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:tgReqChat,text:msg})});
+    }catch{}
+  }
+
+  // Admin ด้วย — ส่งไป Admin Chat ID
+  const sendAdmin=cfg.cond[condKey+'_admin'];
+  if(sendAdmin&&cfg.telegram?.enabled&&cfg.telegram?.token&&cfg.telegram?.chat&&cfg.telegram?.chat!==tgReqChat){
+    try{
+      await fetch('https://api.telegram.org/bot'+cfg.telegram.token+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:cfg.telegram.chat,text:'[Admin] '+msg})});
     }catch{}
   }
 }
@@ -2221,7 +2295,7 @@ async function approveReq(id){
     }
     toast('✅ อนุมัติแล้ว Stock อัปเดต','ok');
     // แจ้งผู้ขอ
-    sendApproveNotif(r,'approved','อนุมัติแล้ว');
+    sendApproveNotif(r,'approved',note);
     await loadAll();renderReqs();renderAdmin();updBadge();
   }catch{toast('❌ เกิดข้อผิดพลาด','err');}
 }
@@ -2909,10 +2983,27 @@ function saveNotifCfg(){
       to:document.getElementById('nc-line-to').value,
       proxy:document.getElementById('nc-line-proxy').value
     },
-    telegram:{enabled:document.getElementById('nc-tg-en').checked,token:document.getElementById('nc-tg-token').value,chat:document.getElementById('nc-tg-chat').value},
+    telegram:{enabled:document.getElementById('nc-tg-en').checked,token:document.getElementById('nc-tg-token').value,chat:document.getElementById('nc-tg-chat').value,chat_req:document.getElementById('nc-tg-chat-req').value},
     email:{enabled:document.getElementById('nc-email-en').checked,svc:document.getElementById('nc-email-svc').value,tpl:document.getElementById('nc-email-tpl').value,key:document.getElementById('nc-email-key').value,to:document.getElementById('nc-email-to').value},
     webhook:{enabled:document.getElementById('nc-wh-en').checked,url:document.getElementById('nc-wh-url').value},
-    cond:{low:document.getElementById('nc-cond-low').checked,out:document.getElementById('nc-cond-out').checked,exp:document.getElementById('nc-cond-exp').checked,req:document.getElementById('nc-cond-req').checked,exp_days:+document.getElementById('nc-exp-days').value||60,exp_multi:document.getElementById('nc-exp-multi').checked,req_line:document.getElementById('nc-req-line').checked,req_tg:document.getElementById('nc-req-tg').checked}
+    cond:{
+      low:document.getElementById('nc-cond-low').checked,
+      out:document.getElementById('nc-cond-out').checked,
+      exp:document.getElementById('nc-cond-exp').checked,
+      exp_days:+document.getElementById('nc-exp-days').value||60,
+      exp_multi:document.getElementById('nc-exp-multi').checked,
+      req:document.getElementById('nc-cond-req').checked,
+      req_line:document.getElementById('nc-req-line').checked,
+      req_tg:document.getElementById('nc-req-tg').checked,
+      approve:document.getElementById('nc-cond-approve').checked,
+      approve_line:document.getElementById('nc-approve-line').checked,
+      approve_tg:document.getElementById('nc-approve-tg').checked,
+      approve_admin:document.getElementById('nc-approve-admin').checked,
+      reject:document.getElementById('nc-cond-reject').checked,
+      reject_line:document.getElementById('nc-reject-line').checked,
+      reject_tg:document.getElementById('nc-reject-tg').checked,
+      reject_admin:document.getElementById('nc-reject-admin').checked,
+    }
   };
   localStorage.setItem(NOTIF_KEY,JSON.stringify(cfg));
   ['line','tg','email','wh'].forEach(k=>{
@@ -2930,10 +3021,28 @@ function loadNotifCfg(){
       document.getElementById('nc-line-to').value=cfg.line.to||'';
       document.getElementById('nc-line-proxy').value=cfg.line.proxy||'';
     }
-    if(cfg.telegram){document.getElementById('nc-tg-en').checked=!!cfg.telegram.enabled;document.getElementById('nc-tg-token').value=cfg.telegram.token||'';document.getElementById('nc-tg-chat').value=cfg.telegram.chat||'';}
+    if(cfg.telegram){document.getElementById('nc-tg-en').checked=!!cfg.telegram.enabled;document.getElementById('nc-tg-token').value=cfg.telegram.token||'';document.getElementById('nc-tg-chat').value=cfg.telegram.chat||'';document.getElementById('nc-tg-chat-req').value=cfg.telegram.chat_req||'';}
     if(cfg.email){document.getElementById('nc-email-en').checked=!!cfg.email.enabled;document.getElementById('nc-email-svc').value=cfg.email.svc||'';document.getElementById('nc-email-tpl').value=cfg.email.tpl||'';document.getElementById('nc-email-key').value=cfg.email.key||'';document.getElementById('nc-email-to').value=cfg.email.to||'';}
     if(cfg.webhook){document.getElementById('nc-wh-en').checked=!!cfg.webhook.enabled;document.getElementById('nc-wh-url').value=cfg.webhook.url||'';}
-    if(cfg.cond){document.getElementById('nc-cond-low').checked=!!cfg.cond.low;document.getElementById('nc-cond-out').checked=!!cfg.cond.out;document.getElementById('nc-cond-exp').checked=!!cfg.cond.exp;document.getElementById('nc-cond-req').checked=!!cfg.cond.req;document.getElementById('nc-exp-days').value=cfg.cond.exp_days||60;document.getElementById('nc-req-line').checked=!!cfg.cond.req_line;document.getElementById('nc-req-tg').checked=!!cfg.cond.req_tg;if(cfg.cond.req_line&&cfg.cond.req_tg)document.getElementById('nc-req-both').checked=true;document.getElementById('nc-exp-multi').checked=!!cfg.cond.exp_multi;}
+    if(cfg.cond){
+      document.getElementById('nc-cond-low').checked=!!cfg.cond.low;
+      document.getElementById('nc-cond-out').checked=!!cfg.cond.out;
+      document.getElementById('nc-cond-exp').checked=!!cfg.cond.exp;
+      document.getElementById('nc-exp-days').value=cfg.cond.exp_days||60;
+      document.getElementById('nc-exp-multi').checked=!!cfg.cond.exp_multi;
+      document.getElementById('nc-cond-req').checked=!!cfg.cond.req;
+      document.getElementById('nc-req-line').checked=!!cfg.cond.req_line;
+      document.getElementById('nc-req-tg').checked=!!cfg.cond.req_tg;
+      if(cfg.cond.req_line&&cfg.cond.req_tg)document.getElementById('nc-req-both').checked=true;
+      document.getElementById('nc-cond-approve').checked=!!cfg.cond.approve;
+      document.getElementById('nc-approve-line').checked=!!cfg.cond.approve_line;
+      document.getElementById('nc-approve-tg').checked=!!cfg.cond.approve_tg;
+      document.getElementById('nc-approve-admin').checked=!!cfg.cond.approve_admin;
+      document.getElementById('nc-cond-reject').checked=!!cfg.cond.reject;
+      document.getElementById('nc-reject-line').checked=!!cfg.cond.reject_line;
+      document.getElementById('nc-reject-tg').checked=!!cfg.cond.reject_tg;
+      document.getElementById('nc-reject-admin').checked=!!cfg.cond.reject_admin;
+    }
     ['line','tg','email','wh'].forEach(k=>{
       const en=document.getElementById(`nc-${k}-en`).checked;
       const nb=document.getElementById(`nb-${k}`);
@@ -2996,6 +3105,23 @@ ${bottles>=0?`เหลือ: ${bottles} ขวด
   }
   return results;
 }
+async function testNotifReqChat(){
+  toast('⏳ กำลังส่งทดสอบ (Request Chat)...','info');
+  const cfg=getNotifCfg();
+  const tgReqChat=cfg.telegram?.chat_req||cfg.telegram?.chat;
+  if(!cfg.telegram?.enabled||!cfg.telegram?.token||!tgReqChat){
+    toast('⚠️ กรุณาตั้งค่า Telegram และ Chat ID (Request) ก่อน','err');return;
+  }
+  try{
+    const r=await fetch('https://api.telegram.org/bot'+cfg.telegram.token+'/sendMessage',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({chat_id:tgReqChat,text:'🧪 ทดสอบ Request Chat\nระบบ Lab Stock — '+new Date().toLocaleString('th-TH')})
+    });
+    const d=await r.json();
+    toast(d.ok?'Telegram Request Chat ✅':'Telegram ❌ '+d.description,d.ok?'ok':'err');
+  }catch(e){toast('Telegram ❌ '+e.message,'err');}
+}
+
 async function testNotif(channel){
   toast('⏳ กำลังส่งทดสอบ...','info');
   const results=await sendNotif('test','ทดสอบการแจ้งเตือน',99,'🧪 นี่คือข้อความทดสอบจากระบบ Lab Stock');
