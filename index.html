@@ -212,7 +212,7 @@ input,select,textarea{font-family:var(--fn);}
 .ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:1000;align-items:center;justify-content:center;padding:14px;backdrop-filter:blur(3px);touch-action:none;}
 .ov.open{display:flex;}
 .modal{background:var(--w);border:1.5px solid var(--bdr);border-radius:var(--r3);width:100%;max-width:500px;max-height:92vh;overflow-y:auto;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.16);touch-action:auto;position:relative;z-index:1001;}
-.dlg-wrap{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);}
+.dlg-wrap{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);}
 .dlg-box{background:var(--w);border-radius:var(--r2);padding:24px;max-width:360px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.2);animation:dlgIn .15s ease;}
 @keyframes dlgIn{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
 .dlg-icon{font-size:32px;text-align:center;margin-bottom:10px;}
@@ -704,23 +704,27 @@ input,select,textarea{font-family:var(--fn);}
               <input type="checkbox" id="nc-cond-out" onchange="saveNotifCfg()" style="width:16px;height:16px;accent-color:var(--red);">
               <span>🔴 แจ้งเตือนเมื่อ Stock หมด (0 ขวด)</span>
             </label>
-            <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer;flex-wrap:wrap;">
-              <input type="checkbox" id="nc-cond-exp" onchange="saveNotifCfg()" style="width:16px;height:16px;accent-color:var(--red);">
-              <span>📅 แจ้งเตือนเมื่อใกล้หมดอายุภายใน</span>
-              <select id="nc-exp-days" onchange="saveNotifCfg()"
-                style="padding:3px 7px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;">
-                <option value="7">7 วัน</option>
-                <option value="30">30 วัน</option>
-                <option value="60" selected>60 วัน</option>
-                <option value="90">90 วัน</option>
-                <option value="180">180 วัน</option>
-              </select>
-              <span>ล่วงหน้า</span>
-              <label style="display:flex;align-items:center;gap:5px;font-size:12px;margin-left:4px;cursor:pointer;">
-                <input type="checkbox" id="nc-exp-multi" onchange="saveNotifCfg()" style="accent-color:var(--red);">
-                <span>แจ้งหลายระดับ (90/30/7 วัน)</span>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer;">
+                <input type="checkbox" id="nc-cond-exp" onchange="saveNotifCfg()" style="width:16px;height:16px;accent-color:var(--red);">
+                <span>📅 แจ้งเตือนเมื่อใกล้หมดอายุ</span>
               </label>
-            </label>
+              <div style="padding-left:26px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <span style="font-size:12px;color:var(--t2);">แจ้งก่อน</span>
+                <select id="nc-exp-days" onchange="saveNotifCfg()"
+                  style="padding:3px 7px;border:1.5px solid var(--bdr);border-radius:6px;font-size:12px;">
+                  <option value="7">7 วัน</option>
+                  <option value="30">30 วัน</option>
+                  <option value="60" selected>60 วัน</option>
+                  <option value="90">90 วัน</option>
+                  <option value="180">180 วัน</option>
+                </select>
+                <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;">
+                  <input type="checkbox" id="nc-exp-multi" onchange="saveNotifCfg()" style="accent-color:var(--pur);">
+                  <span style="color:var(--pur);">🔔 แจ้งหลายระดับ (90/30/7 วัน)</span>
+                </label>
+              </div>
+            </div>
             <div style="display:flex;flex-direction:column;gap:6px;">
               <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer;">
                 <input type="checkbox" id="nc-cond-req" onchange="saveNotifCfg()" style="width:16px;height:16px;accent-color:var(--red);">
@@ -766,6 +770,9 @@ input,select,textarea{font-family:var(--fn);}
           <button class="btn-gh" onclick="exportJSON()">⬇️ Stock JSON</button>
           <button class="btn-p" onclick="exportFullExcel()" style="background:var(--grn);box-shadow:0 2px 8px rgba(0,145,58,.25);">
             📊 Backup Excel ครบทุกตาราง
+          </button>
+          <button class="btn-p" onclick="exportReportPDF()" style="background:var(--blu);box-shadow:0 2px 8px rgba(29,111,184,.25);">
+            📄 Export PDF รายงานสรุป
           </button>
         </div>
         <div style="font-size:11px;color:var(--t3);">Backup Excel รวม: Stock, Requests, ประวัติทั้งหมด, Users</div>
@@ -1187,9 +1194,16 @@ function setupRoleUI(role){
   const btnAdd = document.getElementById('btnAdd');
   if(btnAdd) btnAdd.style.display = isAdmin ? '' : 'none';
 
-  // ปุ่มสร้าง Request — viewer ดูได้อย่างเดียว
+  // Viewer — ซ่อน Request tab และปุ่มสร้าง Request ทั้งหมด
+  document.getElementById('tabReq').style.display = isViewer ? 'none' : '';
   const btnReq = document.getElementById('btnNewReq');
   if(btnReq) btnReq.style.display = isViewer ? 'none' : '';
+
+  // Viewer เริ่มที่ Stock เสมอ
+  if(isViewer){
+    const startBtn=document.getElementById('tabStock');
+    if(startBtn) startBtn.click();
+  }
 }
 
 // ── Auto Logout after 30 min idle ──
@@ -1386,6 +1400,7 @@ function renderStock(){
           <button class="ab ab-gr" onclick="viewItem(${i.id})">👁</button>
           ${isSt&&!needReq?`<button class="ab ab-r" onclick="openAdj(${i.id})">📤 หยิบ</button>`:''}
           ${isA?`<button class="ab ab-b" onclick="openEdit(${i.id})">✏️</button>`:''}
+          ${isA?`<button class="ab ab-gr" onclick="printLabel(${i.id})" title="พิมพ์ Label">🖨️</button>`:''}
           ${isA?`<button class="ab ab-r" onclick="delItem(${i.id})" style="font-size:11px;">🗑 ลบ</button>`:''}
         </div>
       </td>
