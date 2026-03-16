@@ -380,7 +380,6 @@ input,select,textarea{font-family:var(--fn);}
   </div>
   <div class="main">
 
-    <!-- DASHBOARD -->
     <div class="page act" id="pg-dash">
       <div class="sg">
         <div class="sc ct" onclick="nav('stock',document.getElementById('tabStock'))" title="ดูรายการ Stock ทั้งหมด">
@@ -410,7 +409,6 @@ input,select,textarea{font-family:var(--fn);}
       <div id="alertList"></div>
     </div>
 
-    <!-- STOCK -->
     <div class="page" id="pg-stock">
       <div class="sh">
         <h2>🧪 รายการ Reagent</h2>
@@ -464,7 +462,6 @@ input,select,textarea{font-family:var(--fn);}
       </div>
     </div>
 
-    <!-- REQUESTS -->
     <div class="page" id="pg-req">
       <div class="sh">
         <h2>📋 Request / เบิกของ</h2>
@@ -490,17 +487,14 @@ input,select,textarea{font-family:var(--fn);}
       <div id="reqList"><div class="empty"><span class="ei">⏳</span>กำลังโหลด...</div></div>
     </div>
 
-    <!-- REPORT -->
     <div class="page" id="pg-report">
       <div class="sh"><h2>📈 รายงานสรุป</h2><div style="display:flex;gap:7px;"><button class="btn-gh" onclick="exportReportPDF()">📄 Export PDF</button><button class="btn-gh" onclick="window.print()">🖨️ พิมพ์</button></div></div>
       <div id="reportContent"></div>
     </div>
 
-    <!-- ADMIN -->
     <div class="page" id="pg-admin">
       <div class="sh"><h2>⚙️ Admin Panel</h2></div>
 
-      <!-- BRANDING -->
       <div class="sbox">
         <div class="sbox-title">🏥 องค์กร / โลโก้</div>
         <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;">
@@ -516,13 +510,11 @@ input,select,textarea{font-family:var(--fn);}
         </div>
       </div>
 
-      <!-- PENDING -->
       <div class="sbox">
         <div class="sbox-title">📋 Requests รอ Approve <span id="pendCount"></span></div>
         <div id="adminPending"></div>
       </div>
 
-      <!-- USER MANAGEMENT -->
       <div class="sbox">
         <div style="background:linear-gradient(135deg,#fff3cd,#fff9e6);border:1.5px solid #ffc107;border-radius:var(--r);padding:11px 13px;margin-bottom:12px;">
           <div style="font-size:12px;font-weight:700;color:#856404;margin-bottom:5px;">🔐 ความปลอดภัย</div>
@@ -540,25 +532,21 @@ input,select,textarea{font-family:var(--fn);}
         </table></div>
       </div>
 
-      <!-- CATEGORIES -->
       <div class="sbox">
         <div class="sbox-title">🏷️ หมวดหมู่ <button class="ab ab-b" onclick="openAddCat()" style="font-size:11px;">＋ เพิ่ม</button></div>
         <div id="catList" style="display:flex;flex-wrap:wrap;gap:7px;"></div>
       </div>
 
-      <!-- HOSPITALS -->
       <div class="sbox">
         <div class="sbox-title">🏥 รายชื่อ รพ. <button class="ab ab-b" onclick="openAddHosp()" style="font-size:11px;">＋ เพิ่ม</button></div>
         <div id="hospList" style="display:flex;flex-wrap:wrap;gap:7px;"></div>
       </div>
 
-      <!-- DELIVERY -->
       <div class="sbox">
         <div class="sbox-title">🚚 วิธีการส่ง <button class="ab ab-b" onclick="openAddDel()" style="font-size:11px;">＋ เพิ่ม</button></div>
         <div id="delList" style="display:flex;flex-wrap:wrap;gap:7px;"></div>
       </div>
 
-      <!-- IMPORT USER -->
       <div class="sbox">
         <div class="sbox-title">📥 Import User จาก Excel/CSV</div>
         <div style="background:var(--s2);border-radius:var(--r);padding:13px;margin-bottom:12px;font-size:12px;line-height:1.8;">
@@ -581,12 +569,10 @@ input,select,textarea{font-family:var(--fn);}
         </div>
       </div>
 
-      <!-- NOTIFICATIONS -->
       <div class="sbox">
         <div class="sbox-title">🔔 ตั้งค่าการแจ้งเตือน</div>
         <div style="margin-bottom:14px;font-size:12px;color:var(--t2);">แจ้งเตือนเมื่อ Stock ใกล้หมด, หมดสต็อก, ใกล้หมดอายุ และมี Request ใหม่</div>
 
-        <!-- LINE Messaging API -->
         <div class="notif-card" id="nc-line">
           <div class="notif-head" onclick="toggleNotifCard('nb-line',this)" style="cursor:pointer;">
             <div style="display:flex;align-items:center;gap:10px;">
@@ -599,7 +585,6 @@ input,select,textarea{font-family:var(--fn);}
             <label class="sw" onclick="event.stopPropagation()"><input type="checkbox" id="nc-line-en" onchange="saveNotifCfg()"><span class="sw-sl"></span></label>
           </div>
           <div class="notif-body" id="nb-line" style="display:none;">
-            <!-- ช่องกรอก -->
             <div class="fg" style="margin-bottom:8px;"><label>Channel Access Token</label>
               <div style="display:flex;gap:7px;">
                 <input type="text" id="nc-line-token" placeholder="วางToken ที่นี่..." style="flex:1;font-family:var(--mo);font-size:12px;" onchange="saveNotifCfg()">
@@ -630,7 +615,6 @@ input,select,textarea{font-family:var(--fn);}
               </div>
               <div style="font-size:10px;color:var(--t3);margin-top:3px;">ถ้าไม่ใส่ จะใช้ Line 2 → Line 1 แทน</div>
             </div>
-            <!-- คู่มือขั้นตอน -->
             <div style="background:linear-gradient(135deg,#f0fff4,#e8f5ff);border:1.5px solid #b2dfdb;border-radius:10px;padding:14px;">
               <div style="font-size:12px;font-weight:700;color:#00695c;margin-bottom:10px;">📋 ขั้นตอนตั้งค่า LINE Messaging API (ทำครั้งเดียว)</div>
               <div style="display:flex;flex-direction:column;gap:10px;">
@@ -686,7 +670,6 @@ input,select,textarea{font-family:var(--fn);}
                   <div style="font-size:11px;color:var(--t3);margin-top:3px;">ถ้าไม่มี Proxy ระบบจะส่งตรงไป api.line.me (อาจถูกบล็อก CORS บางเบราว์เซอร์)</div>
                 </div>
 
-                <!-- สรุปขั้นตอนทั้งหมด -->
                 <div style="margin-top:14px;background:#fff;border:1.5px solid var(--bdr);border-radius:10px;padding:14px;">
                   <div style="font-size:12px;font-weight:700;color:var(--t1);margin-bottom:10px;">🗺️ ภาพรวมขั้นตอนทั้งหมด (ทำครั้งเดียว)</div>
                   <div style="display:flex;flex-direction:column;gap:6px;font-size:12px;line-height:1.8;">
@@ -708,7 +691,6 @@ input,select,textarea{font-family:var(--fn);}
           </div>
         </div>
 
-        <!-- Telegram -->
         <div class="notif-card" id="nc-tg">
           <div class="notif-head">
             <div style="display:flex;align-items:center;gap:10px;">
@@ -752,7 +734,6 @@ input,select,textarea{font-family:var(--fn);}
           </div>
         </div>
 
-        <!-- Email (mailto / SMTP via webhook) -->
         <div class="notif-card" id="nc-email">
           <div class="notif-head">
             <div style="display:flex;align-items:center;gap:10px;">
@@ -781,7 +762,6 @@ input,select,textarea{font-family:var(--fn);}
           </div>
         </div>
 
-        <!-- Webhook (Generic) -->
         <div class="notif-card" id="nc-wh">
           <div class="notif-head">
             <div style="display:flex;align-items:center;gap:10px;">
@@ -801,7 +781,6 @@ input,select,textarea{font-family:var(--fn);}
           </div>
         </div>
 
-        <!-- เงื่อนไขการแจ้งเตือน -->
         <div style="margin-top:14px;background:var(--s2);border-radius:var(--r);padding:13px;">
           <div style="font-size:12px;font-weight:700;color:var(--t1);margin-bottom:10px;">⚙️ เงื่อนไขการแจ้งเตือน</div>
           <div style="display:flex;flex-direction:column;gap:8px;">
@@ -834,7 +813,6 @@ input,select,textarea{font-family:var(--fn);}
                 </label>
               </div>
             </div>
-            <!-- Request ใหม่ -->
             <div style="background:var(--w);border:1.5px solid var(--bdr);border-radius:var(--r);padding:10px 12px;">
               <div style="font-size:12px;font-weight:700;color:var(--t1);margin-bottom:8px;">📋 Request ใหม่ → แจ้ง Admin</div>
               <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-bottom:6px;">
@@ -857,7 +835,6 @@ input,select,textarea{font-family:var(--fn);}
               </div>
             </div>
 
-            <!-- Approve -->
             <div style="background:var(--w);border:1.5px solid var(--bdr);border-radius:var(--r);padding:10px 12px;">
               <div style="font-size:12px;font-weight:700;color:var(--grn);margin-bottom:8px;">✅ อนุมัติ Request → แจ้งผู้ขอ</div>
               <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-bottom:6px;">
@@ -880,7 +857,6 @@ input,select,textarea{font-family:var(--fn);}
               </div>
             </div>
 
-            <!-- Reject -->
             <div style="background:var(--w);border:1.5px solid var(--bdr);border-radius:var(--r);padding:10px 12px;">
               <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:8px;">❌ ปฏิเสธ Request → แจ้งผู้ขอ</div>
               <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-bottom:6px;">
@@ -911,7 +887,6 @@ input,select,textarea{font-family:var(--fn);}
         </div>
       </div>
 
-      <!-- AUDIT LOG -->
       <div class="sbox">
         <div class="sbox-title">🔍 Audit Log (การเข้าใช้งานล่าสุด)
           <button class="ab ab-b" onclick="loadAuditLog()" style="font-size:11px;margin-left:8px;">🔄 โหลด</button>
@@ -919,7 +894,6 @@ input,select,textarea{font-family:var(--fn);}
         <div id="auditList" style="font-size:12px;color:var(--t3);">กด "โหลด" เพื่อดูประวัติ</div>
       </div>
 
-      <!-- EXPORT -->
       <div class="sbox">
         <div class="sbox-title">📤 Export & Backup</div>
         <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px;">
@@ -939,7 +913,6 @@ input,select,textarea{font-family:var(--fn);}
   </div>
 </div>
 
-<!-- SCAN -->
 <div class="ov" id="mScan">
   <div class="modal">
     <h3>📷 สแกน Barcode</h3>
@@ -958,7 +931,6 @@ input,select,textarea{font-family:var(--fn);}
   </div>
 </div>
 
-<!-- ADD/EDIT ITEM -->
 <div class="ov" id="mItem">
   <div class="modal" style="max-width:520px;">
     <h3 id="mIT">➕ เพิ่ม Reagent</h3>
@@ -978,9 +950,7 @@ input,select,textarea{font-family:var(--fn);}
         <div style="background:#000;border-radius:12px;overflow:hidden;position:relative;">
           <video id="camVideo" autoplay playsinline muted style="width:100%;display:block;max-height:260px;object-fit:cover;border-radius:12px;"></video>
           <div style="position:absolute;inset:0;pointer-events:none;border-radius:12px;">
-            <!-- เส้นสแกน -->
             <div style="position:absolute;top:50%;left:8%;right:8%;transform:translateY(-50%);height:2px;background:rgba(192,0,26,.9);box-shadow:0 0 10px rgba(192,0,26,.8);animation:scanline 1.8s ease-in-out infinite;"></div>
-            <!-- กรอบมุม -->
             <div style="position:absolute;top:20%;left:10%;width:30px;height:30px;border-top:3px solid #fff;border-left:3px solid #fff;border-radius:3px 0 0 0;"></div>
             <div style="position:absolute;top:20%;right:10%;width:30px;height:30px;border-top:3px solid #fff;border-right:3px solid #fff;border-radius:0 3px 0 0;"></div>
             <div style="position:absolute;bottom:20%;left:10%;width:30px;height:30px;border-bottom:3px solid #fff;border-left:3px solid #fff;border-radius:0 0 0 3px;"></div>
@@ -1014,7 +984,6 @@ input,select,textarea{font-family:var(--fn);}
   </div>
 </div>
 
-<!-- ADJUST -->
 <div class="ov" id="mAdj">
   <div class="modal">
     <h3>🔄 ปรับจำนวนขวด</h3>
@@ -1045,7 +1014,6 @@ input,select,textarea{font-family:var(--fn);}
   </div>
 </div>
 
-<!-- VIEW -->
 <div class="ov" id="mView">
   <div class="modal" style="max-width:520px;">
     <h3>🔍 รายละเอียด</h3>
@@ -1054,7 +1022,6 @@ input,select,textarea{font-family:var(--fn);}
   </div>
 </div>
 
-<!-- REQUEST -->
 <div class="ov" id="mReq">
   <div class="modal" style="max-width:520px;">
     <h3>📋 สร้าง Request</h3>
@@ -1088,7 +1055,6 @@ input,select,textarea{font-family:var(--fn);}
   </div>
 </div>
 
-<!-- CHANGE PASSWORD -->
 <div class="ov" id="mPwd">
   <div class="modal" style="max-width:380px;">
     <h3>🔑 เปลี่ยน Password</h3>
@@ -1102,7 +1068,6 @@ input,select,textarea{font-family:var(--fn);}
   </div>
 </div>
 
-<!-- ADD USER -->
 <div class="ov" id="mUser">
   <div class="modal" style="max-width:420px;">
     <h3 id="mUT">👤 เพิ่ม User</h3>
@@ -1130,7 +1095,6 @@ input,select,textarea{font-family:var(--fn);}
   </div>
 </div>
 
-<!-- ADD CAT/HOSP/DEL -->
 <div class="ov" id="mMeta">
   <div class="modal" style="max-width:360px;">
     <h3 id="mMetaTitle">เพิ่ม</h3>
@@ -1142,7 +1106,6 @@ input,select,textarea{font-family:var(--fn);}
   </div>
 </div>
 
-<!-- IMPORT PREVIEW -->
 <div class="ov" id="mImport">
   <div class="modal" style="max-width:600px;">
     <h3>📊 Preview Import Excel</h3>
@@ -1157,7 +1120,6 @@ input,select,textarea{font-family:var(--fn);}
   </div>
 </div>
 
-<!-- MY ACCOUNT MODAL -->
 <div class="ov" id="mMyAcc">
   <div class="modal" style="max-width:400px;">
     <h3>👤 บัญชีของฉัน</h3>
@@ -1176,7 +1138,6 @@ input,select,textarea{font-family:var(--fn);}
   </div>
 </div>
 
-<!-- IMPORT USER PREVIEW -->
 <div class="ov" id="mUserImport">
   <div class="modal" style="max-width:640px;">
     <h3>👥 Preview Import User</h3>
@@ -2628,6 +2589,7 @@ function renderAdmin(){
         <button class="ab ab-b" onclick="openEditUser(${u.id})">✏️</button>
         <button class="ab ab-a" onclick="openChangePwd(${u.id})">🔑</button>
         ${u.username!=='admin'?`<button class="ab ab-r" onclick="toggleUser(${u.id},${!u.active})">${u.active?'🚫':'✅'}</button>`:''}
+        ${u.username!=='admin' && u.username!==S.user.username?`<button class="ab ab-r" onclick="deleteUser(${u.id}, '${u.username}', '${u.name}')" title="ลบผู้ใช้" style="background:#ffeced;">🗑️</button>`:''}
       </div>
     </td>
   </tr>`).join('');
@@ -2740,6 +2702,46 @@ async function toggleUser(id,active){
     toast(active?'✅ เปิดใช้งาน User':'🚫 ปิดใช้งาน User','info');
     await loadUsers();renderAdmin();
   }catch(e){toast('❌ เกิดข้อผิดพลาด: '+(e?.message||'ลองใหม่อีกครั้ง'),'err');}
+}
+
+async function deleteUser(id, username, name) {
+  if (username === S.user.username) {
+    toast('❌ ไม่สามารถลบบัญชีที่คุณกำลังใช้งานอยู่ได้', 'err');
+    return;
+  }
+  try {
+    const pendingReqs = await db('requests', 'GET', null, `?by_username=eq.${encodeURIComponent(username)}&status=eq.pending`);
+    if (pendingReqs && pendingReqs.length > 0) {
+      await dlg({
+        icon: '⚠️',
+        title: 'ไม่สามารถลบได้',
+        msg: `ผู้ใช้ "${name}" ยังมี Request ค้างอยู่ในระบบ (${pendingReqs.length} รายการ)\n\nกรุณาจัดการอนุมัติหรือปฏิเสธ Request ทั้งหมดของผู้ใช้นี้ก่อนทำการลบ`,
+        okText: 'รับทราบ',
+        showCancel: false
+      });
+      return;
+    }
+  } catch (e) {
+    toast('❌ ตรวจสอบข้อมูลไม่สำเร็จ', 'err');
+    return;
+  }
+  const confirm = await dlg({
+    icon: '🗑️',
+    title: 'ยืนยันการลบผู้ใช้',
+    msg: `คุณต้องการลบผู้ใช้ "${name}" (${username}) ใช่หรือไม่?\n⚠️ การกระทำนี้ไม่สามารถกู้คืนได้`,
+    okText: 'ลบถาวร',
+    cancelText: 'ยกเลิก',
+    danger: true
+  });
+  if (!confirm) return;
+  try {
+    await db('users', 'DELETE', null, `?id=eq.${id}`);
+    toast(`🗑️ ลบผู้ใช้ "${name}" เรียบร้อยแล้ว`, 'ok');
+    await loadUsers();
+    renderAdmin();
+  } catch (e) {
+    toast('❌ ลบไม่ได้: ' + (e.message || 'เกิดข้อผิดพลาดทางเทคนิค'), 'err');
+  }
 }
 
 // ══ META (CAT/HOSP/DEL) ══
@@ -3136,492 +3138,4 @@ function saveNotifCfg(){
       low:document.getElementById('nc-cond-low').checked,
       out:document.getElementById('nc-cond-out').checked,
       exp:document.getElementById('nc-cond-exp').checked,
-      exp_days:+document.getElementById('nc-exp-days').value||60,
-      exp_multi:document.getElementById('nc-exp-multi').checked,
-      req:document.getElementById('nc-cond-req').checked,
-      req_line:document.getElementById('nc-req-line').checked,
-      req_tg:document.getElementById('nc-req-tg').checked,
-      approve:document.getElementById('nc-cond-approve').checked,
-      approve_line:document.getElementById('nc-approve-line').checked,
-      approve_tg:document.getElementById('nc-approve-tg').checked,
-      approve_admin:document.getElementById('nc-approve-admin').checked,
-      reject:document.getElementById('nc-cond-reject').checked,
-      reject_line:document.getElementById('nc-reject-line').checked,
-      reject_tg:document.getElementById('nc-reject-tg').checked,
-      reject_admin:document.getElementById('nc-reject-admin').checked,
-    }
-  };
-  localStorage.setItem(NOTIF_KEY,JSON.stringify(cfg));
-  ['line','tg','email','wh'].forEach(k=>{
-    const en=document.getElementById(`nc-${k}-en`).checked;
-    const nb=document.getElementById(`nb-${k}`);
-    if(nb)nb.style.display=en?'block':'none';
-  });
-}
-function loadNotifCfg(){
-  try{
-    const cfg=JSON.parse(localStorage.getItem(NOTIF_KEY)||'{}');
-    if(cfg.line){
-      document.getElementById('nc-line-en').checked=!!cfg.line.enabled;
-      document.getElementById('nc-line-token').value=cfg.line.token||'';
-      document.getElementById('nc-line-to').value=cfg.line.to||'';
-      document.getElementById('nc-line-to-req').value=cfg.line.to_req||'';
-      document.getElementById('nc-line-to-res').value=cfg.line.to_res||'';
-      document.getElementById('nc-line-proxy').value=cfg.line.proxy||'';
-    }
-    if(cfg.telegram){document.getElementById('nc-tg-en').checked=!!cfg.telegram.enabled;document.getElementById('nc-tg-token').value=cfg.telegram.token||'';document.getElementById('nc-tg-chat').value=cfg.telegram.chat||'';document.getElementById('nc-tg-chat-req').value=cfg.telegram.chat_req||'';document.getElementById('nc-tg-chat-res').value=cfg.telegram.chat_res||'';}
-    if(cfg.email){document.getElementById('nc-email-en').checked=!!cfg.email.enabled;document.getElementById('nc-email-svc').value=cfg.email.svc||'';document.getElementById('nc-email-tpl').value=cfg.email.tpl||'';document.getElementById('nc-email-key').value=cfg.email.key||'';document.getElementById('nc-email-to').value=cfg.email.to||'';}
-    if(cfg.webhook){document.getElementById('nc-wh-en').checked=!!cfg.webhook.enabled;document.getElementById('nc-wh-url').value=cfg.webhook.url||'';}
-    if(cfg.cond){
-      document.getElementById('nc-cond-low').checked=!!cfg.cond.low;
-      document.getElementById('nc-cond-out').checked=!!cfg.cond.out;
-      document.getElementById('nc-cond-exp').checked=!!cfg.cond.exp;
-      document.getElementById('nc-exp-days').value=cfg.cond.exp_days||60;
-      document.getElementById('nc-exp-multi').checked=!!cfg.cond.exp_multi;
-      document.getElementById('nc-cond-req').checked=!!cfg.cond.req;
-      document.getElementById('nc-req-line').checked=!!cfg.cond.req_line;
-      document.getElementById('nc-req-tg').checked=!!cfg.cond.req_tg;
-      if(cfg.cond.req_line&&cfg.cond.req_tg)document.getElementById('nc-req-both').checked=true;
-      document.getElementById('nc-cond-approve').checked=!!cfg.cond.approve;
-      document.getElementById('nc-approve-line').checked=!!cfg.cond.approve_line;
-      document.getElementById('nc-approve-tg').checked=!!cfg.cond.approve_tg;
-      document.getElementById('nc-approve-admin').checked=!!cfg.cond.approve_admin;
-      document.getElementById('nc-cond-reject').checked=!!cfg.cond.reject;
-      document.getElementById('nc-reject-line').checked=!!cfg.cond.reject_line;
-      document.getElementById('nc-reject-tg').checked=!!cfg.cond.reject_tg;
-      document.getElementById('nc-reject-admin').checked=!!cfg.cond.reject_admin;
-    }
-    ['line','tg','email','wh'].forEach(k=>{
-      const en=document.getElementById(`nc-${k}-en`).checked;
-      const nb=document.getElementById(`nb-${k}`);
-      if(nb)nb.style.display=en?'block':'none';
-    });
-  }catch{}
-}
-function getNotifCfg(){
-  try{return JSON.parse(localStorage.getItem(NOTIF_KEY)||'{}');}catch{return{};}
-}
-async function sendNotif(type,itemName,bottles,extraMsg=''){
-  const cfg=getNotifCfg();
-  const msg=`🔬 Lab Stock Alert
-${type==='low'?'⚠️ Stock ใกล้หมด':type==='out'?'🔴 Stock หมด':type==='exp'?'📅 ใกล้หมดอายุ':'📋 Request ใหม่'}
-รายการ: ${itemName}
-${bottles>=0?`เหลือ: ${bottles} ขวด
-`:''}${extraMsg}
-เวลา: ${new Date().toLocaleString('th-TH')}`;
-  const results=[];
-  // LINE Messaging API (push message)
-  if(cfg.line?.enabled&&cfg.line?.token&&cfg.line?.to){
-    const ok=await sendLineMsg(cfg.line.to,cfg.line.token,cfg.line.proxy,msg);
-    results.push(ok?'LINE ✅':'LINE ❌');
-  }
-  // Telegram
-  if(cfg.telegram?.enabled&&cfg.telegram?.token&&cfg.telegram?.chat){
-    try{
-      const r=await fetch(`https://api.telegram.org/bot${cfg.telegram.token}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:cfg.telegram.chat,text:msg,parse_mode:'HTML'})});
-      const d=await r.json();results.push(d.ok?'Telegram ✅':'Telegram ❌ '+d.description);
-    }catch{results.push('Telegram ❌ (Network)');}
-  }
-  // Webhook
-  if(cfg.webhook?.enabled&&cfg.webhook?.url){
-    try{
-      const r=await fetch(cfg.webhook.url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type,item_name:itemName,bottles,message:msg,timestamp:new Date().toISOString()})});
-      results.push(r.ok?'Webhook ✅':'Webhook ❌');
-    }catch{results.push('Webhook ❌ (Network)');}
-  }
-  // Email via EmailJS
-  if(cfg.email?.enabled&&cfg.email?.svc&&cfg.email?.tpl&&cfg.email?.key){
-    try{
-      const r=await fetch('https://api.emailjs.com/api/v1.0/email/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({service_id:cfg.email.svc,template_id:cfg.email.tpl,user_id:cfg.email.key,template_params:{to_email:cfg.email.to,subject:`Lab Stock Alert: ${itemName}`,message:msg}})});
-      results.push(r.ok?'Email ✅':'Email ❌');
-    }catch{results.push('Email ❌ (Network)');}
-  }
-  return results;
-}
-async function testTgChat(inputId){
-  const cfg=getNotifCfg();
-  const chatId=document.getElementById(inputId)?.value||cfg.telegram?.chat;
-  if(!cfg.telegram?.token||!chatId){
-    toast('⚠️ กรุณากรอก Bot Token และ Chat ID ก่อน','err');return;
-  }
-  toast('⏳ กำลังส่งทดสอบ...','info');
-  const labelMap={'nc-tg-chat':'Admin Chat','nc-tg-chat-req':'Request Chat','nc-tg-chat-res':'Approve/Reject Chat'};
-  const label=labelMap[inputId]||'Chat';
-  try{
-    const r=await fetch('https://api.telegram.org/bot'+cfg.telegram.token+'/sendMessage',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({chat_id:chatId,text:'🧪 ทดสอบ '+label+'\nระบบ Lab Stock — '+new Date().toLocaleString('th-TH')})
-    });
-    const d=await r.json();
-    toast(d.ok?'Telegram '+label+' ✅':'Telegram ❌ '+d.description,d.ok?'ok':'err');
-  }catch(e){toast('Telegram ❌ '+e.message,'err');}
-}
-async function testNotifReqChat(){testTgChat('nc-tg-chat-req');}
-
-async function testNotif(channel){
-  toast('⏳ กำลังส่งทดสอบ...','info');
-  const results=await sendNotif('test','ทดสอบการแจ้งเตือน',99,'🧪 นี่คือข้อความทดสอบจากระบบ Lab Stock');
-  if(results.length===0){toast('⚠️ ยังไม่ได้เปิดใช้งานช่องทางนี้','err');return;}
-  const r=results.find(x=>x.toLowerCase().includes(channel.split('-')[0]));
-  toast(r||results.join(' | '),(r||'').includes('✅')?'ok':'err');
-}
-async function sendManualNotif(){
-  toast('⏳ กำลังส่งรายงาน...','info');
-  const cfg=getNotifCfg();
-  const today=new Date(),soon=new Date();soon.setDate(soon.getDate()+60);
-  const out=S.items.filter(i=>(i.bottles||0)===0);
-  const low=S.items.filter(i=>(i.bottles||0)>0&&(i.bottles||0)<=(i.min_qty||5));
-  const exp=S.items.filter(i=>i.expiry_date&&new Date(i.expiry_date)<soon);
-  const pend=S.requests.filter(r=>r.status==='pending');
-  const lines=[
-    '📊 รายงานสรุป Lab Stock',
-    `วันที่: ${today.toLocaleDateString('th-TH')}`,
-    `รายการทั้งหมด: ${S.items.length}`,
-    out.length?`🔴 หมดสต็อก: ${out.length} รายการ → ${out.slice(0,3).map(i=>i.name).join(', ')}${out.length>3?'...':''}`:null,
-    low.length?`⚠️ ใกล้หมด: ${low.length} รายการ → ${low.slice(0,3).map(i=>i.name).join(', ')}${low.length>3?'...':''}`:null,
-    exp.length?`📅 ใกล้หมดอายุ: ${exp.length} รายการ`:null,
-    pend.length?`📋 Request รอ Approve: ${pend.length} รายการ`:null,
-  ].filter(Boolean).join('\n');
-  const results=await sendNotif('report','รายงานสรุป',-1,lines);
-  toast(results.length?results.join(' | '):'⚠️ ไม่มีช่องทางที่เปิดใช้',results.some(r=>r.includes('✅'))?'ok':'err');
-}
-// เรียกแจ้งเตือนอัตโนมัติหลัง loadItems
-async function checkAndNotify(){
-  const cfg=getNotifCfg();if(!cfg.cond)return;
-  const today=new Date(),soon=new Date();
-  const expDays=cfg.cond?.exp_days||60;
-  soon.setDate(soon.getDate()+expDays);
-  // ดึง last notified จาก localStorage เพื่อไม่ส่งซ้ำ
-  const lnKey='lab_last_notif';
-  const lastNotif=JSON.parse(localStorage.getItem(lnKey)||'{}');
-  const nowMin=Math.floor(Date.now()/60000);
-  for(const i of S.items){
-    const btl=i.bottles||0;
-    const key=`${i.id}`;
-    if(cfg.cond.out&&btl===0&&(nowMin-(lastNotif[key+'_out']||0))>120){
-      sendNotif('out',i.name,btl);lastNotif[key+'_out']=nowMin;
-    } else if(cfg.cond.low&&btl>0&&btl<=(i.min_qty||5)&&(nowMin-(lastNotif[key+'_low']||0))>120){
-      sendNotif('low',i.name,btl);lastNotif[key+'_low']=nowMin;
-    }
-    if(cfg.cond.exp&&i.expiry_date){
-      const expD=new Date(i.expiry_date);
-      const daysLeft=Math.ceil((expD-today)/(1000*60*60*24));
-      if(cfg.cond.exp_multi){
-        // แจ้งหลายระดับ 90/30/7 วัน
-        for(const lvl of [90,30,7]){
-          if(daysLeft<=lvl&&daysLeft>0&&(nowMin-(lastNotif[key+'_exp'+lvl]||0))>1440){
-            sendNotif('exp',i.name,btl,'⏳ เหลือ '+daysLeft+' วัน (หมด '+expD.toLocaleDateString('th-TH')+')');
-            lastNotif[key+'_exp'+lvl]=nowMin;break;
-          }
-        }
-        if(daysLeft<=0&&(nowMin-(lastNotif[key+'_exp0']||0))>1440){
-          sendNotif('exp',i.name,btl,'🔴 หมดอายุแล้ว! ('+expD.toLocaleDateString('th-TH')+')');
-          lastNotif[key+'_exp0']=nowMin;
-        }
-      } else {
-        if(expD<soon&&(nowMin-(lastNotif[key+'_exp']||0))>1440){
-          sendNotif('exp',i.name,btl,'⏳ เหลือ '+Math.max(0,daysLeft)+' วัน (หมด '+expD.toLocaleDateString('th-TH')+')');
-          lastNotif[key+'_exp']=nowMin;
-        }
-      }
-    }
-  }
-  localStorage.setItem(lnKey,JSON.stringify(lastNotif));
-}
-
-function toggleNotifCard(bodyId,headEl){
-  const nb=document.getElementById(bodyId);
-  if(!nb)return;
-  nb.style.display=nb.style.display==='none'?'block':'none';
-}
-
-function openLineProxyGuide(){
-  const html=`
-  <div style="font-size:13px;line-height:1.9;">
-    <b style="color:var(--red);">วิธีที่ 1: Cloudflare Worker (แนะนำ — ฟรีตลอดชีพ)</b><br><br>
-    1. สมัคร <a href="https://workers.cloudflare.com" target="_blank" style="color:var(--blu);">workers.cloudflare.com</a> (ฟรี)<br>
-    2. กด <b>Create Worker</b> → วางโค้ดนี้:<br>
-    <pre style="background:#1e1e2e;color:#cdd6f4;padding:12px;border-radius:8px;font-size:11px;overflow-x:auto;margin:8px 0;">export default {
-  async fetch(req) {
-    if(req.method==='OPTIONS') return new Response('',{headers:cors()});
-    const b = await req.json();
-    const r = await fetch('https://api.line.me/v2/bot/message/push',{
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'Authorization':'Bearer '+req.headers.get('X-Line-Token')
-      },
-      body: JSON.stringify(b)
-    });
-    return new Response(await r.text(),{status:r.status,headers:cors()});
-  }
-}
-function cors(){return{'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'*','Content-Type':'application/json'};}
-</pre>
-    3. กด <b>Save and Deploy</b><br>
-    4. Copy URL ของ Worker (เช่น <code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;">https://lab-line.yourname.workers.dev</code>)<br>
-    5. วาง URL นั้นในช่อง <b>Proxy URL</b> ในระบบ<br><br>
-    <b style="color:var(--blu);">วิธีที่ 2: Make.com (No-code)</b><br><br>
-    1. สมัคร <a href="https://make.com" target="_blank" style="color:var(--blu);">make.com</a> → สร้าง Scenario ใหม่<br>
-    2. เพิ่ม Module <b>Webhooks → Custom Webhook</b> → Copy URL มาใส่ช่อง Proxy URL<br>
-    3. เพิ่ม Module <b>HTTP → Make a request</b> → ส่งต่อไป LINE API<br><br>
-    <b style="color:var(--pur);">วิธีที่ 3: n8n (Self-hosted)</b><br><br>
-    ใช้ Webhook node รับ → HTTP Request node ส่งต่อ LINE API<br>
-  </div>`;
-  document.getElementById('viewContent').innerHTML=html;
-  openM('mView');
-}
-
-
-// ══ CAMERA BARCODE SCAN (ใน modal เพิ่ม Reagent) ══
-let camStream=null,camTimer=null,barcodeReader=null;
-
-async function toggleCamScan(){
-  const wrap=document.getElementById('camScanWrap');
-  if(wrap.style.display==='none'||!wrap.style.display){
-    wrap.style.display='block';
-    document.getElementById('btnCam').textContent='⏹';
-    await startCamera();
-  } else {
-    stopCamera();
-    wrap.style.display='none';
-    document.getElementById('btnCam').textContent='📷';
-  }
-}
-
-async function startCamera(){
-  const status=document.getElementById('camStatus');
-  try{
-    // ขอสิทธิ์กล้องหลัง (environment) รองรับมือถือทุกรุ่น
-    camStream=await navigator.mediaDevices.getUserMedia({
-      video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}
-    });
-    const video=document.getElementById('camVideo');
-    video.srcObject=camStream;
-    await video.play();
-    status.textContent='🔍 ชี้กล้องไปที่บาร์โค้ด...';
-    status.style.color='var(--grn)';
-    // ลอง BarcodeDetector API ก่อน (Chrome Android รองรับดี)
-    if('BarcodeDetector' in window){
-      status.textContent='✅ กล้องพร้อม — ชี้บาร์โค้ดให้อยู่กลางภาพ';
-      startBarcodeDetector(video);
-    } else if(typeof jsQR !== 'undefined'){
-      // Fallback: jsQR (รองรับทุกเบราว์เซอร์ รวมถึง Safari iOS)
-      status.textContent='✅ กล้องพร้อม (jsQR) — ชี้บาร์โค้ดให้อยู่กลางภาพ';
-      startJsQR(video);
-    } else {
-      status.textContent='⚠️ กล้องเปิดแล้ว — ถ้าสแกนไม่ได้ให้พิมพ์บาร์โค้ดในช่องด้านบน';
-      status.style.color='var(--amb)';
-    }
-  }catch(e){
-    if(e.name==='NotAllowedError'){
-      status.textContent='❌ กรุณาอนุญาตการใช้กล้องในเบราว์เซอร์ก่อน';
-    } else {
-      status.textContent='❌ ไม่สามารถเปิดกล้องได้: '+e.message;
-    }
-    status.style.color='var(--red)';
-  }
-}
-
-function onBarcodeFound(val){
-  document.getElementById('fi-bc').value=val;
-  document.getElementById('camStatus').textContent='✅ สแกนได้: '+val;
-  document.getElementById('camStatus').style.color='var(--grn)';
-  setTimeout(()=>{
-    stopCamera();
-    document.getElementById('camScanWrap').style.display='none';
-    document.getElementById('btnCam').textContent='📷';
-    document.getElementById('fi-name').focus();
-    toast('📷 สแกนบาร์โค้ด: '+val,'ok');
-  },500);
-}
-
-function startBarcodeDetector(video){
-  try{
-    const detector=new BarcodeDetector({formats:['code_128','ean_13','ean_8','code_39','qr_code','upc_a','upc_e','itf','codabar']});
-    camTimer=setInterval(async()=>{
-      if(video.readyState!==4||!video.videoWidth)return;
-      try{
-        const codes=await detector.detect(video);
-        if(codes&&codes.length>0) onBarcodeFound(codes[0].rawValue);
-      }catch{}
-    },300);
-  }catch(e){
-    // BarcodeDetector ไม่รองรับ format นี้ — fallback jsQR
-    if(typeof jsQR!=='undefined') startJsQR(video);
-    else document.getElementById('camStatus').textContent='❌ '+e.message;
-  }
-}
-
-// jsQR fallback — รองรับ QR Code + บาร์โค้ดทั่วไปบน Safari/Firefox
-let jsqrCanvas=null;
-function startJsQR(video){
-  jsqrCanvas=document.createElement('canvas');
-  camTimer=setInterval(()=>{
-    if(video.readyState!==4||!video.videoWidth)return;
-    const w=video.videoWidth,h=video.videoHeight;
-    jsqrCanvas.width=w;jsqrCanvas.height=h;
-    const ctx=jsqrCanvas.getContext('2d');
-    ctx.drawImage(video,0,0,w,h);
-    const imgData=ctx.getImageData(0,0,w,h);
-    const code=jsQR(imgData.data,w,h,{inversionAttempts:'dontInvert'});
-    if(code&&code.data) onBarcodeFound(code.data);
-  },300);
-}
-
-function stopCamera(){
-  if(camTimer){clearInterval(camTimer);camTimer=null;}
-  if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
-  const video=document.getElementById('camVideo');
-  if(video){video.srcObject=null;}
-}
-
-// camera cleanup handled in closeM
-
-function startBcScan(){}
-function stopBcScan(){}
-
-
-function openLineFullGuide(){
-  document.getElementById('viewContent').innerHTML=`
-  <div style="font-size:13px;line-height:1.9;color:var(--t1);">
-    <div style="font-size:15px;font-weight:700;color:var(--red);margin-bottom:14px;">📋 คู่มือละเอียด: Make.com + LINE Messaging API</div>
-
-    <b style="color:var(--grn);">ส่วนที่ 1 — สร้าง LINE Channel</b><br>
-    1. ไปที่ <a href="https://developers.line.biz" target="_blank" style="color:var(--blu);">developers.line.biz</a> → Log in ด้วย LINE Account<br>
-    2. กด <b>Create a new provider</b> → ตั้งชื่อ (เช่น Hospital Lab)<br>
-    3. กด <b>Create a Messaging API channel</b><br>
-    4. กรอกข้อมูล Channel name, description → กด Agree → Create<br>
-    5. ไปแท็บ <b>Messaging API</b> → เลื่อนหา <b>Channel access token</b><br>
-    6. กด <b>Issue</b> → Copy token → วางในช่อง <b>Channel Access Token</b><br><br>
-
-    <b style="color:var(--grn);">ส่วนที่ 2 — หา User ID</b><br>
-    1. ใน Console → แท็บ Messaging API → เลื่อนหา QR Code → เพิ่มเพื่อน Bot<br>
-    2. ไปที่ <a href="https://webhook.site" target="_blank" style="color:var(--blu);">webhook.site</a> → Copy Your unique URL<br>
-    3. กลับ LINE Console → แท็บ <b>Messaging API</b> → <b>Webhook URL</b> → วาง URL จาก webhook.site → กด Verify<br>
-    4. ส่งข้อความใดก็ได้หา Bot ใน LINE<br>
-    5. กลับ webhook.site → ดู JSON ที่เข้ามา → หาค่า <code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;">userId</code> (ขึ้นต้น U)<br>
-    6. Copy userId → วางในช่อง <b>User ID / Group ID</b><br><br>
-
-    <b style="color:var(--blu);">ส่วนที่ 3 — ตั้งค่า Make.com (Proxy)</b><br>
-    1. สมัคร <a href="https://make.com" target="_blank" style="color:var(--blu);">make.com</a> → กด <b>Create a new scenario</b><br>
-    2. กด <b>+</b> → เลือก <b>Webhooks</b> → <b>Custom webhook</b> → กด <b>Add</b> → <b>Save</b><br>
-    3. Copy <b>Webhook URL</b> ที่ได้ → วางในช่อง <b>Proxy URL</b> ในระบบนี้<br>
-    4. กด <b>+</b> ต่อจาก Webhook → เลือก <b>HTTP</b> → <b>Make a request</b><br>
-    5. ตั้งค่า:<br>
-    &nbsp;&nbsp;• URL: <code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;">https://api.line.me/v2/bot/message/push</code><br>
-    &nbsp;&nbsp;• Method: POST<br>
-    &nbsp;&nbsp;• Headers: Authorization = <code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;">Bearer [Channel Access Token]</code><br>
-    &nbsp;&nbsp;• Body type: Raw → Application/JSON<br>
-    &nbsp;&nbsp;• Content: <code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;">{{1.body}}</code><br>
-    6. กด <b>OK</b> → กด <b>Save</b> → เปิด Scenario (toggle ON)<br>
-    7. กลับระบบ → กด <b>ทดสอบ</b> → ถ้าขึ้น LINE ✅ สำเร็จ!<br>
-  </div>`;
-  openM('mView');
-}
-
-function openCfWorkerGuide(){
-  document.getElementById('viewContent').innerHTML=`
-  <div style="font-size:13px;line-height:1.9;color:var(--t1);">
-    <div style="font-size:15px;font-weight:700;color:var(--red);margin-bottom:14px;">⚡ คู่มือ: Cloudflare Worker (ฟรี 100k req/วัน)</div>
-    1. สมัคร <a href="https://workers.cloudflare.com" target="_blank" style="color:var(--blu);">workers.cloudflare.com</a><br>
-    2. Dashboard → <b>Workers & Pages</b> → <b>Create</b> → <b>Create Worker</b><br>
-    3. ตั้งชื่อ เช่น <code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;">lab-line-proxy</code> → Deploy<br>
-    4. กด <b>Edit Code</b> → ลบโค้ดเดิมทั้งหมด → วางโค้ดนี้:<br>
-    <pre style="background:#1e1e2e;color:#cdd6f4;padding:12px;border-radius:8px;font-size:11px;overflow-x:auto;margin:8px 0;white-space:pre-wrap;">export default {
-  async fetch(req) {
-    if(req.method==='OPTIONS')
-      return new Response('',{headers:cors()});
-    const b = await req.json();
-    const r = await fetch(
-      'https://api.line.me/v2/bot/message/push',{
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'Authorization':'Bearer '+req.headers.get('X-Line-Token')
-      },
-      body: JSON.stringify(b)
-    });
-    return new Response(await r.text(),
-      {status:r.status,headers:cors()});
-  }
-}
-function cors(){return{
-  'Access-Control-Allow-Origin':'*',
-  'Access-Control-Allow-Headers':'*',
-  'Content-Type':'application/json'
-};}</pre>
-    5. กด <b>Deploy</b> (มุมขวาบน)<br>
-    6. Copy URL ของ Worker เช่น <code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;">https://lab-line-proxy.xxx.workers.dev</code><br>
-    7. วาง URL ใน <b>Proxy URL</b> ของระบบ → กด <b>ทดสอบ</b><br>
-  </div>`;
-  openM('mView');
-}
-// ══ CUSTOM DIALOG (แทน confirm/prompt) ══
-let _dlgResolve=null;
-function dlg({icon='',title='',msg='',okText='ตกลง',cancelText='ยกเลิก',showCancel=true,input=false,inputPlaceholder='',inputDefault='',danger=false}){
-  return new Promise(resolve=>{
-    _dlgResolve=resolve;
-    document.getElementById('dlgIcon').textContent=icon;
-    document.getElementById('dlgTitle').textContent=title;
-    document.getElementById('dlgMsg').textContent=msg;
-    const inp=document.getElementById('dlgInp');
-    if(input){inp.style.display='';inp.placeholder=inputPlaceholder;inp.value=inputDefault;setTimeout(()=>inp.focus(),100);}
-    else inp.style.display='none';
-    const btns=document.getElementById('dlgBtns');
-    btns.innerHTML=`
-      ${showCancel?`<button class="btn-cn" style="min-width:80px;" onclick="dlgCancel()">${cancelText}</button>`:''}
-      <button class="${danger?'btn-p':'btn-sv'}" style="min-width:80px;" onclick="dlgOk()">${okText}</button>`;
-    document.getElementById('dlgWrap').style.display='flex';
-  });
-}
-function dlgOk(){
-  const inp=document.getElementById('dlgInp');
-  const val=inp.style.display!=='none'?inp.value:true;
-  document.getElementById('dlgWrap').style.display='none';
-  if(_dlgResolve){_dlgResolve(val);_dlgResolve=null;}
-}
-function dlgCancel(){
-  document.getElementById('dlgWrap').style.display='none';
-  if(_dlgResolve){_dlgResolve(null);_dlgResolve=null;}
-}
-document.addEventListener('keydown',e=>{
-  // dialog shortcuts
-  if(document.getElementById('dlgWrap').style.display!=='none'){
-    if(e.key==='Enter'&&e.target.tagName!=='TEXTAREA')dlgOk();
-    if(e.key==='Escape')dlgCancel();
-    return;
-  }
-  // modal Escape
-  if(e.key==='Escape'){
-    const openOv=document.querySelector('.ov.open');
-    if(openOv)closeM(openOv.id);
-    return;
-  }
-  // ไม่ทำงานถ้า focus อยู่ใน input/textarea/select
-  if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))return;
-  // / = focus search
-  if(e.key==='/'&&S.curPage==='stock'){
-    e.preventDefault();
-    const s=document.getElementById('srch');if(s)s.focus();
-  }
-  // r = สร้าง request (ถ้าอยู่หน้า req)
-  if(e.key==='r'&&S.curPage==='req'&&S.user?.role!=='viewer'){
-    openReqModal();
-  }
-});
-
-init();
-</script>
-<!-- CUSTOM DIALOG -->
-<div id="dlgWrap" class="dlg-wrap" style="display:none;" onclick="if(event.target===this)dlgCancel()">
-  <div class="dlg-box">
-    <div class="dlg-icon" id="dlgIcon"></div>
-    <div class="dlg-title" id="dlgTitle"></div>
-    <div class="dlg-msg" id="dlgMsg"></div>
-    <input class="dlg-inp" id="dlgInp" type="text" style="display:none;" placeholder="">
-    <div class="dlg-btns" id="dlgBtns"></div>
-  </div>
-</div>
-</body>
-</html>
+      exp_days:+document.getElementById('nc-
