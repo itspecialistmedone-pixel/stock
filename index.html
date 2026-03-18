@@ -1323,8 +1323,15 @@ window.addEventListener('offline', updateOnlineStatus);
 
 async function init(){
   loadBrand();
+  // timeout 8 วิ ถ้ายังไม่ตอบก็ข้ามไป login
+  const splashTimeout=setTimeout(()=>{
+    document.getElementById('splash').style.display='none';
+    document.getElementById('loginWrap').style.display='flex';
+    document.getElementById('spSub').textContent='⚠️ เชื่อมต่อช้า';
+  },8000);
   try{
     await db('items','GET',null,'?limit=1');
+    clearTimeout(splashTimeout);
     setTimeout(()=>{document.getElementById('splash').style.display='none';document.getElementById('loginWrap').style.display='flex';},900);
     document.getElementById('sdot').classList.remove('off');
     // Supabase Realtime — รับ push แทน polling
@@ -1343,7 +1350,14 @@ async function init(){
       console.warn('Realtime unavailable, using polling');
       setInterval(async()=>{if(S.user){await loadAll();renderPage(S.curPage);}},30000);
     }
-  }catch{document.getElementById('spSub').textContent='❌ เชื่อมต่อไม่ได้';}
+  }catch(e){
+    console.error('init error:',e);
+    document.getElementById('spSub').textContent='⚠️ เชื่อมต่อไม่ได้ กรุณาลองใหม่';
+    setTimeout(()=>{
+      document.getElementById('splash').style.display='none';
+      document.getElementById('loginWrap').style.display='flex';
+    },1500);
+  }
 }
 
 // ══ AUTH ══
