@@ -2402,6 +2402,8 @@ async function approveReq(id){
   }catch(e){toast('❌ เกิดข้อผิดพลาด: '+(e?.message||'ลองใหม่อีกครั้ง'),'err');}
 }
 async function rejectReq(id){
+  const r=S.requests.find(x=>x.id===id);
+  if(!r)return;
   const _rp=await dlg({icon:'❌',title:'ปฏิเสธ Request',msg:r.item_name+' — '+r.qty+' ขวด',input:true,inputPlaceholder:'เหตุผล',okText:'ปฏิเสธ',cancelText:'ยกเลิก',danger:true});
   if(_rp===null)return;
   const note=_rp||'ไม่อนุมัติ';
@@ -3013,6 +3015,38 @@ async function exportFullExcel(){
 }
 function dl(c,t,n){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([c],{type:t}));a.download=n;a.click();}
 function td(){return new Date().toISOString().slice(0,10);}
+// ══ DIALOG (dlg) ══
+function dlg({icon='❓',title='',msg='',okText='ตกลง',cancelText='ยกเลิก',danger=false,input=false,inputPlaceholder='',showCancel=true}={}){
+  return new Promise(resolve=>{
+    const wrap=document.createElement('div');
+    wrap.className='dlg-wrap';
+    wrap.innerHTML=`
+      <div class="dlg-box">
+        <div class="dlg-icon">${icon}</div>
+        <div class="dlg-title">${esc(title)}</div>
+        <div class="dlg-msg">${esc(msg)}</div>
+        ${input?`<input class="dlg-inp" id="dlg-input" type="text" placeholder="${esc(inputPlaceholder)}" autocomplete="off">`:''}
+        <div class="dlg-btns">
+          ${showCancel!==false?`<button class="btn-cn" id="dlg-cancel">${esc(cancelText)}</button>`:''}
+          <button class="${danger?'btn-sv':'btn-sv'}" id="dlg-ok" style="${danger?'background:var(--red);':'background:var(--grn);'}">${esc(okText)}</button>
+        </div>
+      </div>`;
+    document.body.appendChild(wrap);
+    const inp=wrap.querySelector('#dlg-input');
+    if(inp)setTimeout(()=>inp.focus(),50);
+    const ok=wrap.querySelector('#dlg-ok');
+    const cancel=wrap.querySelector('#dlg-cancel');
+    function cleanup(val){document.body.removeChild(wrap);resolve(val);}
+    ok.onclick=()=>cleanup(input?(inp?inp.value:''):true);
+    if(cancel)cancel.onclick=()=>cleanup(null);
+    wrap.addEventListener('mousedown',e=>{if(e.target===wrap)cleanup(null);});
+    wrap.addEventListener('keydown',e=>{
+      if(e.key==='Enter'){e.preventDefault();ok.click();}
+      if(e.key==='Escape')cleanup(null);
+    });
+  });
+}
+
 let tTmr=null;
 function toast(msg,type='info'){
   const el=document.getElementById('toast');
