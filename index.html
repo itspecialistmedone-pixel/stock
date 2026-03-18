@@ -1163,8 +1163,9 @@ const SU='https://uvjawvyixljcfqbyjlbg.supabase.co';
 const SK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2amF3dnlpeGxqY2ZxYnlqbGJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxOTI5NTIsImV4cCI6MjA4ODc2ODk1Mn0.4wBruDIiiuaphKz4iV1HqZey6AiF0B2oIqJwECzVV80';
 const H={'Content-Type':'application/json','apikey':SK,'Authorization':'Bearer '+SK};
 async function db(t,m='GET',b=null,q=''){
+  const prefer=m==='DELETE'?'return=minimal':m!=='GET'?'return=representation':null;
   const r=await fetch(`${SU}/rest/v1/${t}${q}`,{
-    method:m,headers:{...H,...(m!=='GET'?{'Prefer':'return=representation'}:{})},
+    method:m,headers:{...H,...(prefer?{'Prefer':prefer}:{})},
     body:b?JSON.stringify(b):null
   });
   if(!r.ok)throw new Error(await r.text());
@@ -2591,7 +2592,7 @@ function renderAdmin(){
         <button class="ab ab-b" onclick="openEditUser(${u.id})">✏️</button>
         <button class="ab ab-a" onclick="openChangePwd(${u.id})">🔑</button>
         ${u.username!=='admin'?`<button class="ab ab-r" onclick="toggleUser(${u.id},${!u.active})">${u.active?'🚫':'✅'}</button>`:''}
-        ${u.username!=='admin' && u.username!==S.user.username?`<button class="ab ab-r" onclick="deleteUser(${u.id}, '${u.username}', '${u.name}')" title="ลบผู้ใช้" style="background:#ffeced;">🗑️</button>`:''}
+        ${u.username!=='admin' && u.username!==S.user.username?`<button class="ab ab-r" data-uid="${u.id}" data-uname="${u.username}" data-udisp="${u.name.replace(/'/g,'\'').replace(/"/g,'&quot;')}" onclick="deleteUser(+this.dataset.uid,this.dataset.uname,this.dataset.udisp)" title="ลบผู้ใช้" style="background:#ffeced;">🗑️</button>`:''}
       </div>
     </td>
   </tr>`).join('');
@@ -2708,41 +2709,28 @@ async function toggleUser(id,active){
 
 async function deleteUser(id, username, name) {
   if (username === S.user.username) {
-    toast('❌ ไม่สามารถลบบัญชีที่คุณกำลังใช้งานอยู่ได้', 'err');
+    toast('ไม่สามารถลบบัญชีที่กำลังใช้งานอยู่', 'err');
     return;
   }
   try {
-    const pendingReqs = await db('requests', 'GET', null, `?by_username=eq.${encodeURIComponent(username)}&status=eq.pending`);
+    const pendingReqs = await db('requests', 'GET', null, '?by_username=eq.'+encodeURIComponent(username)+'&status=eq.pending');
     if (pendingReqs && pendingReqs.length > 0) {
-      await dlg({
-        icon: '⚠️',
-        title: 'ไม่สามารถลบได้',
-        msg: `ผู้ใช้ "${name}" ยังมี Request ค้างอยู่ในระบบ (${pendingReqs.length} รายการ)\n\nกรุณาจัดการอนุมัติหรือปฏิเสธ Request ทั้งหมดของผู้ใช้นี้ก่อนทำการลบ`,
-        okText: 'รับทราบ',
-        showCancel: false
-      });
+      await dlg({icon:'⚠️',title:'ลบไม่ได้',msg:'ผู้ใช้นี้ยังมี Request ค้างอยู่ '+pendingReqs.length+' รายการ\nกรุณาจัดการ Request ก่อนลบ',okText:'รับทราบ',showCancel:false});
       return;
     }
-  } catch (e) {
-    toast('❌ ตรวจสอบข้อมูลไม่สำเร็จ', 'err');
-    return;
-  }
-  const confirm = await dlg({
-    icon: '🗑️',
-    title: 'ยืนยันการลบผู้ใช้',
-    msg: `คุณต้องการลบผู้ใช้ "${name}" (${username}) ใช่หรือไม่?\n⚠️ การกระทำนี้ไม่สามารถกู้คืนได้`,
-    okText: 'ลบถาวร',
-    cancelText: 'ยกเลิก',
-    danger: true
-  });
-  if (!confirm) return;
-  try {
-    await db('users', 'DELETE', null, `?id=eq.${id}`);
-    toast(`🗑️ ลบผู้ใช้ "${name}" เรียบร้อยแล้ว`, 'ok');
+  } catch(e){console.warn('check pending:',e);}
+  const confirmed=await dlg({icon:'🗑️',title:'ยืนยันลบผู้ใช้',msg:'ลบ '+name+' ('+username+') ?\n⚠️ ไม่สามารถกู้คืนได้',okText:'ลบถาวร',cancelText:'ยกเลิก',danger:true});
+  if(!confirmed)return;
+  try{
+    await db('users','DELETE',null,'?id=eq.'+id);
+    toast('ลบผู้ใช้ '+name+' แล้ว','ok');
     await loadUsers();
     renderAdmin();
-  } catch (e) {
-    toast('❌ ลบไม่ได้: ' + (e.message || 'เกิดข้อผิดพลาดทางเทคนิค'), 'err');
+  }catch(e){
+    console.error('deleteUser error:',e);
+    let errMsg='เกิดข้อผิดพลาด';
+    try{const j=JSON.parse(e.message);errMsg=j.message||j.hint||errMsg;}catch{}
+    toast('ลบไม่ได้: '+errMsg,'err');
   }
 }
 
@@ -3015,33 +3003,25 @@ async function exportFullExcel(){
 }
 function dl(c,t,n){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([c],{type:t}));a.download=n;a.click();}
 function td(){return new Date().toISOString().slice(0,10);}
-// ══ DIALOG (dlg) ══
-function dlg({icon='❓',title='',msg='',okText='ตกลง',cancelText='ยกเลิก',danger=false,input=false,inputPlaceholder='',showCancel=true}={}){
-  return new Promise(resolve=>{
-    const wrap=document.createElement('div');
+// ══ DIALOG ══
+function dlg(opts){
+  const icon=opts.icon||'?',title=opts.title||'',msg=opts.msg||'',okText=opts.okText||'ตกลง',cancelText=opts.cancelText||'ยกเลิก',danger=opts.danger||false,input=opts.input||false,inputPlaceholder=opts.inputPlaceholder||'',showCancel=opts.showCancel!==false;
+  return new Promise(function(resolve){
+    var wrap=document.createElement('div');
     wrap.className='dlg-wrap';
-    wrap.innerHTML=`
-      <div class="dlg-box">
-        <div class="dlg-icon">${icon}</div>
-        <div class="dlg-title">${esc(title)}</div>
-        <div class="dlg-msg">${esc(msg)}</div>
-        ${input?`<input class="dlg-inp" id="dlg-input" type="text" placeholder="${esc(inputPlaceholder)}" autocomplete="off">`:''}
-        <div class="dlg-btns">
-          ${showCancel!==false?`<button class="btn-cn" id="dlg-cancel">${esc(cancelText)}</button>`:''}
-          <button class="${danger?'btn-sv':'btn-sv'}" id="dlg-ok" style="${danger?'background:var(--red);':'background:var(--grn);'}">${esc(okText)}</button>
-        </div>
-      </div>`;
+    wrap.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);';
+    wrap.innerHTML='<div class="dlg-box"><div class="dlg-icon">'+icon+'</div><div class="dlg-title">'+title+'</div><div class="dlg-msg" style="white-space:pre-line;">'+msg+'</div>'+(input?'<input class="dlg-inp" id="dlginp" type="text" placeholder="'+inputPlaceholder+'" autocomplete="off">':'')+'<div class="dlg-btns">'+(showCancel?'<button class="btn-cn" id="dlgcancel">'+cancelText+'</button>':'')+'<button id="dlgok" style="'+(danger?'background:var(--red)':'background:var(--grn)')+';color:#fff;border:none;padding:8px 20px;border-radius:var(--r);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fn);">'+okText+'</button></div></div>';
     document.body.appendChild(wrap);
-    const inp=wrap.querySelector('#dlg-input');
-    if(inp)setTimeout(()=>inp.focus(),50);
-    const ok=wrap.querySelector('#dlg-ok');
-    const cancel=wrap.querySelector('#dlg-cancel');
-    function cleanup(val){document.body.removeChild(wrap);resolve(val);}
-    ok.onclick=()=>cleanup(input?(inp?inp.value:''):true);
-    if(cancel)cancel.onclick=()=>cleanup(null);
-    wrap.addEventListener('mousedown',e=>{if(e.target===wrap)cleanup(null);});
-    wrap.addEventListener('keydown',e=>{
-      if(e.key==='Enter'){e.preventDefault();ok.click();}
+    var inp=wrap.querySelector('#dlginp');
+    if(inp)setTimeout(function(){inp.focus();},50);
+    var okBtn=wrap.querySelector('#dlgok');
+    var cancelBtn=wrap.querySelector('#dlgcancel');
+    function cleanup(val){if(wrap.parentNode)wrap.parentNode.removeChild(wrap);resolve(val);}
+    okBtn.onclick=function(){cleanup(input?(inp?inp.value:''):true);};
+    if(cancelBtn)cancelBtn.onclick=function(){cleanup(null);};
+    wrap.addEventListener('mousedown',function(e){if(e.target===wrap)cleanup(null);});
+    wrap.addEventListener('keydown',function(e){
+      if(e.key==='Enter'){e.preventDefault();okBtn.click();}
       if(e.key==='Escape')cleanup(null);
     });
   });
