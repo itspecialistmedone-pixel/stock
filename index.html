@@ -527,7 +527,7 @@ input,select,textarea{font-family:var(--fn);}
         </div>
         <div class="sbox-title">👥 จัดการผู้ใช้ <button class="ab ab-b" onclick="openAddUser()" style="font-size:11px;">＋ เพิ่ม User</button></div>
         <div class="tw"><table>
-          <thead><tr><th>ชื่อ</th><th>Username</th><th>Role</th><th>ต้อง Request</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
+          <thead><tr><th>ชื่อ</th><th>Username</th><th>Role</th><th>ต้อง Request</th><th>✈️ TG</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
           <tbody id="userTbody"></tbody>
         </table></div>
       </div>
@@ -1087,6 +1087,11 @@ input,select,textarea{font-family:var(--fn);}
         <option value="true">✅ ต้อง Request</option>
         <option value="false">❌ หยิบได้เลย (ไม่ต้อง Request)</option>
       </select>
+    </div>
+    <div class="fg">
+      <label>✈️ Telegram Chat ID (แจ้งเตือนส่วนตัว)</label>
+      <input type="text" id="u-tgid" placeholder="เช่น 123456789 (ส่งข้อความหา Bot ก่อน 1 ครั้ง)" style="font-family:var(--mo);font-size:13px;">
+      <div style="font-size:11px;color:var(--t3);margin-top:3px;">หา Chat ID: ส่งข้อความหา Bot แล้วใช้ @userinfobot หรือ webhook.site</div>
     </div>
     <div class="mb">
       <button class="btn-cn" onclick="closeM('mUser')">ยกเลิก</button>
@@ -2289,7 +2294,7 @@ async function sendApproveNotif(r,status,note){
   const cfg=getNotifCfg();
   const isApprove=status==='approved';
   const condKey=isApprove?'approve':'reject';
-  if(!cfg.cond?.[condKey])return; // ไม่ได้เปิดแจ้งเตือน event นี้
+  if(!cfg.cond?.[condKey])return;
   const nl='\n';
   const icon=isApprove?'✅':'❌';
   const msg=icon+' Request '+(isApprove?'อนุมัติแล้ว':'ถูกปฏิเสธ')+nl
@@ -2299,34 +2304,43 @@ async function sendApproveNotif(r,status,note){
     +(note&&note!=='อนุมัติแล้ว'&&note!=='ไม่อนุมัติ'?'หมายเหตุ: '+note+nl:'')
     +'เวลา: '+new Date().toLocaleString('th-TH');
 
+  // ── หา telegram_chat_id ของผู้ขอโดยตรง ──
+  const requester=S.users.find(u=>u.username===r.by_username);
+  const requesterTgId=requester?.telegram_chat_id||null;
+
   // LINE — ส่งให้ผู้ขอ
   const sendLine=cfg.cond[condKey+'_line'];
   if(sendLine&&cfg.line?.enabled&&cfg.line?.token){
-    const lineToRes=cfg.line.to_res||cfg.line.to_req||cfg.line.to; // Line 3 → 2 → 1
+    const lineToRes=cfg.line.to_res||cfg.line.to_req||cfg.line.to;
     await sendLineMsg(lineToRes,cfg.line.token,cfg.line.proxy,msg);
-    // Admin ด้วย (Line 1) ถ้า to_res ต่างจาก to
     if(cfg.cond[condKey+'_admin']&&cfg.line.to&&cfg.line.to!==lineToRes){
       await sendLineMsg(cfg.line.to,cfg.line.token,cfg.line.proxy,'[Admin] '+msg);
     }
   }
 
-  // Telegram — ส่งผ่าน Request Chat ID (ผู้ขอ)
+  // Telegram — ส่งหาผู้ขอโดยตรง (ถ้ามี Chat ID รายคน) หรือ fallback Group
   const sendTg=cfg.cond[condKey+'_tg'];
-  // Chat 3 สำหรับ Approve/Reject → ผู้ขอ, fallback Chat 2 → Chat 1
-  const tgReqChat=cfg.telegram?.chat_res||cfg.telegram?.chat_req||cfg.telegram?.chat;
-  if(sendTg&&cfg.telegram?.enabled&&cfg.telegram?.token&&tgReqChat){
-    try{
-      await fetch('https://api.telegram.org/bot'+cfg.telegram.token+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:tgReqChat,text:msg})});
-    }catch{}
-  }
-
-  // Admin ด้วย — ส่งไป Admin Chat ID
-  const sendAdmin=cfg.cond[condKey+'_admin'];
-  // ส่งสำเนาให้ Admin ผ่าน Chat 1 (ถ้า Chat 1 ต่างจาก Chat 3)
-  if(sendAdmin&&cfg.telegram?.enabled&&cfg.telegram?.token&&cfg.telegram?.chat&&cfg.telegram?.chat!==tgReqChat){
-    try{
-      await fetch('https://api.telegram.org/bot'+cfg.telegram.token+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:cfg.telegram.chat,text:'[Admin] '+msg})});
-    }catch{}
+  if(sendTg&&cfg.telegram?.enabled&&cfg.telegram?.token){
+    // ลำดับ: Chat ID รายคนของผู้ขอ → Chat 3 (Group ผู้ขอ) → Chat 2 → Chat 1
+    const targetId=requesterTgId||cfg.telegram?.chat_res||cfg.telegram?.chat_req||cfg.telegram?.chat;
+    if(targetId){
+      try{
+        await fetch('https://api.telegram.org/bot'+cfg.telegram.token+'/sendMessage',{
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({chat_id:targetId,text:msg})
+        });
+      }catch(e){console.warn('TG requester notify failed:',e);}
+    }
+    // แจ้ง Admin ด้วยถ้าเปิด
+    const sendAdmin=cfg.cond[condKey+'_admin'];
+    if(sendAdmin&&cfg.telegram?.chat&&cfg.telegram?.chat!==targetId){
+      try{
+        await fetch('https://api.telegram.org/bot'+cfg.telegram.token+'/sendMessage',{
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({chat_id:cfg.telegram.chat,text:'[Admin] '+msg})
+        });
+      }catch{}
+    }
   }
 }
 
@@ -2601,6 +2615,7 @@ function renderAdmin(){
     <td style="padding:9px 12px;border-bottom:1px solid var(--bdr);font-family:var(--mo);color:var(--red);">${u.username}</td>
     <td style="padding:9px 12px;border-bottom:1px solid var(--bdr);"><span class="rpill ${u.role==='admin'?'admin':u.role==='viewer'?'viewer':''}">${u.role}</span></td>
     <td style="padding:9px 12px;border-bottom:1px solid var(--bdr);font-size:12px;">${u.require_request?'✅ ต้อง Request':'❌ หยิบได้เลย'}</td>
+    <td style="padding:9px 12px;border-bottom:1px solid var(--bdr);font-size:11px;font-family:var(--mo);color:${u.telegram_chat_id?'var(--blu)':'var(--t3)'};">${u.telegram_chat_id?'✅ ตั้งแล้ว':'—'}</td>
     <td style="padding:9px 12px;border-bottom:1px solid var(--bdr);"><span style="font-size:12px;color:${u.active?'var(--grn)':'var(--red)'};">${u.active?'✅ ใช้งาน':'🚫 ปิด'}</span></td>
     <td style="padding:9px 12px;border-bottom:1px solid var(--bdr);">
       <div style="display:flex;gap:4px;flex-wrap:wrap;">
@@ -2638,7 +2653,7 @@ function renderAdmin(){
 function openAddUser(){
   document.getElementById('mUT').textContent='👤 เพิ่ม User';
   document.getElementById('u-id').value='';
-  ['u-name','u-uname','u-pwd'].forEach(id=>document.getElementById(id).value='');
+  ['u-name','u-uname','u-pwd','u-tgid'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('u-role').value='staff';
   document.getElementById('u-req').value='true';
   document.getElementById('u-pwd-fg').style.display='';
@@ -2654,6 +2669,7 @@ function openEditUser(id){
   document.getElementById('u-pwd').value='';
   document.getElementById('u-role').value=u.role;
   document.getElementById('u-req').value=u.require_request?'true':'false';
+  document.getElementById('u-tgid').value=u.telegram_chat_id||'';
   document.getElementById('u-pwd-fg').style.display='none';
   openM('mUser');
 }
@@ -2663,8 +2679,9 @@ async function saveUser(){
   const pwd=document.getElementById('u-pwd').value.trim();
   const role=document.getElementById('u-role').value;
   const req=document.getElementById('u-req').value==='true';
+  const tgid=document.getElementById('u-tgid').value.trim()||null;
   if(!name||!uname){toast('กรุณากรอกชื่อและ Username','err');return;}
-  const payload={name,username:uname,role,require_request:req,active:true};
+  const payload={name,username:uname,role,require_request:req,active:true,telegram_chat_id:tgid};
   if(!S.editId&&!pwd){toast('กรุณากรอก Password','err');return;}
   if(pwd){const ph=await sha256(pwd);payload.password=ph;}
   setBL('bSU',true);
@@ -3274,11 +3291,25 @@ async function sendManualNotif(){
     const ok=await sendLineMsg(cfg.line.to,cfg.line.token,cfg.line.proxy,msg);
     sent.push(ok?'LINE ✅':'LINE ❌');
   }
-  if(cfg.telegram?.enabled&&cfg.telegram?.token&&cfg.telegram?.chat){
-    try{
-      const r=await fetch('https://api.telegram.org/bot'+cfg.telegram.token+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:cfg.telegram.chat,text:msg})});
-      const d=await r.json();sent.push(d.ok?'Telegram ✅':'Telegram ❌');
-    }catch{sent.push('Telegram ❌');}
+  if(cfg.telegram?.enabled&&cfg.telegram?.token){
+    // ส่งหา Group Admin (Chat 1)
+    if(cfg.telegram?.chat){
+      try{
+        const r=await fetch('https://api.telegram.org/bot'+cfg.telegram.token+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:cfg.telegram.chat,text:msg})});
+        const d=await r.json();sent.push(d.ok?'Telegram ✅':'Telegram ❌');
+      }catch{sent.push('Telegram ❌');}
+    }
+    // ส่งหา Admin รายคนที่มี telegram_chat_id
+    const adminUsers=S.users.filter(u=>u.role==='admin'&&u.telegram_chat_id&&u.active);
+    for(const au of adminUsers){
+      if(au.telegram_chat_id===cfg.telegram?.chat)continue; // ไม่ส่งซ้ำถ้าเป็น chat เดียวกัน
+      try{
+        await fetch('https://api.telegram.org/bot'+cfg.telegram.token+'/sendMessage',{
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({chat_id:au.telegram_chat_id,text:msg})
+        });
+      }catch{}
+    }
   }
   if(cfg.webhook?.enabled&&cfg.webhook?.url){
     try{
