@@ -2256,93 +2256,173 @@ function onReqBothChange(){
   saveNotifCfg();
 }
 
+// ══════════════════════════════════════════════════════════════════════
+// PATCH: Telegram Notification Logic
+// แก้ไข 2 ฟังก์ชัน — แทนที่ในไฟล์ HTML ต้นฉบับ
+// ══════════════════════════════════════════════════════════════════════
+//
+// FLOW หลังแก้ไข:
+//
+//  📋 Request ใหม่ → Admin Group (Chat 1) เท่านั้น
+//
+//  ✅ Approve / ❌ Reject:
+//    → ส่งตรงหาผู้ขอ:
+//        ① telegram_chat_id รายคน (ใน User Profile)
+//        ② fallback → Chat 3 → Chat 2 → Chat 1
+//    → ส่ง copy สั้นๆ หา Admin Group (Chat 1) ด้วยเสมอ
+//        (ถ้า target ไม่ใช่ group เดียวกัน)
+//
+// ══════════════════════════════════════════════════════════════════════
+ 
+ 
+// ── แทนที่ฟังก์ชัน sendReqNotif เดิมทั้งหมด ──────────────────────────
 async function sendReqNotif(payload){
-  const cfg=getNotifCfg();
-  if(!cfg.cond?.req)return; // ไม่ได้เปิดแจ้งเตือน request
-  const item=S.items.find(x=>x.id===payload.item_id);
-  const nl='\n';
-  const msg='📋 Request ใหม่!'+nl
-    +'รายการ: '+payload.item_name+nl
-    +'จำนวน: '+payload.qty+' ขวด'+nl
-    +(item?'คงเหลือ: '+(item.bottles||0)+' ขวด'+nl:'')
-    +'ผู้ขอ: '+payload.requester_name+nl
-    +'โรงพยาบาล: '+(payload.hospital||'—')+nl
-    +'วิธีส่ง: '+(payload.delivery_method||'—')+nl
-    +(payload.note?'หมายเหตุ: '+payload.note+nl:'')
-    +'เวลา: '+new Date().toLocaleString('th-TH');
-  const results=[];
-  // LINE
-  const sendLine=cfg.cond.req_line||(!cfg.cond.req_line&&!cfg.cond.req_tg);
-  if(sendLine&&cfg.line?.enabled&&cfg.line?.token){
-    const lineToReq=cfg.line.to_req||cfg.line.to; // Line 2 → fallback Line 1
-    const ok=await sendLineMsg(lineToReq,cfg.line.token,cfg.line.proxy,msg);
-    results.push(ok?'LINE ✅':'LINE ❌');
-  }
-  // Telegram
-  const _tgReqChat=cfg.telegram?.chat_req||cfg.telegram?.chat; // Chat 2 สำหรับ Request ใหม่
-  if(cfg.cond.req_tg&&cfg.telegram?.enabled&&cfg.telegram?.token&&_tgReqChat){
+  const cfg = getNotifCfg();
+  if(!cfg.cond?.req) return;
+ 
+  const item = S.items.find(x => x.id === payload.item_id);
+  const nl = '\n';
+  const msg = '📋 มี Request ใหม่!' + nl
+    + '━━━━━━━━━━━━' + nl
+    + '📦 ' + payload.item_name + nl
+    + '🧪 จำนวน: ' + payload.qty + ' ขวด'
+      + (item ? '  (คงเหลือ ' + (item.bottles || 0) + ' ขวด)' : '') + nl
+    + '👤 ผู้ขอ: ' + payload.requester_name + nl
+    + '🏥 ' + (payload.hospital || '—') + nl
+    + '🚚 ' + (payload.delivery_method || '—') + nl
+    + (payload.note ? '📝 ' + payload.note + nl : '')
+    + '🕐 ' + new Date().toLocaleString('th-TH');
+ 
+  const results = [];
+ 
+  // ── Telegram: ส่งหา Admin Group (Chat 1) เสมอ ──
+  if(cfg.telegram?.enabled && cfg.telegram?.token && cfg.telegram?.chat){
     try{
-      const r=await fetch('https://api.telegram.org/bot'+cfg.telegram.token+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:_tgReqChat,text:msg})});
-      const d=await r.json();
-      results.push(d.ok?'Telegram ✅':'Telegram ❌');
-    }catch{results.push('Telegram ❌');}
+      const r = await fetch(
+        'https://api.telegram.org/bot' + cfg.telegram.token + '/sendMessage',
+        { method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: cfg.telegram.chat, text: msg }) }
+      );
+      const d = await r.json();
+      results.push(d.ok ? 'Telegram ✅' : 'Telegram ❌');
+    } catch(e) {
+      results.push('Telegram ❌');
+      console.warn('TG req notify failed:', e);
+    }
   }
-  if(results.length)toast('🔔 แจ้งเตือน: '+results.join(' | '),results.some(r=>r.includes('✅'))?'ok':'err');
+ 
+  // ── LINE: ส่งหา Line 2 (Request) หรือ fallback Line 1 ──
+  if(cfg.line?.enabled && cfg.line?.token){
+    const lineTo = cfg.line.to_req || cfg.line.to;
+    if(lineTo){
+      const ok = await sendLineMsg(lineTo, cfg.line.token, cfg.line.proxy, msg);
+      results.push(ok ? 'LINE ✅' : 'LINE ❌');
+    }
+  }
+ 
+  if(results.length)
+    toast('🔔 แจ้งเตือน: ' + results.join(' | '),
+      results.some(r => r.includes('✅')) ? 'ok' : 'err');
 }
 
-async function sendApproveNotif(r,status,note){
-  const cfg=getNotifCfg();
-  const isApprove=status==='approved';
-  const condKey=isApprove?'approve':'reject';
-  if(!cfg.cond?.[condKey])return;
-  const nl='\n';
-  const icon=isApprove?'✅':'❌';
-  const msg=icon+' Request '+(isApprove?'อนุมัติแล้ว':'ถูกปฏิเสธ')+nl
-    +'รายการ: '+r.item_name+nl
-    +'จำนวน: '+r.qty+' ขวด'+nl
-    +'ผู้ขอ: '+(r.requester_name||r.by_name)+nl
-    +(note&&note!=='อนุมัติแล้ว'&&note!=='ไม่อนุมัติ'?'หมายเหตุ: '+note+nl:'')
-    +'เวลา: '+new Date().toLocaleString('th-TH');
-
-  // ── หา telegram_chat_id ของผู้ขอโดยตรง ──
-  const requester=S.users.find(u=>u.username===r.by_username);
-  const requesterTgId=requester?.telegram_chat_id||null;
-
-  // LINE — ส่งให้ผู้ขอ
-  const sendLine=cfg.cond[condKey+'_line'];
-  if(sendLine&&cfg.line?.enabled&&cfg.line?.token){
-    const lineToRes=cfg.line.to_res||cfg.line.to_req||cfg.line.to;
-    await sendLineMsg(lineToRes,cfg.line.token,cfg.line.proxy,msg);
-    if(cfg.cond[condKey+'_admin']&&cfg.line.to&&cfg.line.to!==lineToRes){
-      await sendLineMsg(cfg.line.to,cfg.line.token,cfg.line.proxy,'[Admin] '+msg);
+// ── แทนที่ฟังก์ชัน sendApproveNotif เดิมทั้งหมด ──────────────────────
+async function sendApproveNotif(r, status, note){
+  const cfg = getNotifCfg();
+  const isApprove = status === 'approved';
+  const condKey   = isApprove ? 'approve' : 'reject';
+  if(!cfg.cond?.[condKey]) return;
+ 
+  const nl   = '\n';
+  const icon = isApprove ? '✅' : '❌';
+  const msg  = icon + ' Request ' + (isApprove ? 'อนุมัติแล้ว' : 'ถูกปฏิเสธ') + nl
+    + '━━━━━━━━━━━━' + nl
+    + '📦 ' + r.item_name + nl
+    + '🧪 จำนวน: ' + r.qty + ' ขวด' + nl
+    + '👤 ผู้ขอ: ' + (r.requester_name || r.by_name) + nl
+    + (note && note !== 'อนุมัติแล้ว' && note !== 'ไม่อนุมัติ'
+        ? '📝 ' + note + nl : '')
+    + '🕐 ' + new Date().toLocaleString('th-TH');
+ 
+  // ── หา telegram_chat_id รายคนของผู้ขอ ──
+  const requester      = S.users.find(u => u.username === r.by_username);
+  const requesterTgId  = requester?.telegram_chat_id || null;
+ 
+  // ── Telegram ──
+  if(cfg.telegram?.enabled && cfg.telegram?.token){
+ 
+    // 1) ส่งตรงหาผู้ขอ
+    //    ลำดับ: Chat ID รายคน → Chat 3 → Chat 2 → Chat 1
+    const personalTarget = requesterTgId
+      || cfg.telegram?.chat_res
+      || cfg.telegram?.chat_req
+      || cfg.telegram?.chat;
+ 
+    if(personalTarget){
+      try{
+        await fetch(
+          'https://api.telegram.org/bot' + cfg.telegram.token + '/sendMessage',
+          { method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: personalTarget, text: msg }) }
+        );
+      } catch(e){ console.warn('TG personal notify failed:', e); }
+    }
+ 
+    // 2) ส่ง copy สั้นๆ หา Admin Group (Chat 1) เสมอ
+    //    (ยกเว้นกรณี personalTarget คือ group เดียวกันอยู่แล้ว)
+    const adminGroupId = cfg.telegram?.chat;
+    if(adminGroupId && adminGroupId !== personalTarget){
+      const adminMsg = '[สำเนา Admin] ' + icon + ' '
+        + (r.requester_name || r.by_name)
+        + ' — ' + r.item_name + ' '
+        + (isApprove ? 'อนุมัติแล้ว' : 'ถูกปฏิเสธ')
+        + (note && note !== 'อนุมัติแล้ว' && note !== 'ไม่อนุมัติ'
+            ? nl + '📝 ' + note : '');
+      try{
+        await fetch(
+          'https://api.telegram.org/bot' + cfg.telegram.token + '/sendMessage',
+          { method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: adminGroupId, text: adminMsg }) }
+        );
+      } catch(e){ console.warn('TG admin copy failed:', e); }
     }
   }
-
-  // Telegram — ส่งหาผู้ขอโดยตรง (ถ้ามี Chat ID รายคน) หรือ fallback Group
-  const sendTg=cfg.cond[condKey+'_tg'];
-  if(sendTg&&cfg.telegram?.enabled&&cfg.telegram?.token){
-    // ลำดับ: Chat ID รายคนของผู้ขอ → Chat 3 (Group ผู้ขอ) → Chat 2 → Chat 1
-    const targetId=requesterTgId||cfg.telegram?.chat_res||cfg.telegram?.chat_req||cfg.telegram?.chat;
-    if(targetId){
-      try{
-        await fetch('https://api.telegram.org/bot'+cfg.telegram.token+'/sendMessage',{
-          method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({chat_id:targetId,text:msg})
-        });
-      }catch(e){console.warn('TG requester notify failed:',e);}
-    }
-    // แจ้ง Admin ด้วยถ้าเปิด
-    const sendAdmin=cfg.cond[condKey+'_admin'];
-    if(sendAdmin&&cfg.telegram?.chat&&cfg.telegram?.chat!==targetId){
-      try{
-        await fetch('https://api.telegram.org/bot'+cfg.telegram.token+'/sendMessage',{
-          method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({chat_id:cfg.telegram.chat,text:'[Admin] '+msg})
-        });
-      }catch{}
+ 
+  // ── LINE ──
+  if(cfg.line?.enabled && cfg.line?.token){
+    // ส่งหาผู้ขอ: Line 3 → Line 2 → Line 1
+    const lineToRes = cfg.line.to_res || cfg.line.to_req || cfg.line.to;
+    if(lineToRes)
+      await sendLineMsg(lineToRes, cfg.line.token, cfg.line.proxy, msg);
+ 
+    // Admin copy ถ้าติ๊กไว้
+    if(cfg.cond?.[condKey + '_admin'] && cfg.line.to && cfg.line.to !== lineToRes){
+      await sendLineMsg(
+        cfg.line.to, cfg.line.token, cfg.line.proxy,
+        '[สำเนา Admin] ' + icon + ' ' + (r.requester_name || r.by_name)
+          + ' — ' + r.item_name
+          + (isApprove ? ' อนุมัติแล้ว' : ' ถูกปฏิเสธ')
+      );
     }
   }
 }
+ 
+ 
+// ══════════════════════════════════════════════════════════════════════
+// วิธีนำไปใส่:
+//
+//  1. เปิดไฟล์ HTML ต้นฉบับ
+//  2. Ctrl+F หา:   async function sendReqNotif(payload){
+//  3. เลือกตั้งแต่บรรทัดนั้น ไปจนถึงปิด } ของฟังก์ชัน
+//  4. แทนที่ด้วย sendReqNotif ข้างบน
+//
+//  5. Ctrl+F หา:   async function sendApproveNotif(r,status,note){
+//  6. เลือกตั้งแต่บรรทัดนั้น ไปจนถึงปิด } ของฟังก์ชัน
+//  7. แทนที่ด้วย sendApproveNotif ข้างบน
+//
+// ══════════════════════════════════════════════════════════════════════
 
 function clearReqFilter(){
   const s=document.getElementById('reqSrch');if(s)s.value='';
