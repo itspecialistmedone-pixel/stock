@@ -516,7 +516,7 @@ input,select,textarea{font-family:var(--fn);}
             </div>
             <label class="sw" onclick="event.stopPropagation()"><input type="checkbox" id="nc-line-en" onchange="saveNotifCfg()"><span class="sw-sl"></span></label>
           </div>
-          <div class="notif-body" id="nb-line" style="display:none;">
+          <div class="notif-body" id="nb-line">
             <div class="fg" style="margin-bottom:8px;margin-top:12px;"><label>Channel Access Token</label>
               <div style="display:flex;gap:7px;">
                 <input type="text" id="nc-line-token" placeholder="วางToken ที่นี่..." style="flex:1;font-family:var(--mo);font-size:12px;" onchange="saveNotifCfg()">
@@ -626,7 +626,7 @@ input,select,textarea{font-family:var(--fn);}
             </div>
             <label class="sw" onclick="event.stopPropagation()"><input type="checkbox" id="nc-email-en" onchange="saveNotifCfg()"><span class="sw-sl"></span></label>
           </div>
-          <div class="notif-body" id="nb-email" style="display:none;">
+          <div class="notif-body" id="nb-email">
             <div style="margin-top:12px;">
               <div class="fg" style="margin-bottom:8px;"><label>EmailJS Service ID</label><input type="text" id="nc-email-svc" placeholder="service_xxxxxxx" style="font-family:var(--mo);font-size:12px;" onchange="saveNotifCfg()"></div>
               <div class="fg" style="margin-bottom:8px;"><label>EmailJS Template ID</label><input type="text" id="nc-email-tpl" placeholder="template_xxxxxxx" style="font-family:var(--mo);font-size:12px;" onchange="saveNotifCfg()"></div>
@@ -649,7 +649,7 @@ input,select,textarea{font-family:var(--fn);}
             </div>
             <label class="sw" onclick="event.stopPropagation()"><input type="checkbox" id="nc-wh-en" onchange="saveNotifCfg()"><span class="sw-sl"></span></label>
           </div>
-          <div class="notif-body" id="nb-wh" style="display:none;">
+          <div class="notif-body" id="nb-wh">
             <div style="margin-top:12px;">
               <div class="fg" style="margin-bottom:8px;"><label>Webhook URL</label>
                 <div style="display:flex;gap:7px;">
