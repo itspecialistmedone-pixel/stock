@@ -742,9 +742,18 @@ input,select,textarea{font-family:var(--fn);}
           </div>
         </div>
 
-        <div style="margin-top:12px;display:flex;gap:8px;">
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
           <button class="btn-p" onclick="sendManualNotif()">📤 ส่งรายงานสรุปตอนนี้</button>
+          <button class="btn-gh" onclick="testExpiryNotif()">📅 ทดสอบแจ้งหมดอายุ</button>
           <button class="btn-gh" onclick="loadNotifCfg()">🔄 โหลดการตั้งค่า</button>
+        </div>
+        <div style="margin-top:10px;background:var(--s2);border-radius:var(--r);padding:10px 12px;font-size:11px;color:var(--t2);line-height:1.8;">
+          <div style="font-weight:700;color:var(--t1);margin-bottom:5px;">⚡ Auto-trigger ที่ทำงานอัตโนมัติ</div>
+          <div>⚠️ <b>ใกล้หมด</b> — ส่งทันทีเมื่อหยิบออกแล้ว Stock ≤ ขั้นต่ำ</div>
+          <div>🔴 <b>หมดสต็อก</b> — ส่งทันทีเมื่อขวดเป็น 0</div>
+          <div>📅 <b>หมดอายุ</b> — ตรวจทุกวัน หลัง login (ส่ง 1 ครั้ง/วัน)</div>
+          <div>📋 <b>Request ใหม่</b> — ส่งทันทีเมื่อ Staff กด Submit</div>
+          <div>✅❌ <b>Approve/Reject</b> — ส่งตรงหาผู้ขอเมื่อ Admin กดอนุมัติ/ปฏิเสธ</div>
         </div>
       </div>
 
@@ -1366,6 +1375,132 @@ async function testNotif(type){const cfg=getNotifCfg();const msg='🧪 ทดส
 async function testTgChat(inputId){const cfg=getNotifCfg();const chatId=document.getElementById(inputId)?.value;if(!cfg.telegram?.token||!chatId){toast('กรุณากรอก Token และ Chat ID','err');return;}try{const r=await fetch('https://api.telegram.org/bot'+cfg.telegram.token+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:chatId,text:'🧪 ทดสอบ Telegram\nLab Stock — '+new Date().toLocaleString('th-TH')})});const d=await r.json();toast(d.ok?'Telegram ✅':'Telegram ❌: '+d.description,d.ok?'ok':'err');}catch(e){toast('Telegram ❌: '+e.message,'err');}}
 async function sendManualNotif(){const cfg=getNotifCfg();const items=S.items;const out=items.filter(i=>!i.bottles||i.bottles===0);const low=items.filter(i=>(i.bottles||0)>0&&(i.bottles||0)<=(i.min_qty||5));const pend=S.requests.filter(r=>r.status==='pending');const nl='\n';const msg='📊 รายงานสรุป Lab Stock'+nl+new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'})+nl+nl+'🧪 Stock ทั้งหมด: '+items.length+' รายการ'+nl+(out.length?'🔴 หมด: '+out.length+' รายการ'+nl:'')+(low.length?'⚠️ ใกล้หมด: '+low.length+' รายการ'+nl:'')+(pend.length?'📋 รอ Approve: '+pend.length+' Request'+nl:'')+(out.length===0&&low.length===0?'✅ ทุกรายการปกติ':'');let sent=[];if(cfg.line?.enabled&&cfg.line?.token&&cfg.line?.to){const ok=await sendLineMsg(cfg.line.to,cfg.line.token,cfg.line.proxy,msg);sent.push(ok?'LINE ✅':'LINE ❌');}if(cfg.telegram?.enabled&&cfg.telegram?.token&&cfg.telegram?.chat){try{const r=await fetch('https://api.telegram.org/bot'+cfg.telegram.token+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:cfg.telegram.chat,text:msg})});const d=await r.json();sent.push(d.ok?'Telegram ✅':'Telegram ❌');}catch{sent.push('Telegram ❌');}}if(cfg.webhook?.enabled&&cfg.webhook?.url){try{await fetch(cfg.webhook.url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'summary',message:msg,timestamp:new Date().toISOString()})});sent.push('Webhook ✅');}catch{sent.push('Webhook ❌');}}toast(sent.length?sent.join(' | '):'ไม่มีช่องทางที่เปิด',sent.some(s=>s.includes('✅'))?'ok':'info');}
 function toggleNotifCard(bodyId,headEl){const body=document.getElementById(bodyId);if(body)body.style.display=body.style.display==='none'||body.style.display===''?'block':'none';}
+
+// ══ AUTO NOTIFY: Stock ใกล้หมด / หมดสต็อก ══
+// เรียกหลัง saveAdj ทุกครั้ง
+async function checkStockNotif(item,newBt){
+  const cfg=getNotifCfg();
+  if(!cfg.telegram?.enabled&&!cfg.line?.enabled)return;
+  const mn=item.min_qty||5;
+  const nl='\n';
+  let msg=null,type=null;
+  if(cfg.cond?.out&&newBt===0){
+    type='out';
+    msg='🔴 Stock หมดสต็อก!'+nl
+      +'━━━━━━━━━━━━'+nl
+      +'📦 '+item.name+nl
+      +'🏷️ '+(item.category||'—')+nl
+      +(item.lot?'📋 Lot: '+item.lot+nl:'')
+      +'⚠️ เหลือ 0 ขวด (ขั้นต่ำ '+mn+' ขวด)'+nl
+      +'🕐 '+new Date().toLocaleString('th-TH');
+  }else if(cfg.cond?.low&&newBt>0&&newBt<=mn){
+    type='low';
+    msg='⚠️ Stock ใกล้หมด'+nl
+      +'━━━━━━━━━━━━'+nl
+      +'📦 '+item.name+nl
+      +'🏷️ '+(item.category||'—')+nl
+      +(item.lot?'📋 Lot: '+item.lot+nl:'')
+      +'🧪 เหลือ '+newBt+' ขวด (ขั้นต่ำ '+mn+' ขวด)'+nl
+      +'🕐 '+new Date().toLocaleString('th-TH');
+  }
+  if(!msg)return;
+  // ส่งหา Admin Group เสมอ
+  if(cfg.telegram?.enabled&&cfg.telegram?.token&&cfg.telegram?.chat){
+    try{await fetch('https://api.telegram.org/bot'+cfg.telegram.token+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:cfg.telegram.chat,text:msg})});}catch(e){console.warn('TG stock notify failed:',e);}
+  }
+  if(cfg.line?.enabled&&cfg.line?.token&&cfg.line?.to){
+    await sendLineMsg(cfg.line.to,cfg.line.token,cfg.line.proxy,msg);
+  }
+  if(cfg.webhook?.enabled&&cfg.webhook?.url){
+    try{await fetch(cfg.webhook.url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type,item_name:item.name,bottles:newBt,message:msg,timestamp:new Date().toISOString()})});}catch{}
+  }
+}
+
+// ══ AUTO NOTIFY: หมดอายุ (ตรวจวันละครั้ง) ══
+async function checkExpiryNotif(force=false){
+  const cfg=getNotifCfg();
+  if(!cfg.cond?.exp)return;
+  if(!cfg.telegram?.enabled&&!cfg.line?.enabled&&!cfg.email?.enabled&&!cfg.webhook?.enabled)return;
+  // กัน spam: ตรวจวันละครั้ง
+  const lastKey='lab_exp_notif_last';
+  const today=new Date().toISOString().slice(0,10);
+  if(!force&&localStorage.getItem(lastKey)===today)return;
+  localStorage.setItem(lastKey,today);
+  const days=cfg.cond?.exp_days||60;
+  const multiLevel=cfg.cond?.exp_multi||false;
+  const now=new Date();
+  const thresholds=multiLevel?[90,30,7]:[days];
+  const nl='\n';
+  const expItems=[];
+  for(const item of S.items){
+    if(!item.expiry_date)continue;
+    const exp=new Date(item.expiry_date);
+    const diffDays=Math.floor((exp-now)/(1000*60*60*24));
+    let label=null;
+    if(diffDays<0)label='⛔ หมดอายุแล้ว '+(Math.abs(diffDays))+' วัน';
+    else{
+      for(const t of thresholds){if(diffDays<=t){label='📅 อีก '+diffDays+' วัน (≤'+t+'วัน)';break;}}
+    }
+    if(label)expItems.push({name:item.name,cat:item.category,lot:item.lot,exp:item.expiry_date,label,diffDays});
+  }
+  if(!expItems.length)return;
+  expItems.sort((a,b)=>a.diffDays-b.diffDays);
+  const msg='📅 แจ้งเตือนหมดอายุ Lab Stock'+nl
+    +'━━━━━━━━━━━━'+nl
+    +expItems.slice(0,10).map(i=>`${i.diffDays<0?'⛔':'⚠️'} ${i.name} — ${i.label}`+nl+'   Lot: '+(i.lot||'—')+' | EXP: '+fd(i.exp)).join(nl)+nl
+    +(expItems.length>10?'... และอีก '+(expItems.length-10)+' รายการ'+nl:'')
+    +'🕐 '+new Date().toLocaleString('th-TH');
+  if(cfg.telegram?.enabled&&cfg.telegram?.token&&cfg.telegram?.chat){
+    try{await fetch('https://api.telegram.org/bot'+cfg.telegram.token+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:cfg.telegram.chat,text:msg})});}catch(e){console.warn('TG expiry notify failed:',e);}
+  }
+  if(cfg.line?.enabled&&cfg.line?.token&&cfg.line?.to){
+    await sendLineMsg(cfg.line.to,cfg.line.token,cfg.line.proxy,msg);
+  }
+  if(cfg.webhook?.enabled&&cfg.webhook?.url){
+    try{await fetch(cfg.webhook.url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'expiry',items:expItems,message:msg,timestamp:new Date().toISOString()})});}catch{}
+  }
+}
+
+// ── Hook: เพิ่ม checkStockNotif ใน saveAdj ──
+const _origSaveAdj=saveAdj;
+saveAdj=async function(){
+  await _origSaveAdj();
+  // หลัง save เสร็จแล้วค่อยตรวจ (items reload แล้ว)
+  const id=S.editId;
+  if(id){
+    const updated=S.items.find(x=>x.id===id);
+    if(updated)checkStockNotif(updated,updated.bottles||0);
+  }
+};
+
+// ── Hook: เพิ่ม checkStockNotif ใน inlinePick ──
+const _origInlinePick=inlinePick;
+inlinePick=async function(id){
+  await _origInlinePick(id);
+  const updated=S.items.find(x=>x.id===id);
+  if(updated)checkStockNotif(updated,updated.bottles||0);
+};
+
+// ── ตรวจหมดอายุอัตโนมัติหลัง login และทุก 1 ชั่วโมง ──
+function scheduleExpiryCheck(){
+  setTimeout(async()=>{
+    if(S.user&&S.user.role==='admin'){
+      await checkExpiryNotif();
+    }
+    setInterval(async()=>{
+      if(S.user&&S.user.role==='admin')await checkExpiryNotif();
+    },60*60*1000);
+  },10000); // รอ 10 วิ หลัง init
+}
+scheduleExpiryCheck();
+
+// ── ปุ่มทดสอบส่ง Expiry ทันที ──
+async function testExpiryNotif(){
+  if(!S.items.length){toast('โหลดข้อมูลก่อน','err');return;}
+  await checkExpiryNotif(true);
+  toast('📅 ส่งแจ้งเตือนหมดอายุแล้ว','ok');
+}
+
 init();
 </script>
 </body>
