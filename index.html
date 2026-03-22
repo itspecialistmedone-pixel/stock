@@ -413,6 +413,7 @@ input,select,textarea{font-family:var(--fn);}
         <div style="display:flex;gap:7px;flex-wrap:wrap;">
           <button class="btn-gh" onclick="openScan()">📷 สแกน</button>
           <button class="btn-gh" onclick="document.getElementById('xlFile').click()">📊 Import Excel</button>
+          <button class="btn-gh" onclick="downloadStockTemplate()">⬇️ Template Stock</button>
           <input type="file" id="xlFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="importExcel(event)">
           <button class="btn-p" id="btnAdd" onclick="openAdd()" style="display:none">＋ เพิ่ม</button>
         </div>
@@ -525,7 +526,13 @@ input,select,textarea{font-family:var(--fn);}
       </div>
       <div class="sbox">
         <div class="sbox-title">🏥 รายชื่อ รพ. <button class="ab ab-b" onclick="openAddHosp()" style="font-size:11px;">＋ เพิ่ม</button></div>
-        <div id="hospList" style="display:flex;flex-wrap:wrap;gap:7px;"></div>
+        <div id="hospList" style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px;"></div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center;border-top:1px solid var(--bdr);padding-top:10px;">
+          <button class="btn-gh" onclick="downloadHospTemplate()" style="font-size:12px;">⬇️ Template รพ.</button>
+          <button class="btn-gh" onclick="document.getElementById('hospImportFile').click()" style="font-size:12px;">📥 Import รพ. จาก CSV</button>
+          <input type="file" id="hospImportFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="importHosps(event)">
+          <span style="font-size:11px;color:var(--t3);">คอลัมน์: <code style="background:var(--s2);padding:1px 5px;border-radius:3px;">name</code></span>
+        </div>
       </div>
       <div class="sbox">
         <div class="sbox-title">🚚 วิธีการส่ง <button class="ab ab-b" onclick="openAddDel()" style="font-size:11px;">＋ เพิ่ม</button></div>
@@ -1641,7 +1648,110 @@ async function changeMyPw(){const oldPw=document.getElementById('my-old-pw').val
 let userImportRows=[];
 async function importUsers(e){const file=e.target.files[0];if(!file)return;e.target.value='';const reader=new FileReader();reader.onload=ev=>{try{const wb=XLSX.read(ev.target.result,{type:'array'});const ws=wb.Sheets[wb.SheetNames[0]];const data=XLSX.utils.sheet_to_json(ws,{defval:''});if(!data.length){toast('❌ ไม่พบข้อมูล','err');return;}userImportRows=data;const keys=Object.keys(data[0]);document.getElementById('uiHead').innerHTML=keys.map(k=>`<th style="padding:8px 11px;background:var(--s2);color:var(--t2);font-size:11px;text-align:left;">${k}</th>`).join('');document.getElementById('uiBody').innerHTML=data.slice(0,8).map(r=>`<tr>${keys.map(k=>`<td style="padding:7px 11px;border-bottom:1px solid var(--bdr);font-size:12px;">${r[k]}</td>`).join('')}</tr>`).join('');document.getElementById('uiInfo').innerHTML=`พบ <strong>${data.length} User</strong>`;openM('mUserImport');}catch(err){toast('❌ ไม่สามารถอ่านไฟล์','err');}};reader.readAsArrayBuffer(file);}
 async function confirmUserImport(){if(!userImportRows.length)return;setBL('bUI',true);let ok=0,skip=0,fail=0;for(const row of userImportRows){const name=String(row.name||row['ชื่อ']||'').trim();const username=String(row.username||row.Username||'').trim().toLowerCase();const password=String(row.password||row['รหัสผ่าน']||'').trim();if(!name||!username||!password){skip++;continue;}const role=['admin','staff','viewer'].includes(String(row.role||'staff').toLowerCase())?String(row.role).toLowerCase():'staff';const req=String(row.require_request||'true').toLowerCase()!=='false';const password_hash=await sha256(String(password));try{await db('users','POST',{name,username,password:password_hash,role,require_request:req,active:true});ok++;}catch{try{const existing=await db('users','GET',null,`?username=eq.${encodeURIComponent(username)}`);if(existing&&existing.length){await db('users','PATCH',{name,role,require_request:req},`?username=eq.${encodeURIComponent(username)}`);ok++;}else{fail++;}}catch{fail++;}}}await loadUsers();closeM('mUserImport');renderAdmin();toast(`📥 Import: ✅ ${ok} คน${skip>0?` ⚠️ ข้าม ${skip}`:''} ${fail>0?`❌ ${fail}`:''}`,ok>0?'ok':'err');setBL('bUI',false);}
-function downloadUserTemplate(){const content='﻿name,username,password,role,require_request\nสมชาย ใจดี,somchai,password123,staff,true\nผู้จัดการ,manager1,mgr2024,admin,false';const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type:'text/csv;charset=utf-8'}));a.download='user_import_template.csv';a.click();toast('⬇️ ดาวน์โหลด Template แล้ว','ok');}
+function downloadStockTemplate(){
+  try{
+    const wb=XLSX.utils.book_new();
+    const ws=XLSX.utils.aoa_to_sheet([
+      ['barcode','name','category','bottles','min_qty','lot','expiry_date','brand','note'],
+      ['BAR-001','Glucose Reagent','Chemistry Reagent',10,3,'LOT-2024-001','2025-12-31','Roche','ตัวอย่าง'],
+      ['BAR-002','Hemoglobin Standard','Hematology',5,2,'LOT-2024-002','2025-06-30','Sysmex',''],
+      ['BAR-003','Urine Dipstick','Urinalysis',20,5,'','2026-03-01','Mission',''],
+    ]);
+    // กำหนดความกว้างคอลัมน์
+    ws['!cols']=[{wch:12},{wch:25},{wch:20},{wch:10},{wch:10},{wch:15},{wch:14},{wch:15},{wch:20}];
+    XLSX.utils.book_append_sheet(wb,ws,'Stock Template');
+    // sheet คำอธิบาย
+    const wsDesc=XLSX.utils.aoa_to_sheet([
+      ['คอลัมน์','คำอธิบาย','จำเป็น','ตัวอย่าง'],
+      ['barcode','บาร์โค้ดสินค้า (ถ้าไม่ใส่จะสร้างจากชื่อ)','ไม่','BAR-001'],
+      ['name','ชื่อ Reagent','✅ ต้องมี','Glucose Reagent'],
+      ['category','หมวดหมู่ (ต้องมีในระบบก่อน)','ไม่','Chemistry Reagent'],
+      ['bottles','จำนวนขวดคงเหลือ','ไม่','10'],
+      ['min_qty','จำนวนขั้นต่ำ (แจ้งเตือนเมื่อต่ำกว่านี้)','ไม่','3'],
+      ['lot','Lot / Batch Number','ไม่','LOT-2024-001'],
+      ['expiry_date','วันหมดอายุ (YYYY-MM-DD)','ไม่','2025-12-31'],
+      ['brand','ผู้ผลิต / Brand','ไม่','Roche'],
+      ['note','หมายเหตุ','ไม่',''],
+    ]);
+    wsDesc['!cols']=[{wch:14},{wch:40},{wch:10},{wch:20}];
+    XLSX.utils.book_append_sheet(wb,wsDesc,'คำอธิบาย');
+    XLSX.writeFile(wb,'stock_import_template.xlsx');
+    toast('⬇️ ดาวน์โหลด Template Stock แล้ว','ok');
+  }catch(e){toast('❌ ดาวน์โหลดไม่ได้','err');}
+}
+
+function downloadHospTemplate(){
+  try{
+    const wb=XLSX.utils.book_new();
+    const ws=XLSX.utils.aoa_to_sheet([
+      ['name'],
+      ['โรงพยาบาลศิริราช'],
+      ['โรงพยาบาลรามาธิบดี'],
+      ['โรงพยาบาลจุฬาลงกรณ์'],
+      ['โรงพยาบาลส่งเสริมสุขภาพตำบล'],
+    ]);
+    ws['!cols']=[{wch:40}];
+    XLSX.utils.book_append_sheet(wb,ws,'Hospital Template');
+    XLSX.writeFile(wb,'hospital_import_template.xlsx');
+    toast('⬇️ ดาวน์โหลด Template รพ. แล้ว','ok');
+  }catch(e){toast('❌ ดาวน์โหลดไม่ได้','err');}
+}
+
+async function importHosps(e){
+  const file=e.target.files[0];if(!file)return;e.target.value='';
+  const reader=new FileReader();
+  reader.onload=async ev=>{
+    try{
+      const wb=XLSX.read(ev.target.result,{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const data=XLSX.utils.sheet_to_json(ws,{defval:''});
+      if(!data.length){toast('❌ ไม่พบข้อมูล','err');return;}
+      let ok=0,skip=0,fail=0;
+      for(const row of data){
+        const name=String(row.name||row['ชื่อ']||row['NAME']||Object.values(row)[0]||'').trim();
+        if(!name){skip++;continue;}
+        // ตรวจซ้ำ
+        if(S.hosps.find(h=>h.name===name)){skip++;continue;}
+        try{await db('hospitals','POST',{name,active:true});ok++;}catch{fail++;}
+      }
+      await loadHosps();renderAdmin();
+      toast(`📥 Import รพ.: ✅ ${ok} รายการ${skip>0?` ⚠️ ข้าม ${skip}`:''} ${fail>0?`❌ ${fail}`:''}`,ok>0?'ok':'info');
+    }catch{toast('❌ อ่านไฟล์ไม่ได้','err');}
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function downloadUserTemplate(){
+  try{
+    const wb=XLSX.utils.book_new();
+    const ws=XLSX.utils.aoa_to_sheet([
+      ['name','username','password','role','require_request'],
+      ['สมชาย ใจดี','somchai','password123','staff','true'],
+      ['ผู้จัดการ','manager1','mgr2024','admin','false'],
+      ['ผู้ดูระบบ','viewer1','view2024','viewer','true'],
+    ]);
+    ws['!cols']=[{wch:20},{wch:15},{wch:15},{wch:10},{wch:16}];
+    // sheet คำอธิบาย
+    const wsDesc=XLSX.utils.aoa_to_sheet([
+      ['คอลัมน์','คำอธิบาย','ค่าที่ใส่ได้'],
+      ['name','ชื่อ-นามสกุล','ข้อความ'],
+      ['username','ชื่อผู้ใช้ (ตัวพิมพ์เล็ก ไม่มีช่องว่าง)','ข้อความ'],
+      ['password','รหัสผ่าน (จะถูก hash อัตโนมัติ)','ข้อความ'],
+      ['role','บทบาท','admin / staff / viewer'],
+      ['require_request','ต้องขออนุมัติก่อนหยิบ','true / false'],
+    ]);
+    wsDesc['!cols']=[{wch:18},{wch:35},{wch:25}];
+    XLSX.utils.book_append_sheet(wb,ws,'User Template');
+    XLSX.utils.book_append_sheet(wb,wsDesc,'คำอธิบาย');
+    XLSX.writeFile(wb,'user_import_template.xlsx');
+    toast('⬇️ ดาวน์โหลด Template User แล้ว','ok');
+  }catch(e){
+    // fallback CSV
+    const content='\uFEFFname,username,password,role,require_request\nสมชาย ใจดี,somchai,password123,staff,true\nผู้จัดการ,manager1,mgr2024,admin,false';
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type:'text/csv;charset=utf-8'}));a.download='user_import_template.csv';a.click();
+    toast('⬇️ ดาวน์โหลด Template แล้ว','ok');
+  }
+}
 const NOTIF_KEY='lab_notif_cfg';
 let _notifSaveTmr=null;
 function saveNotifCfg(){if(_notifSaveTmr)clearTimeout(_notifSaveTmr);_notifSaveTmr=setTimeout(_doSaveNotifCfg,400);}
