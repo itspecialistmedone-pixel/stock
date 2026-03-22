@@ -1494,7 +1494,53 @@ function renderReqs(){
   const el=document.getElementById('reqList');if(!reqs.length){el.innerHTML='<div class="empty"><span class="ei">📭</span>ไม่มี Request</div>';return;}
   el.innerHTML=reqs.map(r=>`<div class="rc"><div class="rch"><div><div class="rct">${esc(r.item_name)} <span style="font-size:12px;color:var(--t2);font-weight:400">${tmap[r.type]||r.type}</span></div><div class="rcs">${fdt(r.created_at)}</div><div style="margin-top:5px;display:flex;flex-wrap:wrap;gap:2px;"><span class="info-pill">👤 ${esc(r.requester_name||r.by_name)}</span><span class="info-pill">🧪 ${r.qty} ขวด</span>${r.lot?`<span class="info-pill" style="background:var(--ambb);color:var(--amb);">🏷️ Lot: ${r.lot}</span>`:''}<span class="info-pill">🏥 ${r.hospital||'—'}</span><span class="info-pill">🚚 ${r.delivery_method||'—'}</span><span class="info-pill">${pmap[r.priority]||r.priority}</span></div></div><span class="sp sp-${r.status}">${r.status==='pending'?'⏳ รอ Approve':r.status==='approved'?'✅ อนุมัติ':r.status==='auto_out'?'📤 หยิบออกแล้ว':'❌ ไม่อนุมัติ'}</span></div>${r.note?`<div class="rcd">📝 ${esc(r.note)}</div>`:''}${r.admin_note?`<div class="rcd" style="background:var(--grnb);">👑 Admin: ${esc(r.admin_note)}</div>`:''}<div class="rca">${isA&&r.status==='pending'?`<button class="ab ab-g" onclick="approveReq(${r.id})">✅ อนุมัติ</button><button class="ab ab-r" onclick="rejectReq(${r.id})">❌ ปฏิเสธ</button>`:''} ${r.status==='auto_out'&&(isA||r.by_username===S.user.username)?`<button class="ab ab-b" onclick="undoOut(${r.id})" style="background:#f0e6ff;border-color:#c4b5fd;color:#7c3aed;">↩️ ยกเลิก / คืนขวด</button>`:''} ${isA||r.by_username===S.user.username?`<button class="ab ab-gr" onclick="delReq(${r.id})" style="margin-left:auto;">🗑 ลบ</button>`:''}</div></div>`).join('');
 }
-async function approveReq(id){const r=S.requests.find(x=>x.id===id);if(!r)return;const _ap=await dlg({icon:'✅',title:'อนุมัติ Request',msg:r.item_name+' — '+r.qty+' ขวด',input:true,inputPlaceholder:'หมายเหตุ (ถ้ามี)',okText:'อนุมัติ',cancelText:'ยกเลิก'});if(_ap===null)return;const note=_ap||'อนุมัติแล้ว';try{await db('requests','PATCH',{status:'approved',admin_note:note},`?id=eq.${id}`);if(r.type==='restock'){const item=S.items.find(x=>x.id===r.item_id);if(item){const newBt=(item.bottles||0)+r.qty;await db('items','PATCH',{bottles:newBt,qty:newBt,updated_at:new Date().toISOString()},`?id=eq.${item.id}`);await db('stock_history','POST',{item_id:item.id,item_name:item.name,type:'in',delta:r.qty,qty_after:newBt,note:`Auto จาก Request #${id}`,by_name:'Admin'});}}addAuditLog('อนุมัติ Request',r.item_name+' — '+r.qty+' ขวด ('+( r.requester_name||r.by_name)+')');toast('✅ อนุมัติแล้ว','ok');sendApproveNotif(r,'approved',note);await loadAll();renderReqs();renderAdmin();updBadge();}catch(e){toast('❌ เกิดข้อผิดพลาด','err');}}
+async function approveReq(id){
+  const r=S.requests.find(x=>x.id===id);if(!r)return;
+  const _ap=await dlg({icon:'✅',title:'อนุมัติ Request',msg:r.item_name+' — '+r.qty+' ขวด',input:true,inputPlaceholder:'หมายเหตุ (ถ้ามี)',okText:'อนุมัติ',cancelText:'ยกเลิก'});
+  if(_ap===null)return;
+  const note=_ap||'อนุมัติแล้ว';
+  try{
+    await db('requests','PATCH',{status:'approved',admin_note:note},`?id=eq.${id}`);
+    const item=S.items.find(x=>x.id===r.item_id);
+    if(item){
+      let newBt=item.bottles||0;
+      let delta=0;
+      let histType='';
+      if(r.type==='restock'){
+        // เติม Stock → เพิ่มขวด
+        delta=r.qty; newBt=(item.bottles||0)+r.qty; histType='in';
+      }else if(r.type==='borrow'){
+        // ยืม → ลดขวด
+        delta=-r.qty; newBt=Math.max(0,(item.bottles||0)-r.qty); histType='out';
+      }else if(r.type==='return'){
+        // คืน → เพิ่มขวด
+        delta=r.qty; newBt=(item.bottles||0)+r.qty; histType='in';
+      }else if(r.type==='other'){
+        // อื่นๆ → ลดขวด
+        delta=-r.qty; newBt=Math.max(0,(item.bottles||0)-r.qty); histType='out';
+      }
+      if(histType){
+        await db('items','PATCH',{bottles:newBt,qty:newBt,updated_at:new Date().toISOString()},`?id=eq.${item.id}`);
+        try{await db('stock_history','POST',{item_id:item.id,item_name:item.name,type:histType,delta,qty_after:newBt,note:`${r.type} — อนุมัติ Request #${id}`,by_name:'Admin'});}catch{}
+        // ถ้า lots มี → sync
+        if(S.lots.filter(l=>l.item_id===item.id).length>0&&histType==='out'){
+          const activeLots=getItemLots(item.id);
+          let remain=r.qty;
+          for(const lot of activeLots){
+            if(remain<=0)break;
+            const take=Math.min(remain,lot.qty||0);
+            if(take>0){await db('item_lots','PATCH',{qty:lot.qty-take,updated_at:new Date().toISOString()},`?id=eq.${lot.id}`);remain-=take;}
+          }
+          await syncItemLot(item.id);
+        }
+      }
+    }
+    addAuditLog('อนุมัติ Request',r.item_name+' — '+r.qty+' ขวด ('+r.type+') by '+(r.requester_name||r.by_name));
+    toast('✅ อนุมัติแล้ว','ok');
+    sendApproveNotif(r,'approved',note);
+    await loadAll();renderReqs();renderAdmin();updBadge();
+  }catch(e){toast('❌ เกิดข้อผิดพลาด','err');}
+}
 async function rejectReq(id){const r=S.requests.find(x=>x.id===id);if(!r)return;const _rp=await dlg({icon:'❌',title:'ปฏิเสธ Request',msg:r.item_name+' — '+r.qty+' ขวด',input:true,inputPlaceholder:'เหตุผล',okText:'ปฏิเสธ',cancelText:'ยกเลิก',danger:true});if(_rp===null)return;const note=_rp||'ไม่อนุมัติ';try{await db('requests','PATCH',{status:'rejected',admin_note:note},`?id=eq.${id}`);addAuditLog('ปฏิเสธ Request',r.item_name+' — '+(r.requester_name||r.by_name)+' : '+note);toast('❌ ปฏิเสธแล้ว','info');sendApproveNotif(r,'rejected',note);await loadRequests();renderReqs();renderAdmin();updBadge();}catch(e){toast('❌ เกิดข้อผิดพลาด','err');}}
 async function undoOut(id){const r=S.requests.find(x=>x.id===id);if(!r)return;const item=S.items.find(x=>x.id===r.item_id);const newBt=(item?item.bottles||0:0)+r.qty;const ok=await dlg({icon:'↩️',title:'ยกเลิกการหยิบออก',msg:(item?item.name:r.item_name)+'\nคืนกลับ: '+r.qty+' ขวด  Stock ใหม่: '+newBt+' ขวด',okText:'ยืนยันคืน',cancelText:'ยกเลิก'});if(!ok)return;try{if(item){await db('items','PATCH',{bottles:newBt,qty:newBt,updated_at:new Date().toISOString()},`?id=eq.${item.id}`);try{await db('stock_history','POST',{item_id:item.id,item_name:item.name,type:'in',delta:r.qty,qty_after:newBt,note:`↩️ ยกเลิกการหยิบออก (Request #${id})`,by_name:S.user.name});}catch{}}await db('requests','PATCH',{status:'rejected',admin_note:`ยกเลิกโดย ${S.user.name}`},`?id=eq.${id}`);toast(`↩️ คืน ${r.qty} ขวดแล้ว`,'ok');await loadAll();renderReqs();renderAdmin();updBadge();}catch(e){toast('❌ เกิดข้อผิดพลาด','err');}}
 async function delReq(id){const r=S.requests.find(x=>x.id===id);if(!r)return;const isApproved=r.status==='approved';if(isApproved){const choice=await dlg({icon:'🗑️',title:'ลบ Request (อนุมัติแล้ว)',msg:r.item_name+' — '+r.qty+' ขวด\n⚠️ กด "ลบ+คืนขวด" เพื่อคืนขวดกลับ',okText:'ลบ + คืนขวด',cancelText:'ยกเลิก',danger:true});if(!choice)return;const item=S.items.find(x=>x.id===r.item_id);if(item){const newBt=(item.bottles||0)+r.qty;await db('items','PATCH',{bottles:newBt,qty:newBt,updated_at:new Date().toISOString()},`?id=eq.${item.id}`);};}else{const ok=await dlg({icon:'🗑️',title:'ลบ Request',msg:r.item_name,okText:'ลบ',danger:true});if(!ok)return;}try{await db('requests','DELETE',null,`?id=eq.${id}`);toast('🗑️ ลบแล้ว','info');await loadAll();renderReqs();renderAdmin();updBadge();}catch{toast('❌ ลบไม่ได้','err');}}
